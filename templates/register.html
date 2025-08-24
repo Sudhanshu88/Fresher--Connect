@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up • FresherConnect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="card">
+      <h1>Create your account</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash">
+            {% for category, message in messages %}
+              <div class="flash-item {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" id="registerForm" novalidate>
+        <div class="grid">
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" name="name" required placeholder="Your name" />
+            <small class="error" data-for="name"></small>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="you@example.com" />
+            <small class="error" data-for="email"></small>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" required minlength="6" placeholder="Minimum 6 characters" />
+            <small class="error" data-for="password"></small>
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select name="role" required>
+              <option value="">Select role</option>
+              <option value="fresher">Fresher</option>
+              <option value="experienced">Experienced</option>
+              <option value="employer">Employer</option>
+            </select>
+            <small class="error" data-for="role"></small>
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="text" name="phone" placeholder="Optional" />
+          </div>
+          <div class="field">
+            <label>Location</label>
+            <input type="text" name="location" placeholder="City, State" />
+          </div>
+          <div class="field">
+            <label>Education</label>
+            <input type="text" name="education" placeholder="e.g., BSc AI, 2nd Year" />
+          </div>
+          <div class="field">
+            <label>Skills (comma separated)</label>
+            <input type="text" name="skills" placeholder="Python, SQL, Excel" />
+          </div>
+          <div class="field">
+            <label>Summary</label>
+            <textarea name="summary" rows="3" placeholder="A short professional summary"></textarea>
+          </div>
+          <div class="field">
+            <label>Resume URL (optional)</label>
+            <input type="url" name="resume_path" placeholder="https://..." />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+      </form>
+
+      <p class="alt">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+    </section>
+  </main>
+  <footer class="footer">© 2025 FresherConnect</footer>
+  <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+</body>
+</html>

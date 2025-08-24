@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FresherConnect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+</head>
+<body>
+  <header class="header">
+    <div class="brand">FresherConnect</div>
+    <nav class="nav">
+      <a class="btn" href="{{ url_for('login') }}">Login</a>
+      <a class="btn btn-primary" href="{{ url_for('register') }}">Sign Up</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div class="hero-text">
+      <h1>Launch your career with confidence</h1>
+      <p>Find real jobs, apply with one click, track applications — all in one place.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="{{ url_for('register') }}">Create Account</a>
+        <a class="btn" href="{{ url_for('login') }}">I already have an account</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true"></div>
+  </main>
+
+  <footer class="footer">© 2025 FresherConnect</footer>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+</html>

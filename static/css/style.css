@@ -1,0 +1,4 @@
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4; }
+.welcome-container { text-align: center; margin-top: 150px; }
+.welcome-buttons .btn { padding: 10px 20px; margin: 10px; background: #667eea; color:white; text-decoration:none; border-radius:5px; }
+.welcome-buttons .btn-outline { background: transparent; border:1px solid #667eea; color:#667eea; }

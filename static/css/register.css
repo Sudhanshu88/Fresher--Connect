@@ -1,0 +1,4 @@
+@import url('login.css');
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:740px){.grid{grid-template-columns:1fr}}
+select, textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#0c1330;color:var(--text)}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard • FresherConnect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">FresherConnect</div>
+      <nav>
+        <a href="#profile">Profile</a>
+        <a href="#jobs">Job Search</a>
+        <a href="#applications">Applications</a>
+        <a href="#payments">Payments</a>
+        <a class="logout" href="{{ url_for('logout') }}">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <!-- Profile -->
+      <section id="profile" class="panel">
+        <h2>Profile</h2>
+        <div class="profile-grid">
+          <div><span class="label">Name</span><span class="value">{{ user.name }}</span></div>
+          <div><span class="label">Email</span><span class="value">{{ user.email }}</span></div>
+          <div><span class="label">Role</span><span class="value">{{ user.role }}</span></div>
+          <div><span class="label">Phone</span><span class="value">{{ user.phone or '—' }}</span></div>
+          <div><span class="label">Location</span><span class="value">{{ user.location or '—' }}</span></div>
+          <div><span class="label">Education</span><span class="value">{{ user.education or '—' }}</span></div>
+          <div><span class="label">Skills</span>
+            <span class="value">
+              {% if user.skills %}
+                {{ user.skills | tojson | replace('["','') | replace('"]','') | replace('","', ', ') }}
+              {% else %}—{% endif %}
+            </span>
+          </div>
+          <div><span class="label">Resume</span>
+            <span class="value">
+              {% if user.resume_path %}
+                <a href="{{ user.resume_path }}" target="_blank" rel="noopener">View</a>
+              {% else %}—{% endif %}
+            </span>
+          </div>
+          <div><span class="label">Premium</span><span class="value">{{ 'Yes' if user.is_premium else 'No' }}</span></div>
+        </div>
+      </section>
+
+      <!-- Job Search -->
+      <section id="jobs" class="panel">
+        <h2>Job Search</h2>
+        <div class="filters">
+          <form class="inline-form" action="{{ url_for('jobs_by_category', category='IT') }}" method="get" onsubmit="return false;">
+            <!-- Simple category quick-links; you can change names to match your job_categories table -->
+            <a class="chip" href="{{ url_for('jobs_by_category', category='IT') }}">IT</a>
+            <a class="chip" href="{{ url_for('jobs_by_category', category='CS') }}">CS</a>
+            <a class="chip" href="{{ url_for('jobs_by_category', category='Finance') }}">Finance</a>
+            <a class="chip" href="{{ url_for('jobs_by_category', category='Marketing') }}">Marketing</a>
+          </form>
+        </div>
+
+        <div class="cards">
+          {% for j in jobs %}
+          <article class="card" data-job-id="{{ j.id }}">
+            <header>
+              <h3>{{ j.title }}</h3>
+              <span class="badge">{{ j.category_name or 'General' }}</span>
+            </header>
+            <div class="meta">
+              <span>{{ j.company_name }}</span>
+              <span>•</span>
+              <span>{{ j.location or 'Remote' }}</span>
+              <span>•</span>
+              <span>{{ j.experience_level | capitalize }} · {{ j.job_type | replace('-', ' ') | title }}</span>
+            </div>
+            <p class="desc">{{ (j.description or '')[:140] }}{% if (j.description or '')|length > 140 %}…{% endif %}</p>
+            <div class="actions">
+              <a class="btn" href="{{ url_for('jobs_by_category', category=j.category_name or 'General') }}">View similar</a>
+              <button class="btn btn-primary apply-btn" data-id="{{ j.id }}" type="button">Apply</button>
+            </div>
+          </article>
+          {% else %}
+            <p>No jobs found.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Applications -->
+      <section id="applications" class="panel">
+        <h2>Applications</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in apps %}
+              <tr>
+                <td>{{ a.title }}</td>
+                <td>{{ a.company_name }}</td>
+                <td class="status {{ a.status }}">{{ a.status | capitalize }}</td>
+                <td>{{ a.applied_at }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">No applications yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Payments -->
+      <section id="payments" class="panel">
+        <h2>Payments</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in pays %}
+              <tr>
+                <td>{{ p.amount }} {{ p.currency }}</td>
+                <td class="status {{ p.status }}">{{ p.status | capitalize }}</td>
+                <td>{{ p.subscription_type or '—' }}</td>
+                <td>{{ p.created_at }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">No payments found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

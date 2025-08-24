@@ -1,0 +1,17 @@
+:root { --bg:#0b1020; --card:#121733; --text:#e9ecf5; --muted:#aab2d5; --primary:#5b7cff; --line:#1f2646; }
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0b1020,#0c1530);color:var(--text);font:16px/1.6 Inter,Arial,system-ui}
+.header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line);backdrop-filter:blur(6px);position:sticky;top:0}
+.brand{font-weight:700;letter-spacing:.3px}
+.nav .btn{margin-left:10px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;max-width:1100px;margin:64px auto;padding:0 24px}
+.hero-text h1{font-size:40px;margin:0 0 10px}
+.hero-text p{color:var(--muted);margin:0 0 24px}
+.cta .btn{margin-right:12px}
+.hero-art{height:320px;border-radius:16px;background:
+  radial-gradient(120px 120px at 20% 30%, rgba(91,124,255,.25), transparent 60%),
+  radial-gradient(160px 160px at 80% 70%, rgba(108,255,214,.18), transparent 60%),
+  linear-gradient(135deg, #151b3b, #0e1431);border:1px solid var(--line)}
+.footer{max-width:1100px;margin:40px auto;padding:16px 24px;color:var(--muted)}
+.btn{display:inline-block;padding:10px 16px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--text);transition:.2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--primary);border-color:transparent;color:#fff}
