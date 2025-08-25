@@ -1,39 +1,35 @@
 
 FROM python:3.10-slim
 
-
+# Prevent Python from writing pyc files & enables unbuffered logs
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+# Install required system packages for mysqlclient and build tools
+RUN apt-get update && apt-get install -y \
+    gcc \
+    pkg-config \
+    default-libmysqlclient-dev \
+    build-essential \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -u 10001 appuser
-
-
+# Create app directory
 WORKDIR /app
 
+# Copy requirements first (for better caching)
+COPY requirements.txt ./requirements.txt
 
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
+# Copy the rest of the code
+COPY . .
 
-COPY Backend/requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
-
-
-COPY Backend/ ./
-
-
-ENV FLASK_ENV=production \
-    DATABASE_HOST=localhost \
-    DATABASE_PORT=3306 \
-    DATABASE_USER=root \
-    DATABASE_PASSWORD=changeme \
-    DATABASE_NAME=fresher_connect \
-    SECRET_KEY=changeme
-
-
+# Expose Flask default port
 EXPOSE 5000
 
-USER appuser
+# Run the app
+CMD ["python", "app.py"]
 
-
-CMD ["python", "run.py"]
