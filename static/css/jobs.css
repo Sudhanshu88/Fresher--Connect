@@ -1,15 +1,135 @@
-:root{--bg:#0b1020;--panel:#101633;--text:#e9ecf5;--muted:#aab2d5;--primary:#5b7cff;--line:#1f2646}
-*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0b1020,#0c1530);color:var(--text);font:16px/1.6 Inter,Arial,system-ui}
-.sub-header{border-bottom:1px solid var(--line);background:#0c1330}
-.sub-header .container{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
-.title{font-weight:700}
-.container{max-width:1100px;margin:24px auto;padding:0 16px}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media (max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:680px){.cards{grid-template-columns:1fr}}
-.card{background:#0f1534;border:1px solid var(--line);border-radius:14px;padding:14px}
-.card header{display:flex;justify-content:space-between;align-items:center}
-.badge{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
-.meta{display:flex;gap:6px;color:var(--muted);font-size:13.5px;margin:6px 0 6px}
-.desc{color:#d6dcff}
-.footer{padding:16px;text-align:center;color:var(--muted)}
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f6f2ea;
+  --surface: #ffffff;
+  --ink: #0b1b2b;
+  --muted: #5d6b77;
+  --line: #d8d0c5;
+  --accent: #0aa37f;
+  --navy: #11253a;
+  --shadow: 0 20px 45px rgba(17, 37, 58, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #f8f5ee 0%, #f1eade 100%);
+}
+
+.container {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+}
+
+.sub-header {
+  background: rgba(246, 242, 234, 0.95);
+  border-bottom: 1px solid var(--line);
+  padding: 18px 0;
+}
+
+.sub-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-family: "Fraunces", "Georgia", serif;
+  font-size: 1.8rem;
+}
+
+.sub-header a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 24px 0;
+}
+
+input,
+select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  font-family: inherit;
+  background: #fff;
+}
+
+.cards {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 30px;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(17, 37, 58, 0.1);
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 8px 0 12px;
+}
+
+.dot {
+  color: var(--line);
+}
+
+.desc {
+  margin: 0;
+  color: var(--muted);
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+  text-align: center;
+  padding: 16px 0 26px;
+  color: var(--muted);
+}
+
+@media (max-width: 720px) {
+  .sub-header .container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

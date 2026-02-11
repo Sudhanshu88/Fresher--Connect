@@ -2,34 +2,220 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FresherConnect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FresherConnect - Fresher-Only Career Network</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
 </head>
-<body>
-  <header class="header">
-    <div class="brand">FresherConnect</div>
-    <nav class="nav">
-      <a class="btn" href="{{ url_for('login') }}">Login</a>
-      <a class="btn btn-primary" href="{{ url_for('register') }}">Sign Up</a>
-    </nav>
+<body class="page-home">
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-mark">FC</span>
+        <div>
+          <span class="brand-title">FresherConnect</span>
+          <span class="brand-sub">Fresher-only career network</span>
+        </div>
+      </div>
+      <nav class="nav" id="navMenu">
+        <a href="#how">How it works</a>
+        <a href="#promise">Fresher promise</a>
+        <a href="#tracks">Career tracks</a>
+        <a href="#stories">Success stories</a>
+        <a class="btn ghost" href="{{ url_for('login') }}">Login</a>
+        <a class="btn primary" href="{{ url_for('register') }}">Join as Fresher</a>
+      </nav>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">Menu</button>
+    </div>
   </header>
 
-  <main class="hero">
-    <div class="hero-text">
-      <h1>Launch your career with confidence</h1>
-      <p>Find real jobs, apply with one click, track applications — all in one place.</p>
-      <div class="cta">
-        <a class="btn btn-primary" href="{{ url_for('register') }}">Create Account</a>
-        <a class="btn" href="{{ url_for('login') }}">I already have an account</a>
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow">Only freshers can enroll</p>
+        <h1>A LinkedIn-style profile built just for freshers.</h1>
+        <p class="lead">
+          No experienced profiles, no noisy feeds. Build a clean, verified fresher profile,
+          get curated entry-level roles, and track every application in one place.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="{{ url_for('register') }}">Create Fresher Profile</a>
+          <a class="btn ghost" href="{{ url_for('login') }}">I already have an account</a>
+        </div>
+        <div class="hero-metrics">
+          <div>
+            <strong>12k+</strong>
+            <span>Fresher profiles</span>
+          </div>
+          <div>
+            <strong>1.8k+</strong>
+            <span>Verified jobs</span>
+          </div>
+          <div>
+            <strong>500+</strong>
+            <span>Campus partners</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="hero-art" aria-hidden="true"></div>
+      <aside class="hero-panel">
+        <div class="panel-card">
+          <div class="panel-head">
+            <h3>Profile preview</h3>
+            <span class="pill">Fresher</span>
+          </div>
+          <div class="profile-row">
+            <div>
+              <p class="name">Aarav Singh</p>
+              <p class="role">B.Tech CSE, 2026</p>
+            </div>
+            <span class="tag">Open to work</span>
+          </div>
+          <div class="panel-list">
+            <div>
+              <span>Top skills</span>
+              <strong>Python, SQL, React</strong>
+            </div>
+            <div>
+              <span>Location</span>
+              <strong>Pune, India</strong>
+            </div>
+            <div>
+              <span>Availability</span>
+              <strong>Immediate</strong>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <h4>Fresher eligibility</h4>
+          <ul>
+            <li>0 to 2 years experience</li>
+            <li>Final-year or recent graduate</li>
+            <li>Verified education details</li>
+          </ul>
+          <a class="text-link" href="{{ url_for('register') }}">Verify and join now</a>
+        </div>
+      </aside>
+    </section>
+
+    <section id="how" class="section container">
+      <div class="section-head">
+        <h2>How FresherConnect works</h2>
+        <p>Everything you need to launch your first role, without competing with experienced profiles.</p>
+      </div>
+      <div class="grid steps">
+        <article class="step-card">
+          <span class="step-num">01</span>
+          <h3>Build a clean profile</h3>
+          <p>One fresher-only profile with verified education, projects, and skills.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">02</span>
+          <h3>Get matched roles</h3>
+          <p>See curated entry-level jobs filtered by skills, location, and batch.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">03</span>
+          <h3>Apply in minutes</h3>
+          <p>Save resumes, track status, and follow up from one dashboard.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">04</span>
+          <h3>Grow with launchpad</h3>
+          <p>Mock interviews, portfolio templates, and fresher resume review.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="promise" class="section highlight">
+      <div class="container highlight-inner">
+        <div>
+          <h2>Fresher promise</h2>
+          <p>
+            This platform is exclusively for freshers. Every role, every company, and every
+            candidate is screened for entry-level readiness.
+          </p>
+        </div>
+        <div class="promise-grid">
+          <div class="promise-card">
+            <h3>No experienced profiles</h3>
+            <p>Freshers do not compete with 3+ year professionals.</p>
+          </div>
+          <div class="promise-card">
+            <h3>Verified entry-level roles</h3>
+            <p>Only roles tagged as fresher-friendly appear in your feed.</p>
+          </div>
+          <div class="promise-card">
+            <h3>Batch-based matching</h3>
+            <p>Get jobs aligned to your graduation year and skills.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tracks" class="section container">
+      <div class="section-head">
+        <h2>Popular fresher tracks</h2>
+        <p>Choose a launch track and build a role-ready profile quickly.</p>
+      </div>
+      <div class="grid tracks">
+        <article class="track-card">
+          <h3>Software Development</h3>
+          <p>DSA roadmap, portfolio templates, and hackathon-ready projects.</p>
+        </article>
+        <article class="track-card">
+          <h3>Data and Analytics</h3>
+          <p>SQL labs, dashboard projects, and analytics resume kits.</p>
+        </article>
+        <article class="track-card">
+          <h3>Product and Design</h3>
+          <p>Case study templates, UI kits, and UX interview practice.</p>
+        </article>
+        <article class="track-card">
+          <h3>Business and Marketing</h3>
+          <p>Growth playbooks, campaign samples, and internship listings.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stories" class="section container">
+      <div class="section-head">
+        <h2>Fresher success stories</h2>
+        <p>Real candidates who landed their first roles.</p>
+      </div>
+      <div class="grid stories">
+        <article class="story-card">
+          <p class="quote">"The fresher-only feed helped me get my first frontend role in 4 weeks."</p>
+          <span class="story-name">Riya, Frontend Developer</span>
+        </article>
+        <article class="story-card">
+          <p class="quote">"The launchpad checklist made my resume interview-ready fast."</p>
+          <span class="story-name">Arjun, Data Analyst</span>
+        </article>
+        <article class="story-card">
+          <p class="quote">"No experienced candidates meant real visibility for my profile."</p>
+          <span class="story-name">Meera, Marketing Associate</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container cta-inner">
+        <div>
+          <h2>Ready for your first job?</h2>
+          <p>Join the fresher-only network and get matched to verified entry-level roles.</p>
+        </div>
+        <a class="btn primary" href="{{ url_for('register') }}">Join FresherConnect</a>
+      </div>
+    </section>
   </main>
 
-  <footer class="footer">© 2025 FresherConnect</footer>
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>2026 FresherConnect. Built for freshers only.</p>
+      <a href="{{ url_for('register') }}">Start free</a>
+    </div>
+  </footer>
+
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

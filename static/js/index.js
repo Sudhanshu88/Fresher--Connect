@@ -1,4 +1,10 @@
-// Index page minimal behavior
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('FresherConnect • index loaded');
+  const menuBtn = document.getElementById('menuBtn');
+  const nav = document.querySelector('.nav');
+
+  if (menuBtn && nav) {
+    menuBtn.addEventListener('click', () => {
+      nav.classList.toggle('open');
+    });
+  }
 });

@@ -1,4 +1,194 @@
-@import url('login.css');
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:740px){.grid{grid-template-columns:1fr}}
-select, textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#0c1330;color:var(--text)}
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f6f2ea;
+  --surface: #ffffff;
+  --ink: #0b1b2b;
+  --muted: #5d6b77;
+  --line: #d8d0c5;
+  --accent: #0aa37f;
+  --navy: #11253a;
+  --shadow: 0 20px 45px rgba(17, 37, 58, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 70% 10%, rgba(255, 138, 61, 0.12), transparent 40%),
+    linear-gradient(180deg, #f8f5ee 0%, #f1eade 100%);
+}
+
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr 1.1fr;
+  gap: 32px;
+  align-items: center;
+  width: min(1140px, 92%);
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.auth-info {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-info h1 {
+  font-family: "Fraunces", "Georgia", serif;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  margin: 0;
+}
+
+.auth-info p {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.info-card {
+  background: var(--surface);
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.info-card ul {
+  padding-left: 18px;
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.auth-card {
+  background: var(--surface);
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+.auth-card h2 {
+  margin-top: 0;
+}
+
+.sub {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.password-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-pass {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.helper {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.alt {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.alt a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.flash {
+  border: 1px solid var(--line);
+  background: #fff7ea;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.flash-item {
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #b62d2d;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 980px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

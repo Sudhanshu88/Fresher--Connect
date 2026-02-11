@@ -3,13 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up • FresherConnect</title>
+  <title>Sign Up - FresherConnect</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
-<body>
-  <main class="auth-wrap">
-    <section class="card">
-      <h1>Create your account</h1>
+<body class="auth-page">
+  <main class="auth-layout">
+    <section class="auth-info">
+      <a class="back-link" href="{{ url_for('index') }}">Back to home</a>
+      <h1>Create your fresher profile.</h1>
+      <p>FresherConnect is exclusive to freshers. Please confirm your graduation year and skills.</p>
+      <div class="info-card">
+        <h3>Who can register?</h3>
+        <ul>
+          <li>Final-year students or recent graduates</li>
+          <li>0 to 2 years experience only</li>
+          <li>Verified education details</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="auth-card wide">
+      <h2>Fresher Registration</h2>
+      <p class="sub">All fields marked * are required.</p>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -24,62 +40,69 @@
       <form method="POST" id="registerForm" novalidate>
         <div class="grid">
           <div class="field">
-            <label>Full Name</label>
-            <input type="text" name="name" required placeholder="Your name" />
+            <label>Full Name *</label>
+            <input type="text" name="name" required placeholder="Your full name" />
             <small class="error" data-for="name"></small>
           </div>
           <div class="field">
-            <label>Email</label>
+            <label>Email *</label>
             <input type="email" name="email" required placeholder="you@example.com" />
             <small class="error" data-for="email"></small>
           </div>
           <div class="field">
-            <label>Password</label>
-            <input type="password" name="password" required minlength="6" placeholder="Minimum 6 characters" />
+            <label>Password *</label>
+            <div class="password-wrap">
+              <input id="regPassword" type="password" name="password" required minlength="6" placeholder="Minimum 6 characters" />
+              <button type="button" id="toggleRegPass" class="toggle-pass">Show</button>
+            </div>
+            <small id="passStrength" class="helper">Strength: -</small>
             <small class="error" data-for="password"></small>
           </div>
           <div class="field">
-            <label>Role</label>
+            <label>Role *</label>
             <select name="role" required>
-              <option value="">Select role</option>
-              <option value="fresher">Fresher</option>
-              <option value="experienced">Experienced</option>
-              <option value="employer">Employer</option>
+              <option value="fresher">Fresher (only)</option>
             </select>
             <small class="error" data-for="role"></small>
           </div>
           <div class="field">
             <label>Phone</label>
-            <input type="text" name="phone" placeholder="Optional" />
+            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" />
           </div>
           <div class="field">
             <label>Location</label>
             <input type="text" name="location" placeholder="City, State" />
           </div>
           <div class="field">
-            <label>Education</label>
-            <input type="text" name="education" placeholder="e.g., BSc AI, 2nd Year" />
+            <label>Education *</label>
+            <input type="text" name="education" required placeholder="B.Tech CSE, 2026" />
+            <small class="error" data-for="education"></small>
           </div>
           <div class="field">
+            <label>Graduation Year *</label>
+            <input type="text" name="grad_year" required placeholder="2026" />
+            <small class="error" data-for="grad_year"></small>
+          </div>
+          <div class="field full">
             <label>Skills (comma separated)</label>
-            <input type="text" name="skills" placeholder="Python, SQL, Excel" />
+            <input type="text" name="skills" placeholder="Python, SQL, Communication" />
           </div>
-          <div class="field">
-            <label>Summary</label>
-            <textarea name="summary" rows="3" placeholder="A short professional summary"></textarea>
+          <div class="field full">
+            <label>Profile Summary</label>
+            <textarea name="summary" rows="3" placeholder="Write a short fresher profile summary"></textarea>
           </div>
-          <div class="field">
-            <label>Resume URL (optional)</label>
-            <input type="url" name="resume_path" placeholder="https://..." />
+          <div class="field full">
+            <label>Resume URL</label>
+            <input type="url" name="resume_path" placeholder="https://your-resume-link" />
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">Create Account</button>
+
+        <button type="submit" class="btn primary">Create Fresher Account</button>
       </form>
 
       <p class="alt">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
     </section>
   </main>
-  <footer class="footer">© 2025 FresherConnect</footer>
   <script src="{{ url_for('static', filename='js/register.js') }}"></script>
 </body>
 </html>

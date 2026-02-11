@@ -3,31 +3,41 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ category }} Jobs • FresherConnect</title>
+  <title>{{ category }} Jobs - FresherConnect</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
   <header class="sub-header">
     <div class="container">
-      <div class="title">{{ category }} Jobs</div>
+      <div class="title">{{ category }} Fresher Jobs</div>
       <nav><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></nav>
     </div>
   </header>
 
   <main class="container">
-    <section class="cards">
+    <div class="toolbar">
+      <input id="searchInput" type="search" placeholder="Search jobs by title or company" />
+      <select id="sortSelect">
+        <option value="default">Sort: Default</option>
+        <option value="title">Sort: Title A-Z</option>
+        <option value="company">Sort: Company A-Z</option>
+      </select>
+    </div>
+
+    <section class="cards" id="jobsGrid">
       {% for j in jobs %}
-      <article class="card">
+      <article class="card" data-title="{{ j.title|lower }}" data-company="{{ j.company_name|lower }}">
         <header>
           <h3>{{ j.title }}</h3>
           <span class="badge">{{ j.category_name }}</span>
         </header>
         <div class="meta">
-          <span>{{ j.company_name }}</span><span>•</span>
-          <span>{{ j.location or 'Remote' }}</span><span>•</span>
-          <span>{{ j.experience_level | capitalize }} · {{ j.job_type | replace('-', ' ') | title }}</span>
+          <span>{{ j.company_name }}</span><span class="dot">&bull;</span>
+          <span>{{ j.location or 'Remote' }}</span><span class="dot">&bull;</span>
+          <span>{{ j.experience_level | capitalize }} - {{ j.job_type | replace('-', ' ') | title }}</span>
         </div>
-        <p class="desc">{{ (j.description or '')[:180] }}{% if (j.description or '')|length > 180 %}…{% endif %}</p>
+        <p class="desc">{{ (j.description or '')[:180] }}{% if (j.description or '')|length > 180 %}...{% endif %}</p>
       </article>
       {% else %}
       <p>No jobs available in this category.</p>
@@ -35,7 +45,7 @@
     </section>
   </main>
 
-  <footer class="footer">© 2025 FresherConnect</footer>
+  <footer class="footer">2026 FresherConnect</footer>
   <script src="{{ url_for('static', filename='js/jobs.js') }}"></script>
 </body>
 </html>
