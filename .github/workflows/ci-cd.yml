@@ -41,7 +41,12 @@ jobs:
       - name: Verify mocked backend flow
         run: python scripts/verify_mock_backend_flow.py
 
+      - name: Remove root .env before Compose validation
+        run: rm -f .env
+
       - name: Validate Docker Compose
+        env:
+          COMPOSE_DISABLE_ENV_FILE: 1
         run: docker compose --env-file .env.example config
 
       - name: Build backend image
