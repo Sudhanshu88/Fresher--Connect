@@ -42,7 +42,7 @@ jobs:
         run: python scripts/verify_mock_backend_flow.py
 
       - name: Validate Docker Compose
-        run: docker compose config
+        run: docker compose --env-file .env.example config
 
       - name: Build backend image
         run: docker build -f backend/Dockerfile.backend -t fresher-connect-backend:ci .
