@@ -86,6 +86,16 @@ Compose starts:
 - `backend` on `5000`
 - `frontend` on `3000`
 
+## CI/CD
+
+GitHub Actions workflow is available at `.github/workflows/ci-cd.yml`.
+
+- CI runs on pull requests and pushes to `main`
+- Backend compile and mocked API flow are verified in CI
+- Docker Compose config is validated in CI
+- Backend and frontend container images are built in CI
+- On pushes to `main`, both images are published to GHCR
+
 ## API summary
 
 - `GET /api/session`
