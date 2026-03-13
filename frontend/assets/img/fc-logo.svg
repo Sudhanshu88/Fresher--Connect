@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Fresher Connect FC logo</title>
+  <desc id="desc">A blue and orange FC monogram inside a shield with a graduation cap.</desc>
+  <defs>
+    <linearGradient id="shieldBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f4fa5"/>
+      <stop offset="100%" stop-color="#1295db"/>
+    </linearGradient>
+    <linearGradient id="shieldOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffb000"/>
+      <stop offset="100%" stop-color="#ef6b00"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M128 18 36 58v70c0 56 37 89 92 110 55-21 92-54 92-110V58Z" fill="url(#shieldBlue)"/>
+  <path d="M128 29 47 64v61c0 49 31 79 81 98 50-19 81-49 81-98V64Z" fill="#ffffff"/>
+  <path d="M128 40 56 69v55c0 43 27 69 72 87 45-18 72-44 72-87V69Z" fill="#f8fbff" stroke="#d7e3f2" stroke-width="3"/>
+
+  <path d="M128 8 64 33l64 23 64-23Z" fill="#123a72"/>
+  <path d="M92 42v19c0 7 15 14 36 14s36-7 36-14V42" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M76 37v28" stroke="#123a72" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="76" cy="67" r="5" fill="#ef6b00"/>
+
+  <path d="M77 96h64l-14 18H98l-8 49H61l9-53-12-14Z" fill="url(#shieldOrange)"/>
+  <path d="M192 105c-7-8-18-12-30-12-27 0-46 20-46 41 0 24 20 43 46 43 13 0 23-4 31-12l-12-18c-5 4-12 7-19 7-12 0-22-9-22-20 0-11 9-20 21-20 8 0 14 2 20 7Z" fill="url(#shieldBlue)"/>
+
+  <path d="M52 176c25 17 50 27 76 36 26-9 51-19 76-36l-8 23c-20 15-43 25-68 33-25-8-48-18-68-33Z" fill="url(#shieldOrange)"/>
+</svg>
