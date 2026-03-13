@@ -29,7 +29,6 @@ Open:
 Copy `.env.example` to `.env` if you use one, then set values as needed.
 
 ```env
-SECRET_KEY=change-this-before-production
 SESSION_COOKIE_SECURE=false
 MONGODB_URI=mongodb://127.0.0.1:27017/fresher_connect
 MAX_CONTENT_LENGTH=2097152
@@ -107,7 +106,6 @@ Compose starts:
 
 ## Production notes
 
-- Use a strong `SECRET_KEY`
 - Use a managed MongoDB deployment for production
 - Restrict `FRONTEND_ORIGINS` to trusted frontend hosts
 - Serve behind HTTPS and set `SESSION_COOKIE_SECURE=true`
