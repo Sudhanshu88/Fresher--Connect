@@ -771,6 +771,10 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.filter-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .full-span {
   grid-column: 1 / -1;
 }
@@ -1100,8 +1104,22 @@ select:focus-visible {
   gap: 12px;
 }
 
+.job-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+
 .job-card-footer .btn {
   min-width: 118px;
+}
+
+.save-job-button.active-save {
+  border-color: rgba(239, 107, 0, 0.28);
+  background: rgba(255, 176, 0, 0.12);
+  color: var(--accent-strong);
 }
 
 .card-link-row {
@@ -1320,6 +1338,10 @@ select:focus-visible {
   min-width: 88px;
 }
 
+.field-note {
+  margin: 0;
+}
+
 :root[data-theme="dark"] .topbar {
   border-bottom-color: rgba(255, 176, 0, 0.14);
   background:
@@ -1423,11 +1445,24 @@ select:focus-visible {
   color: #ffb8a5;
 }
 
+:root[data-theme="dark"] .save-job-button.active-save {
+  border-color: rgba(255, 154, 42, 0.28);
+  background: rgba(255, 154, 42, 0.12);
+  color: #ffd39b;
+}
+
 .inline-form {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+}
+
+.resource-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .inline-form .btn {
@@ -1460,6 +1495,22 @@ th {
 .status-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-metric {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-status-grid {
+  margin-top: 12px;
 }
 
 .status-box {
@@ -1537,6 +1588,7 @@ th {
   .workflow-grid,
   .jobs-grid,
   .company-jobs-grid,
+  .stats-grid,
   .auth-feature-grid,
   .dashboard-hero-grid,
   .hero-mini-grid,
@@ -1552,6 +1604,10 @@ th {
 
   .auth-card {
     padding: 24px;
+  }
+
+  .filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1584,12 +1640,16 @@ th {
   .nav-actions,
   .button-row,
   .status-grid,
-  .form-grid.two-col {
+  .stats-grid,
+  .form-grid.two-col,
+  .filter-grid {
     grid-template-columns: 1fr;
   }
 
   .status-grid,
-  .form-grid.two-col {
+  .stats-grid,
+  .form-grid.two-col,
+  .filter-grid {
     display: grid;
   }
 
@@ -1626,6 +1686,10 @@ th {
 
   .job-card-header {
     flex-direction: column;
+  }
+
+  .job-card-actions {
+    justify-content: flex-start;
   }
 
   .btn {

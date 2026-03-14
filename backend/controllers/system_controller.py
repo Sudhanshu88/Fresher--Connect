@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask import jsonify
+from flask import current_app, jsonify, send_from_directory
 from pymongo.errors import PyMongoError
 
 from backend.middleware.auth import current_account
@@ -35,3 +35,7 @@ def healthcheck():
         return jsonify({"ok": True, "database": "ready", "engine": "mongodb"})
     except (PyMongoError, RuntimeError):
         return jsonify({"ok": False, "database": "unavailable", "engine": "mongodb"}), 503
+
+
+def uploaded_file(filename):
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename, as_attachment=True)

@@ -180,7 +180,7 @@
       return;
     }
     if (user.role === "admin") {
-      window.location.href = "index.html";
+      window.location.href = "admin.html";
       return;
     }
     window.location.href = user.role === "company" ? "company.html" : "user.html";

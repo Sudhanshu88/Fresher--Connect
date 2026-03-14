@@ -14,6 +14,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app import create_app
+from backend.models.documents import build_user_document
+from backend.services.auth_service import hash_password
+from backend.services.platform_service import utcnow
 
 
 def auth_headers(token):
@@ -25,7 +28,7 @@ def main():
     client = app.test_client()
 
     company_register = client.post(
-        "/api/auth/register",
+        "/auth/register",
         json={
             "role": "company",
             "name": "Hiring Manager",
@@ -43,7 +46,7 @@ def main():
     company_token = company_register.get_json()["access_token"]
 
     job_create = client.post(
-        "/api/company/jobs",
+        "/jobs",
         json={
             "company_name": "Example Corp",
             "company_logo": "https://example.com/logo.png",
@@ -81,15 +84,31 @@ def main():
     assert job_create.status_code == 200, job_create.get_data(as_text=True)
     job_id = job_create.get_json()["job"]["id"]
 
-    list_jobs = client.get("/api/jobs")
+    list_jobs = client.get("/jobs")
     assert list_jobs.status_code == 200, list_jobs.get_data(as_text=True)
     assert any(job["id"] == job_id for job in list_jobs.get_json()["jobs"])
 
-    logout_company = client.post("/api/auth/logout", headers=auth_headers(company_token))
+    job_detail = client.get(f"/jobs/{job_id}")
+    assert job_detail.status_code == 200, job_detail.get_data(as_text=True)
+    assert job_detail.get_json()["job"]["id"] == job_id
+
+    filtered_jobs = client.get(
+        "/api/jobs?location=Noida&company=Example%20Corp&skills=Python,Docker&experience=fresher&salary_min=400000&salary_max=900000"
+    )
+    assert filtered_jobs.status_code == 200, filtered_jobs.get_data(as_text=True)
+    filtered_payload = filtered_jobs.get_json()
+    assert filtered_payload["jobs"], filtered_payload
+    assert filtered_payload["jobs"][0]["id"] == job_id, filtered_payload
+
+    unmatched_jobs = client.get("/api/jobs?company=Unknown%20Company")
+    assert unmatched_jobs.status_code == 200, unmatched_jobs.get_data(as_text=True)
+    assert unmatched_jobs.get_json()["jobs"] == [], unmatched_jobs.get_json()
+
+    logout_company = client.post("/auth/logout", headers=auth_headers(company_token))
     assert logout_company.status_code == 200, logout_company.get_data(as_text=True)
 
     user_register = client.post(
-        "/api/auth/register",
+        "/auth/register",
         json={
             "role": "fresher",
             "name": "Test User",
@@ -110,27 +129,41 @@ def main():
     dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_token))
     assert dashboard.status_code == 200, dashboard.get_data(as_text=True)
     assert any(job["id"] == job_id for job in dashboard.get_json()["jobs"])
+    assert dashboard.get_json()["saved_jobs"] == []
+
+    save_job = client.post(
+        "/api/saved-jobs",
+        json={"job_id": job_id},
+        headers=auth_headers(user_token),
+    )
+    assert save_job.status_code == 200, save_job.get_data(as_text=True)
+
+    saved_jobs = client.get("/api/saved-jobs", headers=auth_headers(user_token))
+    assert saved_jobs.status_code == 200, saved_jobs.get_data(as_text=True)
+    assert saved_jobs.get_json()["saved_jobs"][0]["id"] == job_id
 
     apply_once = client.post(
-        "/api/applications",
-        json={"job_id": job_id},
+        f"/apply/{job_id}",
         headers=auth_headers(user_token),
     )
     assert apply_once.status_code == 200, apply_once.get_data(as_text=True)
     application_id = apply_once.get_json()["application"]["id"]
 
     apply_twice = client.post(
-        "/api/applications",
-        json={"job_id": job_id},
+        f"/apply/{job_id}",
         headers=auth_headers(user_token),
     )
     assert apply_twice.status_code == 409, apply_twice.get_data(as_text=True)
 
-    logout_user = client.post("/api/auth/logout", headers=auth_headers(user_token))
+    applications_list = client.get("/applications", headers=auth_headers(user_token))
+    assert applications_list.status_code == 200, applications_list.get_data(as_text=True)
+    assert applications_list.get_json()["applications"][0]["id"] == application_id
+
+    logout_user = client.post("/auth/logout", headers=auth_headers(user_token))
     assert logout_user.status_code == 200, logout_user.get_data(as_text=True)
 
     company_login = client.post(
-        "/api/auth/login",
+        "/auth/login",
         json={"email": "company@example.com", "password": "password123"},
     )
     assert company_login.status_code == 200, company_login.get_data(as_text=True)
@@ -143,16 +176,16 @@ def main():
 
     status_update = client.patch(
         f"/api/company/applications/{application_id}",
-        json={"status": "interview"},
+        json={"status": "shortlisted"},
         headers=auth_headers(company_login_token),
     )
     assert status_update.status_code == 200, status_update.get_data(as_text=True)
 
-    logout_company_again = client.post("/api/auth/logout", headers=auth_headers(company_login_token))
+    logout_company_again = client.post("/auth/logout", headers=auth_headers(company_login_token))
     assert logout_company_again.status_code == 200, logout_company_again.get_data(as_text=True)
 
     user_login = client.post(
-        "/api/auth/login",
+        "/auth/login",
         json={"email": "user@example.com", "password": "password123"},
     )
     assert user_login.status_code == 200, user_login.get_data(as_text=True)
@@ -161,7 +194,53 @@ def main():
     final_dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_login_token))
     assert final_dashboard.status_code == 200, final_dashboard.get_data(as_text=True)
     final_applications = final_dashboard.get_json()["applications"]
-    assert final_applications[0]["status"] == "interview", final_applications
+    assert final_applications[0]["status"] == "shortlisted", final_applications
+    assert final_dashboard.get_json()["saved_jobs"][0]["id"] == job_id
+
+    with app.app_context():
+        store = app.extensions["mongo_store"]
+        store.users.insert_one(
+            build_user_document(
+                user_id=store.next_sequence("users"),
+                name="Platform Admin",
+                email="admin@example.com",
+                password_hash=hash_password("Admin@12345"),
+                role="admin",
+                created_at=utcnow(),
+            )
+        )
+
+    admin_login = client.post(
+        "/auth/login",
+        json={"email": "admin@example.com", "password": "Admin@12345"},
+    )
+    assert admin_login.status_code == 200, admin_login.get_data(as_text=True)
+    admin_token = admin_login.get_json()["access_token"]
+
+    admin_dashboard = client.get("/api/admin/dashboard", headers=auth_headers(admin_token))
+    assert admin_dashboard.status_code == 200, admin_dashboard.get_data(as_text=True)
+    assert admin_dashboard.get_json()["analytics"]["saved_jobs"] == 1
+
+    moderate_job = client.patch(
+        f"/api/admin/jobs/{job_id}",
+        json={"moderation_status": "pending", "is_active": True},
+        headers=auth_headers(admin_token),
+    )
+    assert moderate_job.status_code == 200, moderate_job.get_data(as_text=True)
+
+    moderated_jobs = client.get("/api/jobs")
+    assert moderated_jobs.status_code == 200, moderated_jobs.get_data(as_text=True)
+    assert not any(job["id"] == job_id for job in moderated_jobs.get_json()["jobs"])
+
+    disable_user = client.patch(
+        f"/api/admin/users/{user_register.get_json()['user']['id']}",
+        json={"is_active": False},
+        headers=auth_headers(admin_token),
+    )
+    assert disable_user.status_code == 200, disable_user.get_data(as_text=True)
+
+    disabled_dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_login_token))
+    assert disabled_dashboard.status_code == 403, disabled_dashboard.get_data(as_text=True)
 
     health = client.get("/healthz")
     assert health.status_code == 200, health.get_data(as_text=True)

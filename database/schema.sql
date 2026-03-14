@@ -7,6 +7,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('candidate', 'company', 'admin')),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL
 );
 
@@ -38,6 +39,8 @@ CREATE TABLE jobs (
     salary_range VARCHAR(120),
     location VARCHAR(160),
     experience_required VARCHAR(120),
+    moderation_status VARCHAR(20) NOT NULL DEFAULT 'approved',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL
 );
 
@@ -47,5 +50,13 @@ CREATE TABLE applications (
     candidate_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     status VARCHAR(32) NOT NULL,
     applied_at TIMESTAMP NOT NULL,
+    UNIQUE (job_id, candidate_id)
+);
+
+CREATE TABLE saved_jobs (
+    id BIGINT PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    candidate_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL,
     UNIQUE (job_id, candidate_id)
 );

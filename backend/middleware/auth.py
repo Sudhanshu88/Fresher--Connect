@@ -62,6 +62,8 @@ def login_required(fn):
         user = current_account()
         if not user:
             return json_error("authentication_required", 401)
+        if user.get("is_active") is False:
+            return json_error("account_disabled", 403)
         return fn(user, *args, **kwargs)
 
     return wrapper
@@ -74,6 +76,8 @@ def role_required(role):
             user = current_account()
             if not user:
                 return json_error("authentication_required", 401)
+            if user.get("is_active") is False:
+                return json_error("account_disabled", 403)
             if user.get("role") == "admin":
                 return fn(user, *args, **kwargs)
             if user.get("role") != role:

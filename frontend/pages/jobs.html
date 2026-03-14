@@ -82,7 +82,7 @@
     </section>
 
     <section class="panel">
-      <div class="form-grid two-col">
+      <div class="form-grid filter-grid">
         <div class="field">
           <label for="jobsPageSearch">Search</label>
           <input id="jobsPageSearch" type="text" placeholder="Title, company, location">
@@ -92,6 +92,34 @@
           <select id="jobsPageCategory">
             <option value="">All categories</option>
           </select>
+        </div>
+        <div class="field">
+          <label for="jobsPageLocation">Location</label>
+          <input id="jobsPageLocation" type="text" list="jobsPageLocationList" placeholder="Noida, Remote, Bengaluru">
+          <datalist id="jobsPageLocationList"></datalist>
+        </div>
+        <div class="field">
+          <label for="jobsPageCompany">Company</label>
+          <input id="jobsPageCompany" type="text" list="jobsPageCompanyList" placeholder="Search by company name">
+          <datalist id="jobsPageCompanyList"></datalist>
+        </div>
+        <div class="field">
+          <label for="jobsPageSkills">Skills</label>
+          <input id="jobsPageSkills" type="text" placeholder="Python, Docker, SQL">
+        </div>
+        <div class="field">
+          <label for="jobsPageExperience">Experience</label>
+          <select id="jobsPageExperience">
+            <option value="">All experience levels</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="jobsPageSalaryMin">Minimum Salary</label>
+          <input id="jobsPageSalaryMin" type="number" min="0" step="1000" placeholder="400000">
+        </div>
+        <div class="field">
+          <label for="jobsPageSalaryMax">Maximum Salary</label>
+          <input id="jobsPageSalaryMax" type="number" min="0" step="1000" placeholder="800000">
         </div>
       </div>
       <div id="jobsPageMessage" class="form-message"></div>

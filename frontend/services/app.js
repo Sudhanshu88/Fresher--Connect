@@ -3,6 +3,7 @@
   var state = {
     userDashboard: null,
     companyDashboard: null,
+    adminDashboard: null,
     jobsPage: null,
     jobDetails: null,
     applicationStatusPage: null,
@@ -45,6 +46,11 @@
       return;
     }
 
+    if (page === "admin") {
+      initAdminPage();
+      return;
+    }
+
     if (page === "jobs") {
       initJobsPage();
       return;
@@ -79,6 +85,16 @@
 
   function applicationStatusHref(applicationId) {
     return "application-status.html?application=" + encodeURIComponent(String(applicationId));
+  }
+
+  function dashboardHref(user) {
+    if (!user) {
+      return "login.html";
+    }
+    if (user.role === "admin") {
+      return "admin.html";
+    }
+    return user.role === "company" ? "company.html" : "user.html";
   }
 
   function loadTheme() {
@@ -388,12 +404,29 @@
       '<input id="editSkills" name="skills" type="text" value="' + window.FC_API.escapeHtml(safeJoin(user.skills).replace(/^-$/, "")) + '" placeholder="Python, SQL, Git">' +
       "</div>" +
       '<div class="field">' +
+      '<label for="editExperience">Experience</label>' +
+      '<input id="editExperience" name="experience" type="text" value="' + window.FC_API.escapeHtml(user.experience || "") + '" placeholder="Fresher, 0-1 year, internship">' +
+      "</div>" +
+      '<div class="field">' +
+      '<label for="editLinkedin">LinkedIn</label>' +
+      '<input id="editLinkedin" name="linkedin" type="url" value="' + window.FC_API.escapeHtml(user.linkedin || "") + '" placeholder="https://linkedin.com/in/your-profile">' +
+      "</div>" +
+      '<div class="field">' +
+      '<label for="editPortfolio">Portfolio</label>' +
+      '<input id="editPortfolio" name="portfolio" type="url" value="' + window.FC_API.escapeHtml(user.portfolio || "") + '" placeholder="https://portfolio.example.com">' +
+      "</div>" +
+      '<div class="field">' +
       '<label for="editSummary">Summary</label>' +
       '<textarea id="editSummary" name="summary" rows="4" placeholder="Write a short profile summary">' + window.FC_API.escapeHtml(user.summary || "") + "</textarea>" +
       "</div>" +
       '<div class="field">' +
-      '<label for="editResume">Resume path</label>' +
-      '<input id="editResume" name="resume_path" type="text" value="' + window.FC_API.escapeHtml(user.resume_path || "") + '" placeholder="Resume link or file name">' +
+      '<label for="editResume">Resume link</label>' +
+      '<input id="editResume" name="resume_path" type="text" value="' + window.FC_API.escapeHtml(user.resume_path || "") + '" placeholder="Existing resume link">' +
+      "</div>" +
+      '<div class="field">' +
+      '<label for="editResumeFile">Resume file</label>' +
+      '<input id="editResumeFile" name="resume_file" type="file" accept=".pdf,.doc,.docx">' +
+      '<p class="helper-text field-note">Upload PDF, DOC, or DOCX up to 2 MB.</p>' +
       "</div>" +
       '<div id="editProfileMessage" class="form-message"></div>' +
       '<div class="button-row">' +
@@ -521,9 +554,145 @@
     return payload;
   }
 
-  function filterJobCollection(jobs, searchValue, categoryValue) {
-    var search = String(searchValue || "").trim().toLowerCase();
-    var category = String(categoryValue || "").trim().toLowerCase();
+  function debounce(fn, delay) {
+    var timeoutId = null;
+    return function () {
+      var args = arguments;
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(function () {
+        fn.apply(null, args);
+      }, delay || 250);
+    };
+  }
+
+  function splitFilterTerms(value) {
+    return String(value || "")
+      .split(",")
+      .map(function (item) {
+        return item.trim().toLowerCase();
+      })
+      .filter(Boolean);
+  }
+
+  function normalizeJobFilters(raw) {
+    return {
+      search: String((raw && raw.search) || "").trim().toLowerCase(),
+      category: String((raw && raw.category) || "").trim().toLowerCase(),
+      location: String((raw && raw.location) || "").trim().toLowerCase(),
+      company: String((raw && raw.company) || "").trim().toLowerCase(),
+      experience: String((raw && raw.experience) || "").trim().toLowerCase(),
+      skills: String((raw && raw.skills) || "").trim(),
+      skillTerms: splitFilterTerms(raw && raw.skills),
+      salaryMin: toNumber(raw && raw.salaryMin),
+      salaryMax: toNumber(raw && raw.salaryMax)
+    };
+  }
+
+  function buildJobFilterOptions(jobs) {
+    return {
+      categories: Array.from(new Set((jobs || []).reduce(function (items, job) {
+        return items.concat(job.categories || []);
+      }, []).filter(Boolean))).sort(),
+      locations: Array.from(new Set((jobs || []).map(function (job) {
+        return String(job.location || "").trim();
+      }).filter(Boolean))).sort(),
+      companies: Array.from(new Set((jobs || []).map(function (job) {
+        return String(job.company_name || "").trim();
+      }).filter(Boolean))).sort(),
+      experience_levels: Array.from(new Set((jobs || []).map(function (job) {
+        return String(job.experience_level || job.experience_required || "").trim();
+      }).filter(Boolean))).sort()
+    };
+  }
+
+  function populateOptions(select, items, defaultLabel) {
+    if (!select) {
+      return;
+    }
+
+    var currentValue = select.value;
+    select.innerHTML = '<option value="">' + window.FC_API.escapeHtml(defaultLabel || "All options") + "</option>" +
+      (items || [])
+        .map(function (item) {
+          return '<option value="' + window.FC_API.escapeHtml(item) + '">' + window.FC_API.escapeHtml(item) + "</option>";
+        })
+        .join("");
+    if (currentValue) {
+      select.value = currentValue;
+    }
+  }
+
+  function populateDatalist(id, items) {
+    var list = byId(id);
+    if (!list) {
+      return;
+    }
+
+    list.innerHTML = (items || [])
+      .map(function (item) {
+        return '<option value="' + window.FC_API.escapeHtml(item) + '"></option>';
+      })
+      .join("");
+  }
+
+  function populateJobFilterControls(prefix, jobs, options) {
+    var filterOptions = options || buildJobFilterOptions(jobs || []);
+    populateOptions(byId(prefix + "Category"), filterOptions.categories || [], "All categories");
+    populateOptions(byId(prefix + "Experience"), filterOptions.experience_levels || [], "All experience levels");
+    populateDatalist(prefix + "LocationList", filterOptions.locations || []);
+    populateDatalist(prefix + "CompanyList", filterOptions.companies || []);
+  }
+
+  function readInputValue(id) {
+    var field = byId(id);
+    return field ? field.value : "";
+  }
+
+  function readJobFilters(prefix) {
+    return normalizeJobFilters({
+      search: readInputValue(prefix + "Search"),
+      category: readInputValue(prefix + "Category"),
+      location: readInputValue(prefix + "Location"),
+      company: readInputValue(prefix + "Company"),
+      skills: readInputValue(prefix + "Skills"),
+      experience: readInputValue(prefix + "Experience"),
+      salaryMin: readInputValue(prefix + "SalaryMin"),
+      salaryMax: readInputValue(prefix + "SalaryMax")
+    });
+  }
+
+  function buildJobsRequestPath(filters) {
+    var params = new URLSearchParams();
+    if (filters.search) {
+      params.set("search", filters.search);
+    }
+    if (filters.category) {
+      params.set("category", filters.category);
+    }
+    if (filters.location) {
+      params.set("location", filters.location);
+    }
+    if (filters.company) {
+      params.set("company", filters.company);
+    }
+    if (filters.skills) {
+      params.set("skills", filters.skills);
+    }
+    if (filters.experience) {
+      params.set("experience", filters.experience);
+    }
+    if (filters.salaryMin !== null) {
+      params.set("salary_min", String(filters.salaryMin));
+    }
+    if (filters.salaryMax !== null) {
+      params.set("salary_max", String(filters.salaryMax));
+    }
+    var query = params.toString();
+    return "/api/jobs" + (query ? "?" + query : "");
+  }
+
+  function filterJobCollection(jobs, rawFilters) {
+    var filters = normalizeJobFilters(rawFilters);
 
     return jobs.filter(function (job) {
       var haystack = [
@@ -538,11 +707,22 @@
       ]
         .join(" ")
         .toLowerCase();
-      var matchesSearch = !search || haystack.indexOf(search) >= 0;
-      var matchesCategory = !category || (job.categories || []).some(function (item) {
-        return item.toLowerCase() === category;
+      var skillHaystack = ((job.required_skills || []).join(" ")).toLowerCase();
+      var jobSalaryMin = toNumber(job.salary_min);
+      var jobSalaryMax = toNumber(job.salary_max);
+      var matchesSearch = !filters.search || haystack.indexOf(filters.search) >= 0;
+      var matchesCategory = !filters.category || (job.categories || []).some(function (item) {
+        return item.toLowerCase() === filters.category;
       });
-      return matchesSearch && matchesCategory;
+      var matchesLocation = !filters.location || String(job.location || "").toLowerCase().indexOf(filters.location) >= 0;
+      var matchesCompany = !filters.company || String(job.company_name || "").toLowerCase().indexOf(filters.company) >= 0;
+      var matchesExperience = !filters.experience || String(job.experience_level || job.experience_required || "").toLowerCase().indexOf(filters.experience) >= 0;
+      var matchesSkills = !filters.skillTerms.length || filters.skillTerms.every(function (term) {
+        return skillHaystack.indexOf(term) >= 0;
+      });
+      var matchesSalaryMin = filters.salaryMin === null || (jobSalaryMax !== null && jobSalaryMax >= filters.salaryMin);
+      var matchesSalaryMax = filters.salaryMax === null || (jobSalaryMin !== null && jobSalaryMin <= filters.salaryMax);
+      return matchesSearch && matchesCategory && matchesLocation && matchesCompany && matchesExperience && matchesSkills && matchesSalaryMin && matchesSalaryMax;
     });
   }
 
@@ -622,8 +802,13 @@
   function jobCardMarkup(job, options) {
     var applied = options && options.application ? options.application : null;
     var showApply = options && options.showApply;
+    var allowSave = options && options.allowSave;
+    var isSaved = options && options.isSaved;
     var skills = (job.required_skills || []).slice(0, 3);
     var detailLink = jobDetailsHref(job.id);
+    var saveAction = allowSave
+      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-save-job-id="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved" : "Save job") + "</button>"
+      : "";
     var footerAction = applied
       ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Open status</a>'
       : showApply
@@ -663,12 +848,14 @@
       '<span class="tag experience-chip">' + window.FC_API.escapeHtml(job.experience_level || "entry-level") + "</span>" +
       '<span class="tag experience-chip">' + window.FC_API.escapeHtml(formatCompensation(job)) + "</span>" +
       "</div>" +
-      footerAction +
+      '<div class="job-card-actions">' + saveAction + footerAction + "</div>" +
       "</div>" +
       '<div class="card-link-row">' +
       '<a class="text-link" href="' + detailLink + '">View details</a>' +
       (applied
         ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Application status</a>'
+        : isSaved
+        ? '<span class="meta-line">Saved for quick comparison</span>'
         : '<span class="meta-line">Open details before applying</span>') +
       "</div>" +
       "</article>"
@@ -682,6 +869,14 @@
       safeStatus +
       '">' +
       window.FC_API.escapeHtml(toTitleCase(safeStatus)) +
+      "</span>"
+    );
+  }
+
+  function pillMarkup(label, className) {
+    return (
+      '<span class="' + window.FC_API.escapeHtml(className || "tag") + '">' +
+      window.FC_API.escapeHtml(label) +
       "</span>"
     );
   }
@@ -700,6 +895,33 @@
 
   function safeJoin(list) {
     return Array.isArray(list) && list.length ? list.join(", ") : "-";
+  }
+
+  function computeSavedJobMap(savedJobs) {
+    var map = {};
+    (savedJobs || []).forEach(function (job) {
+      map[job.id] = job;
+    });
+    return map;
+  }
+
+  function externalLinkMarkup(label, href) {
+    if (!href) {
+      return "";
+    }
+    return '<a class="text-link" href="' + window.FC_API.escapeHtml(href) + '" target="_blank" rel="noreferrer">' + window.FC_API.escapeHtml(label) + "</a>";
+  }
+
+  function candidateResourceLinks(candidate) {
+    var links = [
+      externalLinkMarkup("Resume", candidate.resume_url || candidate.resume_path),
+      externalLinkMarkup("LinkedIn", candidate.linkedin),
+      externalLinkMarkup("Portfolio", candidate.portfolio)
+    ].filter(Boolean);
+    if (!links.length) {
+      return '<span class="meta-line">No resume or external profile added yet.</span>';
+    }
+    return '<div class="resource-link-row">' + links.join("") + "</div>";
   }
 
   function setFieldValue(id, value) {
@@ -832,7 +1054,7 @@
           "Signed in as " + session.user.email + ". Open your dashboard to continue.";
         var primaryCta = byId("primaryCta");
         primaryCta.textContent = "Open dashboard";
-        primaryCta.href = session.user.role === "company" ? "company.html" : "user.html";
+        primaryCta.href = dashboardHref(session.user);
 
         var secondaryCta = byId("secondaryCta");
         secondaryCta.textContent = "Logout";
@@ -857,14 +1079,14 @@
           badgeText: session.user.role === "company"
             ? (session.user.company_name || session.user.name)
             : session.user.name,
-          profileHref: session.user.role === "company" ? "company.html" : "user.html",
+          profileHref: dashboardHref(session.user),
           settingsTitle: "Account settings",
           settingsDescription: "Quick information about your signed-in account.",
           moreTitle: "More actions",
           moreDescription: "Jump to the most useful pages from the landing screen.",
           moreLinks: [
             {
-              href: session.user.role === "company" ? "company.html" : "user.html",
+              href: dashboardHref(session.user),
               label: "Open dashboard",
               description: "Go back to your main workspace."
             },
@@ -995,11 +1217,7 @@
   }
 
   function filterJobs(jobs) {
-    return filterJobCollection(
-      jobs,
-      byId("jobSearch").value,
-      byId("jobCategory").value
-    );
+    return filterJobCollection(jobs, readJobFilters("job"));
   }
 
   function renderUserJobs() {
@@ -1007,6 +1225,7 @@
     var heading = byId("jobsHeading");
     var jobs = filterJobs(state.userDashboard.jobs);
     var applicationMap = computeApplicationMap(state.userDashboard.applications);
+    var savedJobMap = computeSavedJobMap(state.userDashboard.saved_jobs || []);
     var jobCountChip = byId("jobCountChip");
 
     heading.textContent = jobs.length + " roles match your filters";
@@ -1024,7 +1243,38 @@
       .map(function (job) {
         return jobCardMarkup(job, {
           application: applicationMap[job.id],
-          showApply: true
+          showApply: true,
+          allowSave: true,
+          isSaved: Boolean(savedJobMap[job.id])
+        });
+      })
+      .join("");
+  }
+
+  function renderSavedJobs() {
+    var target = byId("savedJobsGrid");
+    var heading = byId("savedJobsHeading");
+    if (!target || !heading) {
+      return;
+    }
+
+    var savedJobs = state.userDashboard.saved_jobs || [];
+    var applicationMap = computeApplicationMap(state.userDashboard.applications);
+    var savedJobMap = computeSavedJobMap(savedJobs);
+    heading.textContent = savedJobs.length ? (savedJobs.length + " saved roles ready for review") : "Saved roles for later review";
+
+    if (!savedJobs.length) {
+      target.innerHTML = '<div class="empty-state">Save jobs from the listing to build your shortlist before applying.</div>';
+      return;
+    }
+
+    target.innerHTML = savedJobs
+      .map(function (job) {
+        return jobCardMarkup(job, {
+          application: applicationMap[job.id],
+          showApply: true,
+          allowSave: true,
+          isSaved: Boolean(savedJobMap[job.id])
         });
       })
       .join("");
@@ -1147,6 +1397,12 @@
           target: "userApplicationsSection",
           label: "Application tracker",
           description: "See all submitted applications."
+        },
+        {
+          href: "#userSavedJobsSection",
+          target: "userSavedJobsSection",
+          label: "Saved jobs",
+          description: "Open roles you bookmarked for later."
         }
       ]
     });
@@ -1155,28 +1411,21 @@
       { label: "Email", value: user.email || "-" },
       { label: "Location", value: user.location || "-" },
       { label: "Education", value: user.education || "-" },
-      { label: "Skills", value: safeJoin(user.skills) }
+      { label: "Experience", value: user.experience || "-" },
+      { label: "Skills", value: safeJoin(user.skills) },
+      { label: "Resume", value: user.resume_url || user.resume_path ? "Uploaded" : "-" },
+      { label: "LinkedIn", value: user.linkedin || "-" },
+      { label: "Portfolio", value: user.portfolio || "-" }
     ]);
-  }
-
-  function populateCategories(categories) {
-    var select = byId("jobCategory");
-    select.innerHTML = '<option value="">All categories</option>' +
-      categories
-        .map(function (category) {
-          return '<option value="' + window.FC_API.escapeHtml(category) + '">' +
-            window.FC_API.escapeHtml(category) +
-            "</option>";
-        })
-        .join("");
   }
 
   async function loadUserDashboard() {
     var data = await window.FC_API.request("/api/user/dashboard");
     state.userDashboard = data;
     renderUserProfile(data.user);
-    populateCategories(data.categories || []);
+    populateJobFilterControls("job", data.jobs || [], buildJobFilterOptions(data.jobs || []));
     renderUserJobs();
+    renderSavedJobs();
     renderUserApplications();
   }
 
@@ -1193,33 +1442,86 @@
       return;
     }
 
-    byId("jobSearch").addEventListener("input", renderUserJobs);
-    byId("jobCategory").addEventListener("change", renderUserJobs);
+    [
+      "jobSearch",
+      "jobLocation",
+      "jobCompany",
+      "jobSkills",
+      "jobSalaryMin",
+      "jobSalaryMax"
+    ].forEach(function (id) {
+      var field = byId(id);
+      if (field) {
+        field.addEventListener("input", renderUserJobs);
+      }
+    });
+    ["jobCategory", "jobExperience"].forEach(function (id) {
+      var field = byId(id);
+      if (field) {
+        field.addEventListener("change", renderUserJobs);
+      }
+    });
     byId("editProfileButton").addEventListener("click", openUserProfileEditor);
 
-    byId("jobsGrid").addEventListener("click", async function (event) {
-      var button = event.target.closest(".apply-button");
-      if (!button) {
+    async function handleUserJobAction(event) {
+      var applyButton = event.target.closest(".apply-button");
+      var saveButton = event.target.closest(".save-job-button");
+
+      if (!applyButton && !saveButton) {
         return;
       }
 
-      button.disabled = true;
-      setMessage(byId("userFeedback"), "Submitting application...");
+      if (applyButton) {
+        applyButton.disabled = true;
+        setMessage(byId("userFeedback"), "Submitting application...");
 
-      try {
-        var response = await window.FC_API.request("/api/applications", {
-          method: "POST",
-          body: { job_id: Number(button.dataset.jobId) }
-        });
-        state.userDashboard.applications.unshift(response.application);
-        renderUserJobs();
-        renderUserApplications();
-        setMessage(byId("userFeedback"), "Application submitted successfully.", "success");
-      } catch (error) {
-        button.disabled = false;
-        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        try {
+          var response = await window.FC_API.request("/api/applications", {
+            method: "POST",
+            body: { job_id: Number(applyButton.dataset.jobId) }
+          });
+          state.userDashboard.applications.unshift(response.application);
+          renderUserJobs();
+          renderSavedJobs();
+          renderUserApplications();
+          setMessage(byId("userFeedback"), "Application submitted successfully.", "success");
+        } catch (error) {
+          applyButton.disabled = false;
+          setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        }
+        return;
       }
-    });
+
+      saveButton.disabled = true;
+      setMessage(byId("userFeedback"), saveButton.dataset.saveMode === "remove" ? "Removing saved job..." : "Saving job...");
+      try {
+        if (saveButton.dataset.saveMode === "remove") {
+          await window.FC_API.request("/api/saved-jobs/" + Number(saveButton.dataset.saveJobId), {
+            method: "DELETE"
+          });
+          state.userDashboard.saved_jobs = (state.userDashboard.saved_jobs || []).filter(function (job) {
+            return job.id !== Number(saveButton.dataset.saveJobId);
+          });
+          setMessage(byId("userFeedback"), "Saved job removed.", "success");
+        } else {
+          await window.FC_API.request("/api/saved-jobs", {
+            method: "POST",
+            body: { job_id: Number(saveButton.dataset.saveJobId) }
+          });
+          await loadUserDashboard();
+          setMessage(byId("userFeedback"), "Job saved successfully.", "success");
+          return;
+        }
+        renderUserJobs();
+        renderSavedJobs();
+      } catch (error) {
+        saveButton.disabled = false;
+        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
+      }
+    }
+
+    byId("jobsGrid").addEventListener("click", handleUserJobAction);
+    byId("savedJobsGrid").addEventListener("click", handleUserJobAction);
 
     document.addEventListener("submit", async function (event) {
       if (event.target.id !== "editProfileForm") {
@@ -1232,9 +1534,21 @@
       setMessage(message, "Saving profile...");
 
       try {
+        var payload = readForm(form);
+        delete payload.resume_file;
+        var fileInput = form.elements.resume_file;
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          var uploadBody = new FormData();
+          uploadBody.append("resume", fileInput.files[0]);
+          var uploadResponse = await window.FC_API.request("/api/user/resume", {
+            method: "POST",
+            body: uploadBody
+          });
+          payload.resume_url = uploadResponse.resume_url;
+        }
         await window.FC_API.request("/api/user/profile", {
           method: "PATCH",
-          body: readForm(form)
+          body: payload
         });
         await loadUserDashboard();
         closeSheet();
@@ -1256,7 +1570,7 @@
         title: user.role === "company" ? (user.company_name || user.name) : user.name,
         subtitle: context.subtitle || "Profile, settings, and more",
         badgeText: user.role === "company" ? (user.company_name || user.name) : user.name,
-        profileHref: user.role === "company" ? "company.html" : "user.html",
+        profileHref: dashboardHref(user),
         settingsTitle: context.settingsTitle || "Account settings",
         settingsDescription: context.settingsDescription || "Review your account details and active API connection.",
         moreTitle: context.moreTitle || "More actions",
@@ -1282,35 +1596,18 @@
     });
   }
 
-  function populateSelectOptions(select, categories) {
-    if (!select) {
-      return;
-    }
-
-    select.innerHTML = '<option value="">All categories</option>' +
-      (categories || [])
-        .map(function (category) {
-          return '<option value="' + window.FC_API.escapeHtml(category) + '">' +
-            window.FC_API.escapeHtml(category) +
-            "</option>";
-        })
-        .join("");
-  }
-
   function renderJobsPage() {
     var grid = byId("jobsPageGrid");
     var heading = byId("jobsPageHeading");
-    var jobs = filterJobCollection(
-      state.jobsPage.jobs,
-      byId("jobsPageSearch").value,
-      byId("jobsPageCategory").value
-    );
+    var jobs = state.jobsPage.jobs || [];
     var applicationMap = computeApplicationMap(state.jobsPage.applications || []);
+    var savedJobMap = computeSavedJobMap(state.jobsPage.saved_jobs || []);
     var allowApply = Boolean(state.currentUser && state.currentUser.role === "fresher");
+    var allowSave = allowApply;
 
     heading.textContent = jobs.length + " jobs match your filters";
     byId("jobsPageCount").textContent = String(jobs.length);
-    byId("jobsPageCategories").textContent = String((state.jobsPage.categories || []).length);
+    byId("jobsPageCategories").textContent = String((((state.jobsPage.filter_options || {}).categories) || []).length);
 
     if (!jobs.length) {
       grid.innerHTML = '<div class="empty-state">No jobs match the current listing filters.</div>';
@@ -1321,10 +1618,21 @@
       .map(function (job) {
         return jobCardMarkup(job, {
           application: applicationMap[job.id],
-          showApply: allowApply
+          showApply: allowApply,
+          allowSave: allowSave,
+          isSaved: Boolean(savedJobMap[job.id])
         });
       })
       .join("");
+  }
+
+  async function loadJobsPageListing(filters) {
+    var jobsResponse = await window.FC_API.request(buildJobsRequestPath(filters));
+    state.jobsPage.jobs = jobsResponse.jobs || [];
+    state.jobsPage.categories = jobsResponse.categories || [];
+    state.jobsPage.filter_options = jobsResponse.filters || buildJobFilterOptions(state.jobsPage.jobs);
+    populateJobFilterControls("jobsPage", state.jobsPage.jobs, state.jobsPage.filter_options);
+    renderJobsPage();
   }
 
   async function initJobsPage() {
@@ -1352,45 +1660,105 @@
     });
 
     try {
-      var jobsResponse = await window.FC_API.request("/api/jobs");
       var applications = [];
+      var savedJobs = [];
       if (session && session.user && session.user.role === "fresher") {
         var applicationResponse = await window.FC_API.request("/api/applications/me");
         applications = applicationResponse.applications || [];
+        var savedResponse = await window.FC_API.request("/api/saved-jobs");
+        savedJobs = savedResponse.saved_jobs || [];
       }
       state.jobsPage = {
-        jobs: jobsResponse.jobs || [],
-        categories: jobsResponse.categories || [],
-        applications: applications
+        jobs: [],
+        categories: [],
+        filter_options: {},
+        applications: applications,
+        saved_jobs: savedJobs
       };
-      populateSelectOptions(byId("jobsPageCategory"), state.jobsPage.categories);
-      renderJobsPage();
+      await loadJobsPageListing(readJobFilters("jobsPage"));
     } catch (error) {
       setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load job listing."), "error");
       return;
     }
 
-    byId("jobsPageSearch").addEventListener("input", renderJobsPage);
-    byId("jobsPageCategory").addEventListener("change", renderJobsPage);
+    var refreshJobsPage = debounce(async function () {
+      try {
+        setMessage(byId("jobsPageMessage"), "Updating filters...");
+        await loadJobsPageListing(readJobFilters("jobsPage"));
+        setMessage(byId("jobsPageMessage"), "", "");
+      } catch (error) {
+        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update listing filters."), "error");
+      }
+    }, 250);
+
+    [
+      "jobsPageSearch",
+      "jobsPageLocation",
+      "jobsPageCompany",
+      "jobsPageSkills",
+      "jobsPageSalaryMin",
+      "jobsPageSalaryMax"
+    ].forEach(function (id) {
+      var field = byId(id);
+      if (field) {
+        field.addEventListener("input", refreshJobsPage);
+      }
+    });
+    ["jobsPageCategory", "jobsPageExperience"].forEach(function (id) {
+      var field = byId(id);
+      if (field) {
+        field.addEventListener("change", refreshJobsPage);
+      }
+    });
     byId("jobsPageGrid").addEventListener("click", async function (event) {
-      var button = event.target.closest(".apply-button");
-      if (!button) {
+      var applyButton = event.target.closest(".apply-button");
+      var saveButton = event.target.closest(".save-job-button");
+      if (!applyButton && !saveButton) {
         return;
       }
 
-      button.disabled = true;
-      setMessage(byId("jobsPageMessage"), "Submitting application...");
+      if (applyButton) {
+        applyButton.disabled = true;
+        setMessage(byId("jobsPageMessage"), "Submitting application...");
+        try {
+          var response = await window.FC_API.request("/api/applications", {
+            method: "POST",
+            body: { job_id: Number(applyButton.dataset.jobId) }
+          });
+          state.jobsPage.applications.unshift(response.application);
+          renderJobsPage();
+          setMessage(byId("jobsPageMessage"), "Application submitted successfully.", "success");
+        } catch (error) {
+          applyButton.disabled = false;
+          setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        }
+        return;
+      }
+
+      saveButton.disabled = true;
+      setMessage(byId("jobsPageMessage"), saveButton.dataset.saveMode === "remove" ? "Removing saved job..." : "Saving job...");
       try {
-        var response = await window.FC_API.request("/api/applications", {
-          method: "POST",
-          body: { job_id: Number(button.dataset.jobId) }
-        });
-        state.jobsPage.applications.unshift(response.application);
+        if (saveButton.dataset.saveMode === "remove") {
+          await window.FC_API.request("/api/saved-jobs/" + Number(saveButton.dataset.saveJobId), {
+            method: "DELETE"
+          });
+          state.jobsPage.saved_jobs = (state.jobsPage.saved_jobs || []).filter(function (job) {
+            return job.id !== Number(saveButton.dataset.saveJobId);
+          });
+          setMessage(byId("jobsPageMessage"), "Saved job removed.", "success");
+        } else {
+          await window.FC_API.request("/api/saved-jobs", {
+            method: "POST",
+            body: { job_id: Number(saveButton.dataset.saveJobId) }
+          });
+          var refreshedSaved = await window.FC_API.request("/api/saved-jobs");
+          state.jobsPage.saved_jobs = refreshedSaved.saved_jobs || [];
+          setMessage(byId("jobsPageMessage"), "Job saved successfully.", "success");
+        }
         renderJobsPage();
-        setMessage(byId("jobsPageMessage"), "Application submitted successfully.", "success");
       } catch (error) {
-        button.disabled = false;
-        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        saveButton.disabled = false;
+        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
       }
     });
   }
@@ -1423,18 +1791,28 @@
     var currentApplication = (detailState.applications || []).find(function (item) {
       return item.job && item.job.id === job.id;
     });
+    var isSaved = Boolean(computeSavedJobMap(detailState.saved_jobs || [])[job.id]);
+    var saveAction = currentUser && currentUser.role === "fresher"
+      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-detail-save="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved" : "Save job") + "</button>"
+      : "";
     var heroActions;
     if (currentApplication) {
       heroActions =
         renderStatusPill(currentApplication.status) +
+        saveAction +
         '<a class="btn ghost compact-btn" href="' + applicationStatusHref(currentApplication.id) + '">Open application status</a>';
     } else if (currentUser && currentUser.role === "fresher") {
       heroActions =
         '<button class="btn primary" type="button" data-detail-apply="' + job.id + '">Apply now</button>' +
+        saveAction +
         '<a class="btn ghost compact-btn" href="jobs.html">Back to listing</a>';
     } else if (currentUser && currentUser.role === "company") {
       heroActions =
-        '<a class="btn primary" href="company.html">Open company dashboard</a>' +
+        '<a class="btn primary" href="' + dashboardHref(currentUser) + '">Open company dashboard</a>' +
+        '<a class="btn ghost compact-btn" href="jobs.html">View listing</a>';
+    } else if (currentUser && currentUser.role === "admin") {
+      heroActions =
+        '<a class="btn primary" href="admin.html">Open admin dashboard</a>' +
         '<a class="btn ghost compact-btn" href="jobs.html">View listing</a>';
     } else {
       heroActions =
@@ -1505,7 +1883,7 @@
       moreLinks: [
         { href: "jobs.html", label: "Job listing", description: "Go back to the full job listing." },
         { href: "index.html", label: "Home", description: "Return to the landing page." },
-        { href: session && session.user ? (session.user.role === "company" ? "company.html" : "user.html") : "login.html", label: session && session.user ? "Dashboard" : "Login", description: session && session.user ? "Open your dashboard." : "Sign in to continue." }
+        { href: session && session.user ? dashboardHref(session.user) : "login.html", label: session && session.user ? "Dashboard" : "Login", description: session && session.user ? "Open your dashboard." : "Sign in to continue." }
       ]
     });
 
@@ -1516,14 +1894,18 @@
         return item.id === jobId;
       }) || (jobsResponse.jobs || [])[0] || null;
       var applications = [];
+      var savedJobs = [];
       if (session && session.user && session.user.role === "fresher") {
         var applicationResponse = await window.FC_API.request("/api/applications/me");
         applications = applicationResponse.applications || [];
+        var savedResponse = await window.FC_API.request("/api/saved-jobs");
+        savedJobs = savedResponse.saved_jobs || [];
       }
 
       state.jobDetails = {
         user: session && session.user ? session.user : null,
         applications: applications,
+        saved_jobs: savedJobs,
         jobs: jobsResponse.jobs || [],
         job: job
       };
@@ -1533,23 +1915,53 @@
     }
 
     byId("jobDetailHero").addEventListener("click", async function (event) {
-      var button = event.target.closest("[data-detail-apply]");
-      if (!button) {
+      var applyButton = event.target.closest("[data-detail-apply]");
+      var saveButton = event.target.closest("[data-detail-save]");
+      if (!applyButton && !saveButton) {
         return;
       }
 
-      button.disabled = true;
-      setMessage(byId("jobDetailMessage"), "Submitting application...");
+      if (applyButton) {
+        applyButton.disabled = true;
+        setMessage(byId("jobDetailMessage"), "Submitting application...");
+        try {
+          var response = await window.FC_API.request("/api/applications", {
+            method: "POST",
+            body: { job_id: Number(applyButton.dataset.detailApply) }
+          });
+          state.jobDetails.applications.unshift(response.application);
+          renderJobDetailsPage();
+        } catch (error) {
+          applyButton.disabled = false;
+          setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        }
+        return;
+      }
+
+      saveButton.disabled = true;
+      setMessage(byId("jobDetailMessage"), saveButton.dataset.saveMode === "remove" ? "Removing saved job..." : "Saving job...");
       try {
-        var response = await window.FC_API.request("/api/applications", {
-          method: "POST",
-          body: { job_id: Number(button.dataset.detailApply) }
-        });
-        state.jobDetails.applications.unshift(response.application);
+        if (saveButton.dataset.saveMode === "remove") {
+          await window.FC_API.request("/api/saved-jobs/" + Number(saveButton.dataset.detailSave), {
+            method: "DELETE"
+          });
+          state.jobDetails.saved_jobs = (state.jobDetails.saved_jobs || []).filter(function (jobItem) {
+            return jobItem.id !== Number(saveButton.dataset.detailSave);
+          });
+          setMessage(byId("jobDetailMessage"), "Saved job removed.", "success");
+        } else {
+          await window.FC_API.request("/api/saved-jobs", {
+            method: "POST",
+            body: { job_id: Number(saveButton.dataset.detailSave) }
+          });
+          var refreshedSaved = await window.FC_API.request("/api/saved-jobs");
+          state.jobDetails.saved_jobs = refreshedSaved.saved_jobs || [];
+          setMessage(byId("jobDetailMessage"), "Job saved successfully.", "success");
+        }
         renderJobDetailsPage();
       } catch (error) {
-        button.disabled = false;
-        setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+        saveButton.disabled = false;
+        setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
       }
     });
   }
@@ -1652,6 +2064,239 @@
     } catch (error) {
       byId("applicationHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load application status.")) + '</div>';
     }
+  }
+
+  function renderAdminAnalytics(analytics) {
+    var analyticsGrid = byId("adminAnalyticsGrid");
+    var statusGrid = byId("adminStatusGrid");
+    if (byId("adminHeroUsers")) {
+      byId("adminHeroUsers").textContent = String(analytics.users || 0);
+    }
+    if (byId("adminHeroJobs")) {
+      byId("adminHeroJobs").textContent = String(analytics.active_jobs || 0);
+    }
+    if (byId("adminHeroApplications")) {
+      byId("adminHeroApplications").textContent = String(analytics.applications || 0);
+    }
+
+    analyticsGrid.innerHTML = [
+      { label: "Candidates", value: analytics.candidates || 0 },
+      { label: "Companies", value: analytics.companies || 0 },
+      { label: "Admins", value: analytics.admins || 0 },
+      { label: "Moderation queue", value: analytics.moderated_jobs || 0 },
+      { label: "Saved jobs", value: analytics.saved_jobs || 0 },
+      { label: "Total applications", value: analytics.applications || 0 }
+    ]
+      .map(function (item) {
+        return (
+          '<div class="metric admin-metric">' +
+          '<span class="detail-label">' + window.FC_API.escapeHtml(item.label) + "</span>" +
+          '<strong>' + window.FC_API.escapeHtml(String(item.value)) + "</strong>" +
+          "</div>"
+        );
+      })
+      .join("");
+
+    statusGrid.innerHTML = window.FC_API.statuses
+      .map(function (status) {
+        return (
+          '<div class="status-box">' +
+          '<span>' + window.FC_API.escapeHtml(toTitleCase(status)) + "</span>" +
+          '<strong>' + window.FC_API.escapeHtml(String((analytics.application_statuses || {})[status] || 0)) + "</strong>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  function adminUserActionMarkup(user) {
+    return (
+      '<form class="inline-form admin-user-form" data-user-id="' + (user.user_id || user.id) + '">' +
+      '<select name="is_active">' +
+      '<option value="true"' + (user.is_active ? " selected" : "") + ">Active</option>" +
+      '<option value="false"' + (!user.is_active ? " selected" : "") + ">Disabled</option>" +
+      "</select>" +
+      '<button class="btn primary" type="submit">Save</button>' +
+      "</form>"
+    );
+  }
+
+  function adminModerationOptions(selected) {
+    return ["approved", "pending", "rejected"]
+      .map(function (status) {
+        return (
+          '<option value="' + window.FC_API.escapeHtml(status) + '"' + (status === selected ? " selected" : "") + ">" +
+          window.FC_API.escapeHtml(toTitleCase(status)) +
+          "</option>"
+        );
+      })
+      .join("");
+  }
+
+  function renderAdminUsers() {
+    var tbody = byId("adminUsersBody");
+    var users = state.adminDashboard.users || [];
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No users are available.</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users
+      .map(function (user) {
+        return (
+          "<tr>" +
+          "<td>" +
+          '<div class="table-title">' + window.FC_API.escapeHtml(user.name || "-") + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(user.email || "-") + "</div>" +
+          "</td>" +
+          "<td>" + pillMarkup(toTitleCase(user.db_role || user.role), "tag") + "</td>" +
+          "<td>" +
+          '<div class="meta-line">Created ' + window.FC_API.escapeHtml(window.FC_API.formatDate(user.created_at)) + "</div>" +
+          '<div class="meta-line">Completion ' + window.FC_API.escapeHtml(String(user.profile_completion || 0)) + "%</div>" +
+          "</td>" +
+          "<td>" + pillMarkup(user.is_active ? "Active" : "Disabled", user.is_active ? "status-pill offered" : "status-pill rejected") + "</td>" +
+          "<td>" + adminUserActionMarkup(user) + "</td>" +
+          "</tr>"
+        );
+      })
+      .join("");
+  }
+
+  function renderAdminJobs() {
+    var tbody = byId("adminJobsBody");
+    var jobs = state.adminDashboard.jobs || [];
+    if (!jobs.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No jobs are available.</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = jobs
+      .map(function (job) {
+        return (
+          "<tr>" +
+          "<td>" +
+          '<div class="table-title">' + window.FC_API.escapeHtml(job.title || "-") + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(job.location || "-") + "</div>" +
+          '<div class="meta-line"><a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a></div>' +
+          "</td>" +
+          "<td>" +
+          '<div class="table-title">' + window.FC_API.escapeHtml(job.company_name || "-") + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(job.industry_type || "-") + "</div>" +
+          "</td>" +
+          "<td>" + window.FC_API.escapeHtml(String(job.application_count || 0)) + "</td>" +
+          "<td>" +
+          pillMarkup(toTitleCase(job.moderation_status || "approved"), "tag") +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(job.publicly_visible ? "Visible to candidates" : "Not visible to candidates") + "</div>" +
+          "</td>" +
+          "<td>" +
+          '<form class="inline-form admin-job-form" data-job-id="' + job.id + '">' +
+          '<select name="moderation_status">' + adminModerationOptions(job.moderation_status || "approved") + "</select>" +
+          '<select name="is_active">' +
+          '<option value="true"' + (job.is_active ? " selected" : "") + ">Visible</option>" +
+          '<option value="false"' + (!job.is_active ? " selected" : "") + ">Hidden</option>" +
+          "</select>" +
+          '<button class="btn primary" type="submit">Update</button>' +
+          "</form>" +
+          "</td>" +
+          "</tr>"
+        );
+      })
+      .join("");
+  }
+
+  async function loadAdminDashboard() {
+    var data = await window.FC_API.request("/api/admin/dashboard");
+    state.adminDashboard = data;
+    state.currentUser = data.user;
+
+    setHeaderMenu({
+      user: data.user,
+      menuLabel: "Active account",
+      pageLabel: "Admin dashboard",
+      summary: data.user.email,
+      title: data.user.name,
+      subtitle: "Admin controls, settings, and more",
+      badgeText: data.user.name,
+      profileTarget: "adminAnalyticsSection",
+      profileHref: "admin.html",
+      settingsTitle: "Admin settings",
+      settingsDescription: "Review the active admin account and backend connection.",
+      moreTitle: "Admin actions",
+      moreDescription: "Jump between analytics, users, and moderation.",
+      moreLinks: [
+        { href: "index.html", label: "Home", description: "Return to the landing page." },
+        { href: "#adminAnalyticsSection", target: "adminAnalyticsSection", label: "Analytics", description: "Open the analytics snapshot." },
+        { href: "#adminUsersSection", target: "adminUsersSection", label: "Users", description: "Manage platform accounts." },
+        { href: "#adminJobsSection", target: "adminJobsSection", label: "Jobs", description: "Moderate job posts." }
+      ]
+    });
+
+    renderAdminAnalytics(data.analytics || {});
+    renderAdminUsers();
+    renderAdminJobs();
+  }
+
+  async function initAdminPage() {
+    var admin = await requireRole("admin");
+    if (!admin) {
+      return;
+    }
+
+    try {
+      await loadAdminDashboard();
+    } catch (error) {
+      setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to load admin dashboard."), "error");
+      return;
+    }
+
+    byId("adminUsersBody").addEventListener("submit", async function (event) {
+      var form = event.target.closest(".admin-user-form");
+      if (!form) {
+        return;
+      }
+
+      event.preventDefault();
+      var button = form.querySelector("button");
+      button.disabled = true;
+      try {
+        await window.FC_API.request("/api/admin/users/" + form.dataset.userId, {
+          method: "PATCH",
+          body: { is_active: form.elements.is_active.value === "true" }
+        });
+        await loadAdminDashboard();
+        setMessage(byId("adminMessage"), "User updated successfully.", "success");
+      } catch (error) {
+        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update user."), "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    byId("adminJobsBody").addEventListener("submit", async function (event) {
+      var form = event.target.closest(".admin-job-form");
+      if (!form) {
+        return;
+      }
+
+      event.preventDefault();
+      var button = form.querySelector("button");
+      button.disabled = true;
+      try {
+        await window.FC_API.request("/api/admin/jobs/" + form.dataset.jobId, {
+          method: "PATCH",
+          body: {
+            moderation_status: form.elements.moderation_status.value,
+            is_active: form.elements.is_active.value === "true"
+          }
+        });
+        await loadAdminDashboard();
+        setMessage(byId("adminMessage"), "Job moderation updated.", "success");
+      } catch (error) {
+        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update moderation state."), "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
   }
 
   function renderStatusGrid(statusCounts) {
@@ -1779,10 +2424,12 @@
           '<div class="table-title">' + window.FC_API.escapeHtml(candidate.name || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.email || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.location || "-") + "</div>" +
+          candidateResourceLinks(candidate) +
           "</td>" +
           "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(application.job.title) + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(application.job.company_name) + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(window.FC_API.formatDate(application.applied_at)) + "</div>" +
           "</td>" +
           "<td>" +
           window.FC_API.escapeHtml(safeJoin(candidate.skills)) +
@@ -1793,6 +2440,7 @@
           '">' +
           '<select name="status">' + statusOptions(application.status) + "</select>" +
           '<button class="btn primary" type="submit">Update</button>' +
+          '<button class="btn ghost compact-btn" type="button" data-status-shortcut="shortlisted" data-application-id="' + application.id + '">Shortlist</button>' +
           "</form>" +
           "</td>" +
           "</tr>"
@@ -1918,6 +2566,27 @@
         setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Status update failed."), "error");
       } finally {
         button.disabled = false;
+      }
+    });
+
+    byId("companyApplicationsBody").addEventListener("click", async function (event) {
+      var shortcut = event.target.closest("[data-status-shortcut]");
+      if (!shortcut) {
+        return;
+      }
+
+      shortcut.disabled = true;
+      try {
+        await window.FC_API.request("/api/company/applications/" + shortcut.dataset.applicationId, {
+          method: "PATCH",
+          body: { status: shortcut.dataset.statusShortcut }
+        });
+        await loadCompanyDashboard();
+        setMessage(byId("jobFormMessage"), "Candidate shortlisted.", "success");
+      } catch (error) {
+        setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Unable to update candidate status."), "error");
+      } finally {
+        shortcut.disabled = false;
       }
     });
   }

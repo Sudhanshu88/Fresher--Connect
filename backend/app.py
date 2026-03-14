@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from flask import Flask
 
 from backend.config.settings import load_runtime_settings
@@ -11,6 +13,9 @@ from backend.services.platform_service import MongoStore
 def create_app():
     backend = Flask(__name__)
     backend.config.update(load_runtime_settings())
+    upload_folder = os.path.join(backend.instance_path, "uploads")
+    os.makedirs(upload_folder, exist_ok=True)
+    backend.config["UPLOAD_FOLDER"] = upload_folder
     backend.extensions["mongo_store"] = MongoStore(
         backend.config["FC_MONGODB_URI"],
         use_mock=backend.config["FC_USE_MOCK_DB"],

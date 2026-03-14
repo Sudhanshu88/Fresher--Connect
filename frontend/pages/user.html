@@ -109,12 +109,12 @@
         </section>
 
         <section class="profile-card card">
-          <span class="section-label">Application Status</span>
-          <h3>Status page access</h3>
+          <span class="section-label">Profile Tools</span>
+          <h3>Resume and tracking support</h3>
           <div class="detail-list">
+            <div>Upload your latest resume from Edit profile before applying to new roles.</div>
+            <div>Save jobs first if you want to compare openings before you apply.</div>
             <div>Open any submitted application in a dedicated status page.</div>
-            <div>See the current stage, applied date, and role details clearly.</div>
-            <div>Use job details to understand the role before applying.</div>
           </div>
         </section>
       </aside>
@@ -130,7 +130,7 @@
             <a class="btn ghost compact-btn" href="jobs.html">Open full listing</a>
           </div>
 
-          <div class="form-grid two-col">
+          <div class="form-grid filter-grid">
             <div class="field">
               <label for="jobSearch">Search</label>
               <input id="jobSearch" type="text" placeholder="Title, company, location">
@@ -141,6 +141,34 @@
               <select id="jobCategory">
                 <option value="">All categories</option>
               </select>
+            </div>
+            <div class="field">
+              <label for="jobLocation">Location</label>
+              <input id="jobLocation" type="text" list="jobLocationList" placeholder="Remote, Noida, Pune">
+              <datalist id="jobLocationList"></datalist>
+            </div>
+            <div class="field">
+              <label for="jobCompany">Company</label>
+              <input id="jobCompany" type="text" list="jobCompanyList" placeholder="Search by company">
+              <datalist id="jobCompanyList"></datalist>
+            </div>
+            <div class="field">
+              <label for="jobSkills">Skills</label>
+              <input id="jobSkills" type="text" placeholder="Python, SQL, Git">
+            </div>
+            <div class="field">
+              <label for="jobExperience">Experience</label>
+              <select id="jobExperience">
+                <option value="">All experience levels</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="jobSalaryMin">Minimum Salary</label>
+              <input id="jobSalaryMin" type="number" min="0" step="1000" placeholder="300000">
+            </div>
+            <div class="field">
+              <label for="jobSalaryMax">Maximum Salary</label>
+              <input id="jobSalaryMax" type="number" min="0" step="1000" placeholder="800000">
             </div>
           </div>
 
@@ -163,6 +191,16 @@
           <div id="jobSpotlightCard" class="detail-highlight-card empty-state">
             Search or browse jobs to see a focused role preview here.
           </div>
+        </section>
+
+        <section class="panel" id="userSavedJobsSection">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Saved Jobs</span>
+              <h2 id="savedJobsHeading">Saved roles for later review</h2>
+            </div>
+          </div>
+          <div id="savedJobsGrid" class="jobs-grid"></div>
         </section>
 
         <section class="panel">

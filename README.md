@@ -141,18 +141,22 @@ It verifies Python compilation, mocked backend flow, Docker Compose configuratio
 
 ## API Summary
 
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `GET /jobs`
+- `GET /jobs/:job_id`
+- `POST /jobs`
+- `POST /apply/:job_id`
+- `GET /applications`
 - `GET /api/session`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/jobs`
 - `GET /api/user/dashboard`
 - `PATCH /api/user/profile`
-- `POST /api/applications`
-- `GET /api/applications/me`
+- `POST /api/user/resume`
 - `GET /api/company/dashboard`
 - `GET /api/company/jobs`
-- `POST /api/company/jobs`
 - `GET /api/company/applications`
 - `PATCH /api/company/applications/:application_id`
 - `GET /healthz`
+
+Legacy `/api/...` routes are still available for backward compatibility with the current frontend.

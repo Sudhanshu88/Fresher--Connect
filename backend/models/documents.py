@@ -40,6 +40,7 @@ def build_user_document(
     password_hash,
     role,
     created_at,
+    is_active=True,
 ):
     return {
         "id": user_id,
@@ -47,6 +48,7 @@ def build_user_document(
         "email": email,
         "password_hash": password_hash,
         "role": role,
+        "is_active": bool(is_active),
         "created_at": created_at,
         "updated_at": created_at,
     }
@@ -204,6 +206,7 @@ def build_job_document(
         "hiring_stages": hiring_stages,
         "categories": categories,
         "is_active": True,
+        "moderation_status": "approved",
         "created_at": created_at,
         "updated_at": created_at,
     }

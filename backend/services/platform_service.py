@@ -188,6 +188,8 @@ def job_is_active(job):
         return False
     if job.get("is_active") is False:
         return False
+    if str(job.get("moderation_status") or "approved").strip().lower() != "approved":
+        return False
     expiry_date = parse_optional_datetime(job.get("expiry_date"))
     return not expiry_date or expiry_date >= utcnow()
 
@@ -252,6 +254,7 @@ def serialize_user(account):
             "email": account.get("email"),
             "role": "admin",
             "db_role": "admin",
+            "is_active": bool(account.get("is_active", True)),
             "profile_completion": profile_completion(account),
             "created_at": isoformat(account.get("created_at")),
         }
@@ -266,6 +269,7 @@ def serialize_user(account):
             "email": account.get("email"),
             "role": "company",
             "db_role": account.get("db_role") or "company",
+            "is_active": bool(account.get("is_active", True)),
             "location": account.get("location"),
             "profile_completion": profile_completion(account),
             "created_at": isoformat(account.get("created_at")),
@@ -285,6 +289,7 @@ def serialize_user(account):
         "email": account.get("email"),
         "role": "fresher",
         "db_role": account.get("db_role") or "candidate",
+        "is_active": bool(account.get("is_active", True)),
         "location": account.get("location"),
         "profile_completion": profile_completion(account),
         "created_at": isoformat(account.get("created_at")),
@@ -335,6 +340,7 @@ def serialize_job(job):
         "industry_type": job.get("industry_type"),
         "company_size": job.get("company_size"),
         "company_description": job.get("company_description"),
+        "moderation_status": job.get("moderation_status") or "approved",
         "department": job.get("department"),
         "experience_level": job.get("experience_level") or job.get("experience_required"),
         "job_type": job.get("job_type") or job.get("employment_type"),
@@ -417,9 +423,12 @@ class MongoStore:
         self.companies = self.db["companies"]
         self.jobs = self.db["jobs"]
         self.applications = self.db["applications"]
+        self.saved_jobs = self.db["saved_jobs"]
         self.counters = self.db["counters"]
 
     def ping(self):
+        if self.use_mock:
+            return None
         self.client.admin.command("ping")
 
     def ensure_indexes(self):
@@ -440,6 +449,12 @@ class MongoStore:
         self.applications.create_index(
             [("company_id", ASCENDING), ("status", ASCENDING), ("applied_at", DESCENDING)],
             name="ix_applications_company_status",
+        )
+        self.saved_jobs.create_index([("id", ASCENDING)], unique=True, name="uq_saved_jobs_id")
+        self.saved_jobs.create_index(
+            [("candidate_id", ASCENDING), ("job_id", ASCENDING)],
+            unique=True,
+            name="uq_saved_jobs_candidate_job",
         )
 
     def next_sequence(self, name):
@@ -476,6 +491,7 @@ class MongoStore:
                 "email": user.get("email"),
                 "role": "admin",
                 "db_role": "admin",
+                "is_active": bool(user.get("is_active", True)),
                 "created_at": user.get("created_at"),
                 "updated_at": user.get("updated_at"),
             }
@@ -496,6 +512,7 @@ class MongoStore:
                 "email": user.get("email"),
                 "role": "company",
                 "db_role": user.get("role", "company"),
+                "is_active": bool(user.get("is_active", True)),
                 "created_at": user.get("created_at") or company.get("created_at"),
                 "updated_at": company.get("updated_at") or user.get("updated_at"),
             }
@@ -512,6 +529,7 @@ class MongoStore:
             "email": user.get("email"),
             "role": "fresher",
             "db_role": user.get("role", "candidate"),
+            "is_active": bool(user.get("is_active", True)),
             "created_at": user.get("created_at"),
             "updated_at": profile.get("updated_at") or user.get("updated_at"),
             "resume_path": profile.get("resume_url"),
@@ -525,6 +543,19 @@ def seed_database(store):
         return
 
     now = utcnow()
+    admin_email = normalize_email(os.getenv("ADMIN_EMAIL", "admin@fresherconnect.local"))
+    if not store.users.find_one({"email": admin_email}, {"_id": 0}):
+        store.users.insert_one(
+            build_user_document(
+                user_id=store.next_sequence("users"),
+                name=str(os.getenv("ADMIN_NAME", "Platform Admin")).strip() or "Platform Admin",
+                email=admin_email,
+                password_hash=hash_password(os.getenv("ADMIN_PASSWORD", "Admin@12345")),
+                role="admin",
+                created_at=now,
+            )
+        )
+
     companies = [
         {
             "contact_name": "Aisha Verma",

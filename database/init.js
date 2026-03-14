@@ -28,13 +28,14 @@ function ensureIndex(collectionName, keys, options) {
 
 ensureCollection("users", {
   bsonType: "object",
-  required: ["id", "name", "email", "password_hash", "role", "created_at", "updated_at"],
+  required: ["id", "name", "email", "password_hash", "role", "is_active", "created_at", "updated_at"],
   properties: {
     id: { bsonType: ["int", "long"] },
     name: { bsonType: "string" },
     email: { bsonType: "string" },
     password_hash: { bsonType: "string" },
     role: { enum: ["candidate", "company", "admin"] },
+    is_active: { bsonType: "bool" },
     created_at: { bsonType: "date" },
     updated_at: { bsonType: "date" }
   }
@@ -120,6 +121,8 @@ ensureCollection("jobs", {
     experience_required: { bsonType: "string" },
     education_required: { bsonType: ["string", "null"] },
     employment_type: { bsonType: ["string", "null"] },
+    is_active: { bsonType: ["bool", "null"] },
+    moderation_status: { enum: ["approved", "pending", "rejected", null] },
     posted_date: { bsonType: ["date", "null"] },
     expiry_date: { bsonType: ["date", "null"] },
     created_at: { bsonType: "date" },
@@ -145,12 +148,23 @@ ensureCollection("applications", {
   }
 });
 
+ensureCollection("saved_jobs", {
+  bsonType: "object",
+  required: ["id", "candidate_id", "job_id", "created_at"],
+  properties: {
+    id: { bsonType: ["int", "long"] },
+    candidate_id: { bsonType: ["int", "long"] },
+    job_id: { bsonType: ["int", "long"] },
+    created_at: { bsonType: "date" }
+  }
+});
+
 const countersExists = appDb.getCollectionInfos({ name: "counters" }).length > 0;
 if (!countersExists) {
   appDb.createCollection("counters");
 }
 
-["users", "companies", "jobs", "applications"].forEach(function (name) {
+["users", "companies", "jobs", "applications", "saved_jobs"].forEach(function (name) {
   appDb.counters.updateOne(
     { _id: name },
     { $setOnInsert: { seq: 0 } },
@@ -180,6 +194,13 @@ ensureIndex(
   "applications",
   { company_id: 1, status: 1, applied_at: -1 },
   { name: "ix_applications_company_status" }
+);
+
+ensureIndex("saved_jobs", { id: 1 }, { unique: true, name: "uq_saved_jobs_id" });
+ensureIndex(
+  "saved_jobs",
+  { candidate_id: 1, job_id: 1 },
+  { unique: true, name: "uq_saved_jobs_candidate_job" }
 );
 
 print("MongoDB schema ready for database: " + databaseName);
