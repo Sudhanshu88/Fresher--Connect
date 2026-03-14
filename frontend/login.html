@@ -17,32 +17,46 @@
         </span>
         <span>
           <span class="brand-title">Fresher Connect</span>
-          <span class="brand-sub">Separate frontend and backend login</span>
+          <span class="brand-sub">Sign in and resume your workflow</span>
         </span>
       </a>
 
       <div class="page-intro auth-copy-block">
-        <span class="section-label">Sign In</span>
-        <h1 class="page-title">Open your dashboard and continue the hiring flow.</h1>
+        <span class="section-label">Login</span>
+        <h1 class="page-title">Open the page that matches your role and continue where you left off.</h1>
         <p class="muted">
-          Freshers will go to their application tracking page. Companies will go to the hiring panel.
+          Candidate accounts land on job discovery and application tracking. Company accounts land on
+          job posting and applicant management.
         </p>
       </div>
 
-      <div class="card">
-        <h3>Before you login</h3>
+      <div class="auth-feature-grid">
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Candidate Dashboard</span>
+          <h3>Search, apply, track</h3>
+          <p>Open jobs, save time with filters, and keep every application status in one place.</p>
+        </article>
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Company Dashboard</span>
+          <h3>Post and manage</h3>
+          <p>Create openings, view fresher profiles, and update the pipeline from one workspace.</p>
+        </article>
+      </div>
+
+      <div class="card auth-note-card">
+        <span class="section-label">Flow Reminder</span>
         <ul class="hero-points compact">
-          <li>Backend API should be running on `http://127.0.0.1:5000`.</li>
-          <li>Frontend should be served from a local static server like port `3000`.</li>
-          <li>Session and CSRF handling are done through the backend API.</li>
+          <li>Job listing and job details stay available before login.</li>
+          <li>Application status is unlocked after fresher sign-in.</li>
+          <li>Session and CSRF protection continue through the backend API.</li>
         </ul>
       </div>
     </section>
 
-    <section class="auth-card">
+    <section class="auth-card auth-card-strong">
       <span class="section-label">Account Access</span>
-      <h2>Login</h2>
-      <p class="muted">Use the email and password you registered with.</p>
+      <h2>Welcome back</h2>
+      <p class="muted">Use the email and password already registered on the platform.</p>
 
       <form id="loginForm" class="form-grid">
         <div class="field">
@@ -60,9 +74,10 @@
         <button class="btn primary" type="submit">Login</button>
       </form>
 
-      <p class="helper-text">
-        Need an account? <a class="text-link" href="register.html">Register here</a>
-      </p>
+      <div class="auth-inline-meta">
+        <span>New here?</span>
+        <a class="text-link" href="register.html">Create an account</a>
+      </div>
     </section>
   </main>
 </body>

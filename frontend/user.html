@@ -17,7 +17,7 @@
         </span>
         <span>
           <span class="brand-title">Fresher Connect</span>
-          <span class="brand-sub">Fresher application dashboard</span>
+          <span class="brand-sub">Candidate dashboard</span>
         </span>
       </a>
       <div class="nav-actions header-actions">
@@ -54,12 +54,39 @@
   </header>
 
   <main class="container dashboard-shell">
+    <section class="panel dashboard-hero-panel">
+      <div class="dashboard-hero-grid">
+        <div class="page-intro">
+          <span class="section-label">Candidate Dashboard</span>
+          <h1 class="page-title">Track your applications and keep the next job move visible.</h1>
+          <p class="muted">
+            Search live roles, open detailed job pages, apply once, and use the status page to see
+            exactly where each application stands.
+          </p>
+        </div>
+        <div class="hero-mini-grid" id="applicationSummaryGrid">
+          <div class="mini-stat">
+            <span>Applied</span>
+            <strong id="summaryApplied">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>In progress</span>
+            <strong id="summaryActive">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Offers</span>
+            <strong id="summaryOffered">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="dashboard-grid">
       <aside class="sidebar">
         <section class="profile-card card" id="userProfileSection">
           <div class="card-head">
             <div class="page-intro">
-              <span class="section-label">User Page</span>
+              <span class="section-label">Profile</span>
               <h2 id="userName">Loading...</h2>
               <p class="profile-meta" id="userMeta">Profile is loading.</p>
             </div>
@@ -82,12 +109,12 @@
         </section>
 
         <section class="profile-card card">
-          <span class="section-label">Tracking</span>
-          <h3>How this page works</h3>
+          <span class="section-label">Application Status</span>
+          <h3>Status page access</h3>
           <div class="detail-list">
-            <div>Use search and category filters to narrow jobs.</div>
-            <div>Apply once to a role. Duplicate applications are blocked.</div>
-            <div>Track each status change in the table below.</div>
+            <div>Open any submitted application in a dedicated status page.</div>
+            <div>See the current stage, applied date, and role details clearly.</div>
+            <div>Use job details to understand the role before applying.</div>
           </div>
         </section>
       </aside>
@@ -96,13 +123,11 @@
         <section class="panel" id="userJobsSection">
           <div class="section-head">
             <div class="page-intro">
-              <span class="section-label">Open Jobs</span>
-              <h1 class="page-title">Browse roles and apply.</h1>
-              <p class="muted">This page is for fresher accounts only.</p>
+              <span class="section-label">Job Listing</span>
+              <h2 class="page-title page-title-small">Find fresher-friendly roles</h2>
+              <p class="muted">Use filters to refine the listing and open job details before applying.</p>
             </div>
-            <div class="panel-chip">
-              <span class="tag" id="jobCountChip">0 roles</span>
-            </div>
+            <a class="btn ghost compact-btn" href="jobs.html">Open full listing</a>
           </div>
 
           <div class="form-grid two-col">
@@ -119,13 +144,31 @@
             </div>
           </div>
 
+          <div class="chip-row dashboard-chip-row">
+            <span class="tag" id="jobCountChip">0 roles</span>
+            <span class="tag" id="applicationStageChip">0 active stages</span>
+          </div>
+
           <div id="userFeedback" class="form-message"></div>
+        </section>
+
+        <section class="panel detail-highlight-panel">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Job Details Preview</span>
+              <h2 id="jobSpotlightHeading">Select a role from the listing</h2>
+            </div>
+            <a class="text-link" id="jobSpotlightLink" href="jobs.html">Open listing</a>
+          </div>
+          <div id="jobSpotlightCard" class="detail-highlight-card empty-state">
+            Search or browse jobs to see a focused role preview here.
+          </div>
         </section>
 
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Jobs</span>
+              <span class="section-label">Live Job Cards</span>
               <h2 id="jobsHeading">Available roles</h2>
             </div>
           </div>
@@ -135,7 +178,7 @@
         <section class="panel" id="userApplicationsSection">
           <div class="section-head">
             <div>
-              <span class="section-label">Application Tracker</span>
+              <span class="section-label">Application Status</span>
               <h2>Your submitted applications</h2>
             </div>
           </div>
@@ -147,6 +190,7 @@
                   <th>Company</th>
                   <th>Applied</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="applicationsTableBody"></tbody>

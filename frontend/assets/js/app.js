@@ -3,6 +3,9 @@
   var state = {
     userDashboard: null,
     companyDashboard: null,
+    jobsPage: null,
+    jobDetails: null,
+    applicationStatusPage: null,
     currentUser: null,
     menuContext: null,
     theme: "light"
@@ -39,11 +42,43 @@
 
     if (page === "company") {
       initCompanyPage();
+      return;
+    }
+
+    if (page === "jobs") {
+      initJobsPage();
+      return;
+    }
+
+    if (page === "job-details") {
+      initJobDetailsPage();
+      return;
+    }
+
+    if (page === "application-status") {
+      initApplicationStatusPage();
     }
   }
 
   function byId(id) {
     return document.getElementById(id);
+  }
+
+  function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+
+  function toNumber(value) {
+    var parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function jobDetailsHref(jobId) {
+    return "job-details.html?job=" + encodeURIComponent(String(jobId));
+  }
+
+  function applicationStatusHref(applicationId) {
+    return "application-status.html?application=" + encodeURIComponent(String(applicationId));
   }
 
   function loadTheme() {
@@ -73,6 +108,7 @@
       moreDescription: "Quick links to move through Fresher Connect.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Back to the landing page." },
+        { href: "jobs.html", label: "Jobs", description: "Browse the live job listing." },
         { href: "login.html", label: "Login", description: "Sign in to your account." },
         { href: "register.html", label: "Create account", description: "Register as fresher or company." }
       ]
@@ -485,6 +521,160 @@
     return payload;
   }
 
+  function filterJobCollection(jobs, searchValue, categoryValue) {
+    var search = String(searchValue || "").trim().toLowerCase();
+    var category = String(categoryValue || "").trim().toLowerCase();
+
+    return jobs.filter(function (job) {
+      var haystack = [
+        job.title,
+        job.company_name,
+        job.location || "",
+        job.department || "",
+        job.work_mode || "",
+        job.industry_type || "",
+        (job.categories || []).join(" "),
+        (job.required_skills || []).join(" ")
+      ]
+        .join(" ")
+        .toLowerCase();
+      var matchesSearch = !search || haystack.indexOf(search) >= 0;
+      var matchesCategory = !category || (job.categories || []).some(function (item) {
+        return item.toLowerCase() === category;
+      });
+      return matchesSearch && matchesCategory;
+    });
+  }
+
+  function countApplicationsByStatus(applications) {
+    var counts = {
+      applied: 0,
+      active: 0,
+      offered: 0
+    };
+
+    (applications || []).forEach(function (application) {
+      if (application.status === "offered") {
+        counts.offered += 1;
+      }
+      if (["reviewing", "shortlisted", "interview"].indexOf(application.status) >= 0) {
+        counts.active += 1;
+      }
+      counts.applied += 1;
+    });
+    return counts;
+  }
+
+  function timelineMarkup(steps, currentIndex) {
+    if (!steps.length) {
+      return '<div class="empty-state">Timeline data is not available for this item.</div>';
+    }
+
+    return steps
+      .map(function (step, index) {
+        var stateClass = "pending";
+        if (currentIndex > index) {
+          stateClass = "done";
+        } else if (currentIndex === index) {
+          stateClass = "current";
+        }
+
+        return (
+          '<div class="timeline-step ' + stateClass + '">' +
+          '<span class="timeline-index">' + window.FC_API.escapeHtml(String(index + 1)) + "</span>" +
+          '<div class="timeline-copy">' +
+          '<strong>' + window.FC_API.escapeHtml(step) + "</strong>" +
+          "<span>" + window.FC_API.escapeHtml(stateClass === "current" ? "Current stage" : stateClass === "done" ? "Completed" : "Upcoming") + "</span>" +
+          "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  function stageIndex(status) {
+    var index = window.FC_API.statuses.indexOf(status);
+    return index >= 0 ? index : 0;
+  }
+
+  function detailRowsMarkup(items) {
+    return items
+      .map(function (item) {
+        return (
+          '<div class="detail-item">' +
+          '<span class="detail-label">' + window.FC_API.escapeHtml(item.label) + "</span>" +
+          '<strong class="detail-value">' + window.FC_API.escapeHtml(item.value || "-") + "</strong>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  function detailParagraphMarkup(title, body, fallback) {
+    return (
+      '<div class="detail-paragraph">' +
+      '<h3>' + window.FC_API.escapeHtml(title) + "</h3>" +
+      '<p>' + window.FC_API.escapeHtml(body || fallback || "-") + "</p>" +
+      "</div>"
+    );
+  }
+
+  function jobCardMarkup(job, options) {
+    var applied = options && options.application ? options.application : null;
+    var showApply = options && options.showApply;
+    var skills = (job.required_skills || []).slice(0, 3);
+    var detailLink = jobDetailsHref(job.id);
+    var footerAction = applied
+      ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Open status</a>'
+      : showApply
+        ? '<button class="btn primary apply-button" type="button" data-job-id="' + job.id + '">Apply now</button>'
+        : '<a class="btn ghost compact-btn" href="' + detailLink + '">Open details</a>';
+
+    return (
+      '<article class="card job-card">' +
+      '<div class="job-card-top">' +
+      '<div class="job-card-header">' +
+      "<h3>" + window.FC_API.escapeHtml(job.title) + "</h3>" +
+      '<span class="tag job-type-chip">' + window.FC_API.escapeHtml(job.job_type) + "</span>" +
+      "</div>" +
+      '<p class="meta-line">' +
+      window.FC_API.escapeHtml(job.company_name) +
+      " | " +
+      window.FC_API.escapeHtml(job.location || "Location flexible") +
+      " | " +
+      window.FC_API.escapeHtml(toTitleCase(job.work_mode || "onsite")) +
+      "</p>" +
+      '<p class="job-description">' + window.FC_API.escapeHtml(job.description) + "</p>" +
+      '<div class="tag-list">' +
+      (job.categories || [])
+        .map(function (category) {
+          return '<span class="tag">' + window.FC_API.escapeHtml(category) + "</span>";
+        })
+        .join("") +
+      skills
+        .map(function (skill) {
+          return '<span class="tag">' + window.FC_API.escapeHtml(skill) + "</span>";
+        })
+        .join("") +
+      "</div>" +
+      "</div>" +
+      '<div class="job-card-footer">' +
+      '<div class="tag-list">' +
+      '<span class="tag experience-chip">' + window.FC_API.escapeHtml(job.experience_level || "entry-level") + "</span>" +
+      '<span class="tag experience-chip">' + window.FC_API.escapeHtml(formatCompensation(job)) + "</span>" +
+      "</div>" +
+      footerAction +
+      "</div>" +
+      '<div class="card-link-row">' +
+      '<a class="text-link" href="' + detailLink + '">View details</a>' +
+      (applied
+        ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Application status</a>'
+        : '<span class="meta-line">Open details before applying</span>') +
+      "</div>" +
+      "</article>"
+    );
+  }
+
   function renderStatusPill(status) {
     var safeStatus = window.FC_API.statusClass(status);
     return (
@@ -628,6 +818,7 @@
       profileHref: "login.html",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Explore the landing page." },
+        { href: "jobs.html", label: "Jobs", description: "Browse the job listing." },
         { href: "login.html", label: "Login", description: "Sign in to your account." },
         { href: "register.html", label: "Create account", description: "Register as a fresher or company." }
       ]
@@ -677,6 +868,7 @@
               label: "Open dashboard",
               description: "Go back to your main workspace."
             },
+            { href: "jobs.html", label: "Browse jobs", description: "Open the job listing page." },
             { href: "index.html", label: "Home", description: "Stay on the landing page." },
             { href: "register.html", label: "Create another account", description: "Open the registration page." }
           ]
@@ -803,28 +995,11 @@
   }
 
   function filterJobs(jobs) {
-    var search = byId("jobSearch").value.trim().toLowerCase();
-    var category = byId("jobCategory").value.trim().toLowerCase();
-
-    return jobs.filter(function (job) {
-      var haystack = [
-        job.title,
-        job.company_name,
-        job.location || "",
-        job.department || "",
-        job.work_mode || "",
-        job.industry_type || "",
-        (job.categories || []).join(" "),
-        (job.required_skills || []).join(" ")
-      ]
-        .join(" ")
-        .toLowerCase();
-      var matchesSearch = !search || haystack.indexOf(search) >= 0;
-      var matchesCategory = !category || (job.categories || []).some(function (item) {
-        return item.toLowerCase() === category;
-      });
-      return matchesSearch && matchesCategory;
-    });
+    return filterJobCollection(
+      jobs,
+      byId("jobSearch").value,
+      byId("jobCategory").value
+    );
   }
 
   function renderUserJobs() {
@@ -838,6 +1013,7 @@
     if (jobCountChip) {
       jobCountChip.textContent = jobs.length + " roles";
     }
+    renderUserJobSpotlight(jobs, applicationMap);
 
     if (!jobs.length) {
       jobsGrid.innerHTML = '<div class="empty-state">No jobs match the current search and category filter.</div>';
@@ -846,53 +1022,10 @@
 
     jobsGrid.innerHTML = jobs
       .map(function (job) {
-        var applied = applicationMap[job.id];
-        return (
-          '<article class="card job-card">' +
-          '<div class="job-card-top">' +
-          '<div class="job-card-header">' +
-          "<h3>" + window.FC_API.escapeHtml(job.title) + "</h3>" +
-          '<span class="tag job-type-chip">' + window.FC_API.escapeHtml(job.job_type) + "</span>" +
-          "</div>" +
-          '<p class="meta-line">' +
-          window.FC_API.escapeHtml(job.company_name) +
-          " | " +
-          window.FC_API.escapeHtml(job.location || "Location flexible") +
-          " | " +
-          window.FC_API.escapeHtml(toTitleCase(job.work_mode || "onsite")) +
-          "</p>" +
-          '<p class="job-description">' + window.FC_API.escapeHtml(job.description) + "</p>" +
-          '<div class="tag-list">' +
-          (job.categories || [])
-            .map(function (category) {
-              return '<span class="tag">' + window.FC_API.escapeHtml(category) + "</span>";
-            })
-            .join("") +
-          (job.required_skills || [])
-            .slice(0, 3)
-            .map(function (skill) {
-              return '<span class="tag">' + window.FC_API.escapeHtml(skill) + "</span>";
-            })
-            .join("") +
-          "</div>" +
-          "</div>" +
-          '<div class="job-card-footer">' +
-          '<div class="tag-list">' +
-          '<span class="tag experience-chip">' +
-          window.FC_API.escapeHtml(job.experience_level || "entry-level") +
-          "</span>" +
-          '<span class="tag experience-chip">' +
-          window.FC_API.escapeHtml(formatCompensation(job)) +
-          "</span>" +
-          "</div>" +
-          (applied
-            ? renderStatusPill(applied.status)
-            : '<button class="btn primary apply-button" type="button" data-job-id="' +
-              job.id +
-              '">Apply now</button>') +
-          "</div>" +
-          "</article>"
-        );
+        return jobCardMarkup(job, {
+          application: applicationMap[job.id],
+          showApply: true
+        });
       })
       .join("");
   }
@@ -901,9 +1034,10 @@
     var tbody = byId("applicationsTableBody");
     var applications = state.userDashboard.applications;
     byId("applicationCount").textContent = String(applications.length);
+    renderUserApplicationSummary(applications);
 
     if (!applications.length) {
-      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No applications yet. Apply to a job to start tracking.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No applications yet. Apply to a job to start tracking.</div></td></tr>';
       return;
     }
 
@@ -915,10 +1049,72 @@
           "<td><div class=\"table-title\">" + window.FC_API.escapeHtml(application.job.company_name) + "</div></td>" +
           "<td>" + window.FC_API.formatDate(application.applied_at) + "</td>" +
           "<td>" + renderStatusPill(application.status) + "</td>" +
+          '<td><a class="text-link" href="' + applicationStatusHref(application.id) + '">Open status</a></td>' +
           "</tr>"
         );
       })
       .join("");
+  }
+
+  function renderUserApplicationSummary(applications) {
+    var counts = countApplicationsByStatus(applications);
+    if (byId("summaryApplied")) {
+      byId("summaryApplied").textContent = String(counts.applied);
+    }
+    if (byId("summaryActive")) {
+      byId("summaryActive").textContent = String(counts.active);
+    }
+    if (byId("summaryOffered")) {
+      byId("summaryOffered").textContent = String(counts.offered);
+    }
+    if (byId("applicationStageChip")) {
+      byId("applicationStageChip").textContent = counts.active + " active stages";
+    }
+  }
+
+  function renderUserJobSpotlight(jobs, applicationMap) {
+    var heading = byId("jobSpotlightHeading");
+    var link = byId("jobSpotlightLink");
+    var card = byId("jobSpotlightCard");
+    if (!heading || !link || !card) {
+      return;
+    }
+
+    if (!jobs.length) {
+      heading.textContent = "Select a role from the listing";
+      link.href = "jobs.html";
+      link.textContent = "Open listing";
+      card.className = "detail-highlight-card empty-state";
+      card.textContent = "Search or browse jobs to see a focused role preview here.";
+      return;
+    }
+
+    var job = jobs[0];
+    var application = applicationMap[job.id];
+    heading.textContent = job.title;
+    link.href = jobDetailsHref(job.id);
+    link.textContent = "Open job details";
+    card.className = "detail-highlight-card";
+    card.innerHTML =
+      '<div class="detail-highlight-top">' +
+      '<div>' +
+      '<p class="meta-line">' + window.FC_API.escapeHtml(job.company_name + " | " + (job.location || "Location flexible")) + "</p>" +
+      '<h3>' + window.FC_API.escapeHtml(job.title) + "</h3>" +
+      "</div>" +
+      (application ? renderStatusPill(application.status) : '<span class="tag">' + window.FC_API.escapeHtml(job.job_type) + "</span>") +
+      "</div>" +
+      '<p class="job-description">' + window.FC_API.escapeHtml(job.role_overview || job.description) + "</p>" +
+      '<div class="tag-list">' +
+      '<span class="tag">' + window.FC_API.escapeHtml(job.department || "General") + "</span>" +
+      '<span class="tag">' + window.FC_API.escapeHtml(job.degree_required || "Any Graduate") + "</span>" +
+      '<span class="tag">' + window.FC_API.escapeHtml(formatCompensation(job)) + "</span>" +
+      "</div>" +
+      '<div class="card-link-row">' +
+      '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a>' +
+      (application
+        ? '<a class="text-link" href="' + applicationStatusHref(application.id) + '">View application status</a>'
+        : '<span class="meta-line">Apply from the job card below</span>') +
+      "</div>";
   }
 
   function renderUserProfile(user) {
@@ -944,6 +1140,7 @@
       moreDescription: "Jump to jobs, tracking, and home from one place.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Go back to the landing page." },
+        { href: "jobs.html", label: "Job listing", description: "Open the dedicated job listing page." },
         { href: "#userJobsSection", target: "userJobsSection", label: "Browse jobs", description: "Jump to the jobs section." },
         {
           href: "#userApplicationsSection",
@@ -1048,6 +1245,415 @@
     });
   }
 
+  function setStandaloneMenuContext(user, config) {
+    var context = config || {};
+    if (user) {
+      setHeaderMenu({
+        user: user,
+        menuLabel: "Active account",
+        pageLabel: context.pageLabel || "Workspace",
+        summary: user.email,
+        title: user.role === "company" ? (user.company_name || user.name) : user.name,
+        subtitle: context.subtitle || "Profile, settings, and more",
+        badgeText: user.role === "company" ? (user.company_name || user.name) : user.name,
+        profileHref: user.role === "company" ? "company.html" : "user.html",
+        settingsTitle: context.settingsTitle || "Account settings",
+        settingsDescription: context.settingsDescription || "Review your account details and active API connection.",
+        moreTitle: context.moreTitle || "More actions",
+        moreDescription: context.moreDescription || "Open related pages from the current flow.",
+        moreLinks: context.moreLinks || defaultMenuContext().moreLinks
+      });
+      return;
+    }
+
+    setHeaderMenu({
+      menuLabel: "Quick access",
+      pageLabel: context.pageLabel || "Workspace",
+      summary: context.summary || "Open the next page in the hiring flow",
+      title: context.title || "Open menu",
+      subtitle: context.subtitle || "Profile, settings, and more",
+      badgeText: "FC",
+      profileHref: "login.html",
+      settingsTitle: context.settingsTitle || "Connection settings",
+      settingsDescription: context.settingsDescription || "Review the active API connection and quick shortcuts.",
+      moreTitle: context.moreTitle || "More actions",
+      moreDescription: context.moreDescription || "Open related pages from the current flow.",
+      moreLinks: context.moreLinks || defaultMenuContext().moreLinks
+    });
+  }
+
+  function populateSelectOptions(select, categories) {
+    if (!select) {
+      return;
+    }
+
+    select.innerHTML = '<option value="">All categories</option>' +
+      (categories || [])
+        .map(function (category) {
+          return '<option value="' + window.FC_API.escapeHtml(category) + '">' +
+            window.FC_API.escapeHtml(category) +
+            "</option>";
+        })
+        .join("");
+  }
+
+  function renderJobsPage() {
+    var grid = byId("jobsPageGrid");
+    var heading = byId("jobsPageHeading");
+    var jobs = filterJobCollection(
+      state.jobsPage.jobs,
+      byId("jobsPageSearch").value,
+      byId("jobsPageCategory").value
+    );
+    var applicationMap = computeApplicationMap(state.jobsPage.applications || []);
+    var allowApply = Boolean(state.currentUser && state.currentUser.role === "fresher");
+
+    heading.textContent = jobs.length + " jobs match your filters";
+    byId("jobsPageCount").textContent = String(jobs.length);
+    byId("jobsPageCategories").textContent = String((state.jobsPage.categories || []).length);
+
+    if (!jobs.length) {
+      grid.innerHTML = '<div class="empty-state">No jobs match the current listing filters.</div>';
+      return;
+    }
+
+    grid.innerHTML = jobs
+      .map(function (job) {
+        return jobCardMarkup(job, {
+          application: applicationMap[job.id],
+          showApply: allowApply
+        });
+      })
+      .join("");
+  }
+
+  async function initJobsPage() {
+    var session = null;
+    try {
+      session = await window.FC_API.getSession();
+      if (session.user) {
+        state.currentUser = session.user;
+      }
+    } catch (_error) {
+      session = null;
+    }
+
+    setStandaloneMenuContext(session && session.user, {
+      pageLabel: "Job listing",
+      summary: "Browse roles and open detailed job pages",
+      settingsTitle: "Listing settings",
+      settingsDescription: "Review the active API endpoint and account access from the listing page.",
+      moreLinks: [
+        { href: "index.html", label: "Home", description: "Go back to the landing page." },
+        { href: "jobs.html", label: "Job listing", description: "Stay on the job listing page." },
+        { href: "login.html", label: "Login", description: "Sign in to apply and track status." },
+        { href: "register.html", label: "Create account", description: "Register as fresher or company." }
+      ]
+    });
+
+    try {
+      var jobsResponse = await window.FC_API.request("/api/jobs");
+      var applications = [];
+      if (session && session.user && session.user.role === "fresher") {
+        var applicationResponse = await window.FC_API.request("/api/applications/me");
+        applications = applicationResponse.applications || [];
+      }
+      state.jobsPage = {
+        jobs: jobsResponse.jobs || [],
+        categories: jobsResponse.categories || [],
+        applications: applications
+      };
+      populateSelectOptions(byId("jobsPageCategory"), state.jobsPage.categories);
+      renderJobsPage();
+    } catch (error) {
+      setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load job listing."), "error");
+      return;
+    }
+
+    byId("jobsPageSearch").addEventListener("input", renderJobsPage);
+    byId("jobsPageCategory").addEventListener("change", renderJobsPage);
+    byId("jobsPageGrid").addEventListener("click", async function (event) {
+      var button = event.target.closest(".apply-button");
+      if (!button) {
+        return;
+      }
+
+      button.disabled = true;
+      setMessage(byId("jobsPageMessage"), "Submitting application...");
+      try {
+        var response = await window.FC_API.request("/api/applications", {
+          method: "POST",
+          body: { job_id: Number(button.dataset.jobId) }
+        });
+        state.jobsPage.applications.unshift(response.application);
+        renderJobsPage();
+        setMessage(byId("jobsPageMessage"), "Application submitted successfully.", "success");
+      } catch (error) {
+        button.disabled = false;
+        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+      }
+    });
+  }
+
+  function renderJobDetailsPage() {
+    var detailState = state.jobDetails;
+    var hero = byId("jobDetailHero");
+    var overview = byId("jobDetailOverview");
+    var responsibilities = byId("jobDetailResponsibilities");
+    var required = byId("jobDetailRequired");
+    var preferred = byId("jobDetailPreferred");
+    var stages = byId("jobDetailStages");
+    var company = byId("jobDetailCompany");
+    var application = byId("jobDetailApplication");
+    var job = detailState.job;
+
+    if (!job) {
+      hero.innerHTML = '<div class="empty-state">No job selected. Open the listing page and choose a role.</div>';
+      overview.innerHTML = '<div class="empty-state">Job content is not available.</div>';
+      responsibilities.innerHTML = '<div class="empty-state">Responsibilities are not available.</div>';
+      required.innerHTML = '<div class="empty-state">No qualification details available.</div>';
+      preferred.innerHTML = '<div class="empty-state">No qualification details available.</div>';
+      stages.innerHTML = '<div class="empty-state">No hiring stages available.</div>';
+      company.innerHTML = '<div class="empty-state">Company details are not available.</div>';
+      application.innerHTML = '<div class="empty-state">Application actions are not available.</div>';
+      return;
+    }
+
+    var currentUser = detailState.user;
+    var currentApplication = (detailState.applications || []).find(function (item) {
+      return item.job && item.job.id === job.id;
+    });
+    var heroActions;
+    if (currentApplication) {
+      heroActions =
+        renderStatusPill(currentApplication.status) +
+        '<a class="btn ghost compact-btn" href="' + applicationStatusHref(currentApplication.id) + '">Open application status</a>';
+    } else if (currentUser && currentUser.role === "fresher") {
+      heroActions =
+        '<button class="btn primary" type="button" data-detail-apply="' + job.id + '">Apply now</button>' +
+        '<a class="btn ghost compact-btn" href="jobs.html">Back to listing</a>';
+    } else if (currentUser && currentUser.role === "company") {
+      heroActions =
+        '<a class="btn primary" href="company.html">Open company dashboard</a>' +
+        '<a class="btn ghost compact-btn" href="jobs.html">View listing</a>';
+    } else {
+      heroActions =
+        '<a class="btn primary" href="login.html">Login to apply</a>' +
+        '<a class="btn ghost compact-btn" href="register.html">Create account</a>';
+    }
+
+    hero.innerHTML =
+      '<div class="detail-hero-copy">' +
+      '<span class="section-label">Job Details</span>' +
+      '<h1 class="page-title page-title-small">' + window.FC_API.escapeHtml(job.title) + "</h1>" +
+      '<p class="meta-line">' +
+      window.FC_API.escapeHtml(job.company_name) +
+      " | " +
+      window.FC_API.escapeHtml(job.location || "Location flexible") +
+      " | " +
+      window.FC_API.escapeHtml(toTitleCase(job.work_mode || "onsite")) +
+      "</p>" +
+      '<p class="muted">' + window.FC_API.escapeHtml(job.description) + "</p>" +
+      '<div class="button-row">' + heroActions + "</div>" +
+      '<div id="jobDetailMessage" class="form-message"></div>' +
+      "</div>" +
+      '<div class="job-facts-grid">' +
+      detailRowsMarkup([
+        { label: "Experience", value: job.experience_level || "Fresher" },
+        { label: "Degree", value: job.degree_required || "Any Graduate" },
+        { label: "Compensation", value: formatCompensation(job) },
+        { label: "Expires", value: formatExpiry(job.expires_at) }
+      ]) +
+      "</div>";
+
+    overview.innerHTML = detailParagraphMarkup("Role overview", job.role_overview || job.description, "Role overview not added.");
+    responsibilities.innerHTML = detailParagraphMarkup("Responsibilities", job.responsibilities, "Responsibilities have not been added yet.");
+    required.innerHTML = detailParagraphMarkup("Required qualifications", job.required_qualifications || job.requirements, "Required qualifications have not been added.");
+    preferred.innerHTML = detailParagraphMarkup("Preferred qualifications", job.preferred_qualifications, "Preferred qualifications have not been added.");
+    stages.innerHTML = timelineMarkup(job.hiring_stages || [], currentApplication ? Math.min(stageIndex(currentApplication.status), Math.max((job.hiring_stages || []).length - 1, 0)) : -1);
+    company.innerHTML = detailRowsMarkup([
+      { label: "Company", value: job.company_name || "-" },
+      { label: "Industry", value: job.industry_type || "-" },
+      { label: "Website", value: job.company_website || "-" },
+      { label: "Size", value: job.company_size || "-" },
+      { label: "Description", value: job.company_description || "-" }
+    ]);
+    application.innerHTML = detailRowsMarkup([
+      { label: "Application method", value: toTitleCase(job.application_method || "platform") },
+      { label: "Resume required", value: job.resume_required ? "Yes" : "No" },
+      { label: "Portfolio required", value: job.portfolio_required ? "Yes" : "No" },
+      { label: "Cover letter required", value: job.cover_letter_required ? "Yes" : "No" }
+    ]);
+  }
+
+  async function initJobDetailsPage() {
+    var session = null;
+    try {
+      session = await window.FC_API.getSession();
+      if (session.user) {
+        state.currentUser = session.user;
+      }
+    } catch (_error) {
+      session = null;
+    }
+
+    setStandaloneMenuContext(session && session.user, {
+      pageLabel: "Job details",
+      summary: "Review role details and application actions",
+      settingsTitle: "Job page settings",
+      settingsDescription: "Review your active account and API connection from the job details page.",
+      moreLinks: [
+        { href: "jobs.html", label: "Job listing", description: "Go back to the full job listing." },
+        { href: "index.html", label: "Home", description: "Return to the landing page." },
+        { href: session && session.user ? (session.user.role === "company" ? "company.html" : "user.html") : "login.html", label: session && session.user ? "Dashboard" : "Login", description: session && session.user ? "Open your dashboard." : "Sign in to continue." }
+      ]
+    });
+
+    try {
+      var jobsResponse = await window.FC_API.request("/api/jobs");
+      var jobId = toNumber(getQueryParam("job"));
+      var job = (jobsResponse.jobs || []).find(function (item) {
+        return item.id === jobId;
+      }) || (jobsResponse.jobs || [])[0] || null;
+      var applications = [];
+      if (session && session.user && session.user.role === "fresher") {
+        var applicationResponse = await window.FC_API.request("/api/applications/me");
+        applications = applicationResponse.applications || [];
+      }
+
+      state.jobDetails = {
+        user: session && session.user ? session.user : null,
+        applications: applications,
+        jobs: jobsResponse.jobs || [],
+        job: job
+      };
+      renderJobDetailsPage();
+    } catch (error) {
+      byId("jobDetailHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load job details.")) + '</div>';
+    }
+
+    byId("jobDetailHero").addEventListener("click", async function (event) {
+      var button = event.target.closest("[data-detail-apply]");
+      if (!button) {
+        return;
+      }
+
+      button.disabled = true;
+      setMessage(byId("jobDetailMessage"), "Submitting application...");
+      try {
+        var response = await window.FC_API.request("/api/applications", {
+          method: "POST",
+          body: { job_id: Number(button.dataset.detailApply) }
+        });
+        state.jobDetails.applications.unshift(response.application);
+        renderJobDetailsPage();
+      } catch (error) {
+        button.disabled = false;
+        setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+      }
+    });
+  }
+
+  function renderApplicationStatusPage() {
+    var currentState = state.applicationStatusPage;
+    var selectedId = toNumber(getQueryParam("application"));
+    var selected = (currentState.applications || []).find(function (item) {
+      return item.id === selectedId;
+    }) || (currentState.applications || [])[0] || null;
+    var hero = byId("applicationHero");
+    var timeline = byId("applicationTimeline");
+    var summary = byId("applicationSummary");
+    var jobDetails = byId("applicationJobDetails");
+    var applicationList = byId("applicationList");
+
+    if (!selected) {
+      hero.innerHTML = '<div class="empty-state">No application is available yet. Apply to a role first.</div>';
+      timeline.innerHTML = '<div class="empty-state">Status timeline will appear here after you apply.</div>';
+      summary.innerHTML = '<div class="empty-state">No application summary available.</div>';
+      jobDetails.innerHTML = '<div class="empty-state">No job details available.</div>';
+      applicationList.innerHTML = '<div class="empty-state">No application links available.</div>';
+      return;
+    }
+
+    hero.innerHTML =
+      '<div class="detail-hero-copy">' +
+      '<span class="section-label">Application Status</span>' +
+      '<h1 class="page-title page-title-small">' + window.FC_API.escapeHtml(selected.job.title) + "</h1>" +
+      '<p class="meta-line">' + window.FC_API.escapeHtml(selected.job.company_name) + " | " + window.FC_API.escapeHtml(selected.job.location || "Location flexible") + "</p>" +
+      '<div class="button-row">' +
+      renderStatusPill(selected.status) +
+      '<a class="btn ghost compact-btn" href="' + jobDetailsHref(selected.job.id) + '">Open job details</a>' +
+      '<a class="btn ghost compact-btn" href="user.html">Back to dashboard</a>' +
+      "</div>" +
+      "</div>" +
+      '<div class="job-facts-grid">' +
+      detailRowsMarkup([
+        { label: "Applied", value: window.FC_API.formatDate(selected.applied_at) },
+        { label: "Current stage", value: toTitleCase(selected.status) },
+        { label: "Work mode", value: toTitleCase(selected.job.work_mode || "onsite") },
+        { label: "Compensation", value: formatCompensation(selected.job) }
+      ]) +
+      "</div>";
+
+    timeline.innerHTML = timelineMarkup(
+      window.FC_API.statuses.map(function (status) {
+        return toTitleCase(status);
+      }),
+      stageIndex(selected.status)
+    );
+    summary.innerHTML = detailRowsMarkup([
+      { label: "Company", value: selected.job.company_name || "-" },
+      { label: "Location", value: selected.job.location || "-" },
+      { label: "Department", value: selected.job.department || "-" },
+      { label: "Employment type", value: toTitleCase(selected.job.job_type || "full-time") }
+    ]);
+    jobDetails.innerHTML = detailRowsMarkup([
+      { label: "Role", value: selected.job.title || "-" },
+      { label: "Experience", value: selected.job.experience_level || "-" },
+      { label: "Degree", value: selected.job.degree_required || "-" },
+      { label: "Skills", value: safeJoin(selected.job.required_skills) }
+    ]);
+    applicationList.innerHTML = (currentState.applications || [])
+      .map(function (application) {
+        return (
+          '<a class="sheet-link' + (application.id === selected.id ? ' active-link' : '') + '" href="' + applicationStatusHref(application.id) + '">' +
+          '<strong>' + window.FC_API.escapeHtml(application.job.title) + "</strong>" +
+          '<span>' + window.FC_API.escapeHtml(application.job.company_name + " | " + toTitleCase(application.status)) + "</span>" +
+          "</a>"
+        );
+      })
+      .join("");
+  }
+
+  async function initApplicationStatusPage() {
+    var user = await requireRole("fresher");
+    if (!user) {
+      return;
+    }
+
+    setStandaloneMenuContext(user, {
+      pageLabel: "Application status",
+      summary: user.email,
+      settingsTitle: "Status page settings",
+      settingsDescription: "Review your profile and the active API connection from the status page.",
+      moreLinks: [
+        { href: "user.html", label: "Dashboard", description: "Go back to your candidate dashboard." },
+        { href: "jobs.html", label: "Job listing", description: "Browse more jobs." },
+        { href: "index.html", label: "Home", description: "Return to the landing page." }
+      ]
+    });
+
+    try {
+      var response = await window.FC_API.request("/api/applications/me");
+      state.applicationStatusPage = {
+        applications: response.applications || []
+      };
+      renderApplicationStatusPage();
+    } catch (error) {
+      byId("applicationHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load application status.")) + '</div>';
+    }
+  }
+
   function renderStatusGrid(statusCounts) {
     var target = byId("statusGrid");
     target.innerHTML = window.FC_API.statuses
@@ -1066,6 +1672,9 @@
     var jobs = state.companyDashboard.posted_jobs;
     var target = byId("companyJobsGrid");
     byId("postedJobsCount").textContent = String(jobs.length);
+    if (byId("heroOpenJobs")) {
+      byId("heroOpenJobs").textContent = String(jobs.length);
+    }
 
     if (!jobs.length) {
       target.innerHTML = '<div class="empty-state">No jobs posted yet. Use the form above to add the first opening.</div>';
@@ -1113,9 +1722,12 @@
           '<span class="meta-line">' +
           window.FC_API.escapeHtml((job.hiring_stages || []).join(" -> ") || "Hiring stages not added") +
           "</span>" +
+          '<div class="tag-list">' +
           '<span class="status-pill applied">' +
           window.FC_API.escapeHtml(String(job.application_count || 0)) +
           " applicants</span>" +
+          '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a>' +
+          "</div>" +
           "</div>" +
           "</article>"
         );
@@ -1142,6 +1754,16 @@
   function renderCompanyApplications() {
     var applications = state.companyDashboard.applications;
     var tbody = byId("companyApplicationsBody");
+    if (byId("heroApplicants")) {
+      byId("heroApplicants").textContent = String(applications.length);
+    }
+    if (byId("heroStages")) {
+      byId("heroStages").textContent = String(
+        window.FC_API.statuses.filter(function (status) {
+          return (state.companyDashboard.status_counts || {})[status] > 0;
+        }).length
+      );
+    }
 
     if (!applications.length) {
       tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No candidates have applied yet.</div></td></tr>';
@@ -1201,6 +1823,7 @@
       moreDescription: "Jump to job creation, pipeline, and landing page.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Go back to the landing page." },
+        { href: "jobs.html", label: "Job listing", description: "See the candidate-facing job listing page." },
         {
           href: "#companyJobFormSection",
           target: "companyJobFormSection",

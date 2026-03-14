@@ -17,7 +17,7 @@
         </span>
         <span>
           <span class="brand-title">Fresher Connect</span>
-          <span class="brand-sub">Company hiring dashboard</span>
+          <span class="brand-sub">Company dashboard</span>
         </span>
       </a>
       <div class="nav-actions header-actions">
@@ -54,10 +54,37 @@
   </header>
 
   <main class="container dashboard-shell">
+    <section class="panel dashboard-hero-panel">
+      <div class="dashboard-hero-grid">
+        <div class="page-intro">
+          <span class="section-label">Company Dashboard</span>
+          <h1 class="page-title">Post jobs, review fresher profiles, and keep the hiring pipeline organized.</h1>
+          <p class="muted">
+            The company dashboard now connects job creation, posted job details, and application status
+            updates in one place.
+          </p>
+        </div>
+        <div class="hero-mini-grid">
+          <div class="mini-stat">
+            <span>Open jobs</span>
+            <strong id="heroOpenJobs">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Total applicants</span>
+            <strong id="heroApplicants">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Live stages</span>
+            <strong id="heroStages">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="dashboard-grid">
       <aside class="sidebar">
         <section class="profile-card card" id="companyProfileSection">
-          <span class="section-label">Company Page</span>
+          <span class="section-label">Company Profile</span>
           <h2 id="companyNameHeading">Loading...</h2>
           <p class="profile-meta" id="companyMeta">Company profile is loading.</p>
 
@@ -76,12 +103,12 @@
         </section>
 
         <section class="profile-card card">
-          <span class="section-label">Workflow</span>
-          <h3>What companies can do</h3>
+          <span class="section-label">Hiring Flow</span>
+          <h3>What this page controls</h3>
           <div class="detail-list">
-            <div>Create jobs from the form below.</div>
-            <div>Review applicant details in one place.</div>
-            <div>Move candidates through the hiring pipeline.</div>
+            <div>Create structured job posts with company and role details.</div>
+            <div>Open individual job detail pages from the posted jobs section.</div>
+            <div>Update candidate statuses without losing applicant context.</div>
           </div>
         </section>
       </aside>
@@ -90,9 +117,9 @@
         <section class="panel" id="companyOverviewSection">
           <div class="section-head">
             <div class="page-intro">
-              <span class="section-label">Hiring Panel</span>
-              <h1 class="page-title">Post jobs and track applicants.</h1>
-              <p class="muted">This page is for company accounts only.</p>
+              <span class="section-label">Hiring Overview</span>
+              <h2 class="page-title page-title-small">Current pipeline snapshot</h2>
+              <p class="muted">Monitor all active stages before posting the next role or updating applicants.</p>
             </div>
           </div>
           <div id="statusGrid" class="status-grid"></div>
@@ -101,7 +128,7 @@
         <section class="panel" id="companyJobFormSection">
           <div class="section-head">
             <div>
-              <span class="section-label">Add Job</span>
+              <span class="section-label">Job Form</span>
               <h2>Create a new opening</h2>
             </div>
           </div>
@@ -430,7 +457,7 @@
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Posted Jobs</span>
+              <span class="section-label">Job Details</span>
               <h2>Your job listings</h2>
             </div>
           </div>
@@ -440,7 +467,7 @@
         <section class="panel" id="companyApplicationsSection">
           <div class="section-head">
             <div>
-              <span class="section-label">Applicant Pipeline</span>
+              <span class="section-label">Application Status</span>
               <h2>Manage fresher applications</h2>
             </div>
           </div>
