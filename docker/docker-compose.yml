@@ -6,7 +6,7 @@ services:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
-      - ./mongodb/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - ../database/init.js:/docker-entrypoint-initdb.d/init.js:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
@@ -17,7 +17,7 @@ services:
 
   backend:
     build:
-      context: .
+      context: ..
       dockerfile: backend/Dockerfile.backend
     container_name: fresher-connect-backend
     depends_on:
@@ -42,7 +42,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: frontend/Dockerfile.frontend
     container_name: fresher-connect-frontend
     depends_on:

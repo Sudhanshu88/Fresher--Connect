@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobs | Fresher Connect</title>
+  <link rel="stylesheet" href="../styles/app.css">
+  <script defer src="../services/api.js"></script>
+  <script defer src="../services/app.js"></script>
+</head>
+<body data-page="jobs">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark image-mark">
+          <img class="brand-logo" src="../components/fc-logo.svg" alt="Fresher Connect logo">
+        </span>
+        <span>
+          <span class="brand-title">Fresher Connect</span>
+          <span class="brand-sub">Job listing</span>
+        </span>
+      </a>
+      <div class="nav-actions header-actions">
+        <div class="menu-shell">
+          <button
+            class="menu-toggle"
+            type="button"
+            data-menu-toggle
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="headerMenu"
+          >
+            <span class="sr-only" id="menuButtonTitle">Open menu</span>
+            <span class="menu-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+
+          <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
+            <div class="menu-panel-head">
+              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Open a page from the hiring flow</strong>
+            </div>
+            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
+            <button class="menu-item" type="button" data-menu-action="more">More</button>
+            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container page-shell">
+    <section class="panel dashboard-hero-panel">
+      <div class="dashboard-hero-grid">
+        <div class="page-intro">
+          <span class="section-label">Job Listing</span>
+          <h1 class="page-title">Browse fresher-friendly roles and open every job in a detailed view.</h1>
+          <p class="muted">
+            Use search and categories to narrow the list, then open job details to review requirements,
+            compensation, and hiring stages before applying.
+          </p>
+        </div>
+        <div class="hero-mini-grid">
+          <div class="mini-stat">
+            <span>Available roles</span>
+            <strong id="jobsPageCount">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Categories</span>
+            <strong id="jobsPageCategories">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Workflows</span>
+            <strong>Listing + details</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="form-grid two-col">
+        <div class="field">
+          <label for="jobsPageSearch">Search</label>
+          <input id="jobsPageSearch" type="text" placeholder="Title, company, location">
+        </div>
+        <div class="field">
+          <label for="jobsPageCategory">Category</label>
+          <select id="jobsPageCategory">
+            <option value="">All categories</option>
+          </select>
+        </div>
+      </div>
+      <div id="jobsPageMessage" class="form-message"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <span class="section-label">Results</span>
+          <h2 id="jobsPageHeading">Available jobs</h2>
+        </div>
+      </div>
+      <div id="jobsPageGrid" class="jobs-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container stack-between">
+      <span>Review a role in detail before applying or signing in.</span>
+      <a class="text-link" href="job-details.html">Open job details</a>
+    </div>
+  </footer>
+
+  <div class="sheet-backdrop hidden" data-menu-overlay></div>
+  <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
+    <div class="stack-between">
+      <div class="page-intro">
+        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
+        <h2 id="menuSheetTitle">Menu</h2>
+        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+      </div>
+      <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
+    </div>
+    <div id="menuSheetBody" class="sheet-body"></div>
+  </section>
+</body>
+</html>

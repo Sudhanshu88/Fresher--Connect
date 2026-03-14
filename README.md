@@ -1,15 +1,49 @@
-# FresherConnect
+# Fresher Connect
 
-FresherConnect is split into a static frontend and a Flask backend API. The runtime data store is MongoDB, with separate collections for freshers, companies, jobs, applications, and counters.
+Fresher Connect is a split frontend and backend hiring platform for freshers and recruiters. The frontend is a static app, the backend is a Flask API, and MongoDB stores users, companies, jobs, and applications.
+
+## Repository Structure
+
+```text
+Fresher--Connect
+|-- backend
+|   |-- config
+|   |-- controllers
+|   |-- middleware
+|   |-- models
+|   |-- routes
+|   |-- services
+|   |-- app.py
+|   `-- Dockerfile.backend
+|-- frontend
+|   |-- components
+|   |-- pages
+|   |-- services
+|   |-- styles
+|   |-- index.html
+|   `-- Dockerfile.frontend
+|-- database
+|   |-- init.js
+|   `-- schema.sql
+|-- docker
+|   |-- Dockerfile
+|   `-- docker-compose.yml
+|-- .github
+|   `-- workflows
+|       `-- ci.yml
+|-- scripts
+|-- app.py
+`-- requirements.txt
+```
 
 ## Stack
 
-- Frontend: static HTML/CSS/JS from `frontend/`
-- Backend: Flask API from `backend/app.py`
-- Database: MongoDB
+- Frontend: static HTML, CSS, and JavaScript in `frontend/pages`, `frontend/styles`, and `frontend/services`
+- Backend: Flask API with route, controller, middleware, and service layers in `backend/`
+- Database: MongoDB collections, plus SQL reference schema in `database/schema.sql`
 - Local verification mode: `mongomock`
 
-## Local setup
+## Local Setup
 
 ```bash
 python -m venv .venv
@@ -24,9 +58,11 @@ Open:
 - Frontend: `http://127.0.0.1:3000/?api=http://127.0.0.1:5000`
 - Backend: `http://127.0.0.1:5000`
 
-## Environment variables
+Root HTML files in `frontend/` are compatibility redirects. Main page implementations live in `frontend/pages/`.
 
-Copy `.env.example` to `.env` if you use one, then set values as needed.
+## Environment Variables
+
+Copy `.env.example` to `.env` if needed.
 
 ```env
 SESSION_COOKIE_SECURE=false
@@ -38,27 +74,28 @@ DISABLE_SEED_DATA=false
 
 Notes:
 
-- If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`.
-- Set `MONGODB_USE_MOCK=true` when you want to run the backend against an in-memory mocked MongoDB for local verification.
-- Set `DISABLE_SEED_DATA=true` to skip the sample companies and sample jobs.
+- If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`
+- Set `MONGODB_USE_MOCK=true` to run the backend against an in-memory mocked MongoDB
+- Set `DISABLE_SEED_DATA=true` to skip sample companies and jobs
 
-## MongoDB schema init
+## Database
 
-A MongoDB init script is available at `mongodb/init.js`.
+MongoDB init script:
 
 ```bash
-mongosh --file mongodb/init.js
+mongosh --file database/init.js
 ```
 
-It prepares:
+Reference relational schema:
 
-- `users`
-- `companies`
-- `jobs`
-- `applications`
-- `counters`
+- `database/schema.sql`
 
 ## Docker
+
+Shared Docker assets:
+
+- `docker/Dockerfile`
+- `docker/docker-compose.yml`
 
 Backend image:
 
@@ -74,29 +111,35 @@ docker build -f frontend/Dockerfile.frontend -t fresher-connect-frontend .
 docker run -p 3000:80 fresher-connect-frontend
 ```
 
-Docker Compose:
+Compose:
 
 ```bash
-docker compose up --build
+docker compose -f docker/docker-compose.yml up --build
 ```
 
-Compose starts:
+## CI
 
-- `mongodb` on `27017`
-- `backend` on `5000`
-- `frontend` on `3000`
+GitHub Actions workflow:
 
-## CI/CD
+- `.github/workflows/ci.yml`
 
-GitHub Actions workflow is available at `.github/workflows/ci-cd.yml`.
+It verifies Python compilation, mocked backend flow, Docker Compose configuration, and container builds.
 
-- CI runs on pull requests and pushes to `main`
-- Backend compile and mocked API flow are verified in CI
-- Docker Compose config is validated in CI
-- Backend and frontend container images are built in CI
-- On pushes to `main`, both images are published to GHCR
+## Screenshots
 
-## API summary
+### Dashboard
+
+![Dashboard](docs/screenshots/dashboard-preview.svg)
+
+### Job Apply Page
+
+![Job Apply Page](docs/screenshots/job-apply-page-preview.svg)
+
+### Company Panel
+
+![Company Panel](docs/screenshots/company-panel-preview.svg)
+
+## API Summary
 
 - `GET /api/session`
 - `POST /api/auth/register`
@@ -113,9 +156,3 @@ GitHub Actions workflow is available at `.github/workflows/ci-cd.yml`.
 - `GET /api/company/applications`
 - `PATCH /api/company/applications/:application_id`
 - `GET /healthz`
-
-## Production notes
-
-- Use a managed MongoDB deployment for production
-- Restrict `FRONTEND_ORIGINS` to trusted frontend hosts
-- Serve behind HTTPS and set `SESSION_COOKIE_SECURE=true`

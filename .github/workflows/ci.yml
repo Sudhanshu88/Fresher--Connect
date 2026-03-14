@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: ci-cd-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Compile Python files
-        run: python -m py_compile backend/app.py backend/__init__.py app.py scripts/verify_mock_backend_flow.py
+        run: python -m compileall backend scripts app.py
 
       - name: Verify mocked backend flow
         run: python scripts/verify_mock_backend_flow.py
@@ -47,7 +47,7 @@ jobs:
       - name: Validate Docker Compose
         env:
           COMPOSE_DISABLE_ENV_FILE: 1
-        run: docker compose --env-file .env.example config
+        run: docker compose -f docker/docker-compose.yml --env-file .env.example config
 
       - name: Build backend image
         run: docker build -f backend/Dockerfile.backend -t fresher-connect-backend:ci .

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Fresher Connect</title>
+  <link rel="stylesheet" href="../styles/app.css">
+  <script defer src="../services/api.js"></script>
+  <script defer src="../services/app.js"></script>
+</head>
+<body data-page="login">
+  <main class="auth-shell">
+    <section class="auth-copy">
+      <a class="brand" href="index.html">
+        <span class="brand-mark image-mark">
+          <img class="brand-logo" src="../components/fc-logo.svg" alt="Fresher Connect logo">
+        </span>
+        <span>
+          <span class="brand-title">Fresher Connect</span>
+          <span class="brand-sub">Sign in and resume your workflow</span>
+        </span>
+      </a>
+
+      <div class="page-intro auth-copy-block">
+        <span class="section-label">Login</span>
+        <h1 class="page-title">Open the page that matches your role and continue where you left off.</h1>
+        <p class="muted">
+          Candidate accounts land on job discovery and application tracking. Company accounts land on
+          job posting and applicant management.
+        </p>
+      </div>
+
+      <div class="auth-feature-grid">
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Candidate Dashboard</span>
+          <h3>Search, apply, track</h3>
+          <p>Open jobs, save time with filters, and keep every application status in one place.</p>
+        </article>
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Company Dashboard</span>
+          <h3>Post and manage</h3>
+          <p>Create openings, view fresher profiles, and update the pipeline from one workspace.</p>
+        </article>
+      </div>
+
+      <div class="card auth-note-card">
+        <span class="section-label">Flow Reminder</span>
+        <ul class="hero-points compact">
+          <li>Job listing and job details stay available before login.</li>
+          <li>Application status is unlocked after fresher sign-in.</li>
+          <li>Session and CSRF protection continue through the backend API.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="auth-card auth-card-strong">
+      <span class="section-label">Account Access</span>
+      <h2>Welcome back</h2>
+      <p class="muted">Use the email and password already registered on the platform.</p>
+
+      <form id="loginForm" class="form-grid">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" name="email" type="email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" name="password" type="password" placeholder="Minimum 8 characters" required>
+        </div>
+
+        <div id="loginMessage" class="form-message"></div>
+
+        <button class="btn primary" type="submit">Login</button>
+      </form>
+
+      <div class="auth-inline-meta">
+        <span>New here?</span>
+        <a class="text-link" href="register.html">Create an account</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
