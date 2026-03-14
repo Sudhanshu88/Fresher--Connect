@@ -17,6 +17,10 @@ CREATE TABLE candidate_profiles (
     education VARCHAR(160),
     experience VARCHAR(120),
     resume_url TEXT,
+    resume_filename VARCHAR(255),
+    resume_parser_status VARCHAR(32),
+    resume_text_excerpt TEXT,
+    resume_parsed_skills TEXT,
     linkedin TEXT,
     portfolio TEXT
 );
@@ -59,4 +63,17 @@ CREATE TABLE saved_jobs (
     candidate_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL,
     UNIQUE (job_id, candidate_id)
+);
+
+CREATE TABLE notifications (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(80) NOT NULL,
+    title VARCHAR(180) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    email_status VARCHAR(32) NOT NULL DEFAULT 'skipped',
+    metadata TEXT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP
 );

@@ -7,6 +7,8 @@ from pymongo import DESCENDING, ReturnDocument
 
 from backend.models.constants import TRACKABLE_STATUSES
 from backend.models.documents import build_job_document, merge_company_profile
+from backend.services.matching_service import match_candidate_to_job
+from backend.services.notification_service import notify_candidates_for_new_job
 from backend.services.platform_service import (
     build_job_location,
     extract_salary_bounds,
@@ -23,6 +25,12 @@ from backend.services.platform_service import (
     serialize_user,
     utcnow,
 )
+
+
+def _attach_application_match(store, application):
+    data = serialize_application(store, application, include_candidate=True)
+    data.update(match_candidate_to_job(data.get("candidate") or {}, data.get("job") or {}))
+    return data
 
 
 def company_dashboard(company):
@@ -46,7 +54,7 @@ def company_dashboard(company):
             "ok": True,
             "user": serialize_user(company),
             "posted_jobs": posted_jobs,
-            "applications": [serialize_application(store, item, include_candidate=True) for item in application_docs],
+            "applications": [_attach_application_match(store, item) for item in application_docs],
             "status_counts": status_counts,
         }
     )
@@ -146,13 +154,14 @@ def create_company_job(company):
         created_at=utcnow(),
     )
     store.jobs.insert_one(job)
-    return jsonify({"ok": True, "job": serialize_job(job)})
+    notification_summary = notify_candidates_for_new_job(store, job)
+    return jsonify({"ok": True, "job": serialize_job(job), "notification_summary": notification_summary})
 
 
 def company_applications(company):
     store = get_store()
     applications = [
-        serialize_application(store, item, include_candidate=True)
+        _attach_application_match(store, item)
         for item in store.applications.find({"company_id": company["company_id"]}, {"_id": 0}).sort("applied_at", DESCENDING)
     ]
     return jsonify({"ok": True, "applications": applications})
@@ -172,4 +181,4 @@ def update_company_application(company, application_id):
     )
     if not application:
         return json_error("application_not_found", 404)
-    return jsonify({"ok": True, "application": serialize_application(store, application, include_candidate=True)})
+    return jsonify({"ok": True, "application": _attach_application_match(store, application)})

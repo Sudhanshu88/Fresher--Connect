@@ -4,7 +4,9 @@ from flask import Blueprint
 
 from backend.controllers.user_controller import (
     create_application,
+    mark_notification_read,
     my_applications,
+    my_notifications,
     my_saved_jobs,
     save_job,
     unsave_job,
@@ -37,3 +39,17 @@ user_bp.add_url_rule(
 user_bp.get("/api/saved-jobs")(role_required("fresher")(my_saved_jobs))
 user_bp.post("/api/saved-jobs")(role_required("fresher")(save_job))
 user_bp.delete("/api/saved-jobs/<int:job_id>")(role_required("fresher")(unsave_job))
+user_bp.get("/api/notifications")(role_required("fresher")(my_notifications))
+user_bp.patch("/api/notifications/<int:notification_id>/read")(role_required("fresher")(mark_notification_read))
+user_bp.add_url_rule(
+    "/notifications",
+    endpoint="my_notifications_rest",
+    view_func=role_required("fresher")(my_notifications),
+    methods=["GET"],
+)
+user_bp.add_url_rule(
+    "/notifications/<int:notification_id>/read",
+    endpoint="mark_notification_read_rest",
+    view_func=role_required("fresher")(mark_notification_read),
+    methods=["PATCH"],
+)

@@ -4,6 +4,7 @@ from flask import jsonify, request
 from pymongo import DESCENDING
 
 from backend.middleware.auth import current_account
+from backend.services.matching_service import attach_job_match
 from backend.services.platform_service import distinct_categories, get_store, job_is_active, json_error, parse_optional_int, serialize_job
 
 
@@ -81,6 +82,8 @@ def _matches_job(job, filters):
 
 def list_jobs():
     store = get_store()
+    viewer = current_account(store)
+    candidate = viewer if viewer and viewer.get("role") == "fresher" else None
     filters = {
         "search": str(request.args.get("search") or "").strip().lower(),
         "category": str(request.args.get("category") or "").strip().lower(),
@@ -93,7 +96,7 @@ def list_jobs():
     }
 
     all_jobs = [
-        serialize_job(job)
+        attach_job_match(candidate, serialize_job(job)) if candidate else serialize_job(job)
         for job in store.jobs.find({}, {"_id": 0}).sort("posted_date", DESCENDING)
         if job_is_active(job)
     ]
@@ -135,4 +138,8 @@ def get_job_detail(job_id):
     if not (job_is_active(job) or is_admin or is_owner):
         return json_error("job_not_found", 404)
 
-    return jsonify({"ok": True, "job": serialize_job(job)})
+    payload = serialize_job(job)
+    if viewer and viewer.get("role") == "fresher":
+        payload = attach_job_match(viewer, payload)
+
+    return jsonify({"ok": True, "job": payload})

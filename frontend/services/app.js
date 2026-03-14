@@ -830,6 +830,7 @@
       window.FC_API.escapeHtml(toTitleCase(job.work_mode || "onsite")) +
       "</p>" +
       '<p class="job-description">' + window.FC_API.escapeHtml(job.description) + "</p>" +
+      matchInsightsMarkup(job, { compact: true, limit: 3 }) +
       '<div class="tag-list">' +
       (job.categories || [])
         .map(function (category) {
@@ -918,10 +919,24 @@
       externalLinkMarkup("LinkedIn", candidate.linkedin),
       externalLinkMarkup("Portfolio", candidate.portfolio)
     ].filter(Boolean);
-    if (!links.length) {
+    var notes = [];
+    if (candidate.resume_parser_status && candidate.resume_parser_status !== "not_uploaded") {
+      notes.push("Resume " + resumeParserLabel(candidate.resume_parser_status));
+    }
+    if ((candidate.resume_parsed_skills || []).length) {
+      notes.push("AI skills: " + safeJoin((candidate.resume_parsed_skills || []).slice(0, 5)));
+    }
+    if (!links.length && !notes.length) {
       return '<span class="meta-line">No resume or external profile added yet.</span>';
     }
-    return '<div class="resource-link-row">' + links.join("") + "</div>";
+    return (
+      (links.length ? '<div class="resource-link-row">' + links.join("") + "</div>" : "") +
+      notes
+        .map(function (note) {
+          return '<div class="meta-line resume-skill-note">' + window.FC_API.escapeHtml(note) + "</div>";
+        })
+        .join("")
+    );
   }
 
   function setFieldValue(id, value) {
@@ -940,6 +955,136 @@
 
   function formatExpiry(dateValue) {
     return dateValue ? window.FC_API.formatDate(dateValue) : "No expiry";
+  }
+
+  function resumeParserLabel(status) {
+    var safeStatus = String(status || "not_uploaded").toLowerCase();
+    if (safeStatus === "parsed") {
+      return "AI parsed";
+    }
+    if (safeStatus === "fallback") {
+      return "Fallback parsed";
+    }
+    if (safeStatus === "unavailable") {
+      return "Unreadable";
+    }
+    if (safeStatus === "not_uploaded") {
+      return "Not uploaded";
+    }
+    return toTitleCase(safeStatus);
+  }
+
+  function matchToneClass(score) {
+    var numeric = toNumber(score);
+    if (numeric === null) {
+      return "low";
+    }
+    if (numeric >= 75) {
+      return "strong";
+    }
+    if (numeric >= 45) {
+      return "medium";
+    }
+    if (numeric > 0) {
+      return "early";
+    }
+    return "low";
+  }
+
+  function matchPillMarkup(score, label) {
+    var numeric = toNumber(score);
+    if (numeric === null) {
+      return "";
+    }
+    return (
+      '<span class="match-pill ' + matchToneClass(numeric) + '">' +
+      window.FC_API.escapeHtml(String(numeric)) +
+      "% " +
+      window.FC_API.escapeHtml(label || "AI match") +
+      "</span>"
+    );
+  }
+
+  function matchInsightsMarkup(subject, options) {
+    var numeric = toNumber(subject && subject.match_score);
+    if (numeric === null) {
+      return "";
+    }
+
+    var config = options || {};
+    var matchedSkills = (subject.matched_skills || []).slice(0, config.limit || 4);
+    var missingSkills = (subject.missing_skills || []).slice(0, config.limit || 3);
+
+    return (
+      '<div class="match-insights' + (config.compact ? " compact" : "") + '">' +
+      '<div class="match-insights-top">' +
+      matchPillMarkup(numeric, subject.match_label || "AI match") +
+      (config.showReason === false
+        ? ""
+        : '<span class="meta-line">' +
+          window.FC_API.escapeHtml(subject.match_reason || "Compared against candidate and job skills.") +
+          "</span>") +
+      "</div>" +
+      (matchedSkills.length
+        ? '<div class="tag-list">' +
+          matchedSkills
+            .map(function (skill) {
+              return '<span class="tag match-tag">' + window.FC_API.escapeHtml(skill) + "</span>";
+            })
+            .join("") +
+          "</div>"
+        : "") +
+      (missingSkills.length
+        ? '<div class="meta-line">Missing: ' + window.FC_API.escapeHtml(missingSkills.join(", ")) + "</div>"
+        : "") +
+      "</div>"
+    );
+  }
+
+  function notificationStatusLabel(status) {
+    var safeStatus = String(status || "skipped").toLowerCase();
+    if (safeStatus === "sent") {
+      return "Email sent";
+    }
+    if (safeStatus === "failed") {
+      return "Email failed";
+    }
+    return "In-app alert";
+  }
+
+  function notificationCardMarkup(notification) {
+    var metadata = notification.metadata || {};
+    var matchMarkup = matchPillMarkup(metadata.match_score, "match");
+    var matchedSkills = (metadata.matched_skills || []).slice(0, 3);
+
+    return (
+      '<article class="notification-card' + (notification.is_read ? " is-read" : "") + '">' +
+      '<div class="notification-top">' +
+      '<span class="meta-line">' + window.FC_API.escapeHtml(window.FC_API.formatDate(notification.created_at)) + "</span>" +
+      (matchMarkup || '<span class="tag">Job alert</span>') +
+      "</div>" +
+      '<h3>' + window.FC_API.escapeHtml(notification.title || "Notification") + "</h3>" +
+      '<p class="job-description">' + window.FC_API.escapeHtml(notification.message || "") + "</p>" +
+      (matchedSkills.length
+        ? '<div class="tag-list">' +
+          matchedSkills
+            .map(function (skill) {
+              return '<span class="tag match-tag">' + window.FC_API.escapeHtml(skill) + "</span>";
+            })
+            .join("") +
+          "</div>"
+        : "") +
+      '<div class="card-link-row">' +
+      (metadata.job_id
+        ? '<a class="text-link" href="' + jobDetailsHref(metadata.job_id) + '">Open matched job</a>'
+        : '<span class="meta-line">No linked job</span>') +
+      '<span class="meta-line">' + window.FC_API.escapeHtml(notificationStatusLabel(notification.email_status)) + "</span>" +
+      (!notification.is_read
+        ? '<button class="btn ghost compact-btn" type="button" data-notification-read="' + notification.id + '">Mark read</button>'
+        : '<span class="meta-line">Read</span>') +
+      "</div>" +
+      "</article>"
+    );
   }
 
   function prefillCompanyJobForm(user) {
@@ -1306,6 +1451,25 @@
       .join("");
   }
 
+  function renderNotifications() {
+    var list = byId("notificationList");
+    var badge = byId("notificationCountBadge");
+    if (!list || !badge || !state.userDashboard) {
+      return;
+    }
+
+    var notifications = state.userDashboard.notifications || [];
+    var unreadCount = Number(state.userDashboard.notification_unread_count || 0);
+    badge.textContent = unreadCount ? unreadCount + " unread" : "All read";
+
+    if (!notifications.length) {
+      list.innerHTML = '<div class="empty-state">No job alerts yet. New matched openings will appear here after companies post relevant roles.</div>';
+      return;
+    }
+
+    list.innerHTML = notifications.map(notificationCardMarkup).join("");
+  }
+
   function renderUserApplicationSummary(applications) {
     var counts = countApplicationsByStatus(applications);
     if (byId("summaryApplied")) {
@@ -1354,6 +1518,7 @@
       (application ? renderStatusPill(application.status) : '<span class="tag">' + window.FC_API.escapeHtml(job.job_type) + "</span>") +
       "</div>" +
       '<p class="job-description">' + window.FC_API.escapeHtml(job.role_overview || job.description) + "</p>" +
+      matchInsightsMarkup(job, { compact: true, limit: 3 }) +
       '<div class="tag-list">' +
       '<span class="tag">' + window.FC_API.escapeHtml(job.department || "General") + "</span>" +
       '<span class="tag">' + window.FC_API.escapeHtml(job.degree_required || "Any Graduate") + "</span>" +
@@ -1413,7 +1578,9 @@
       { label: "Education", value: user.education || "-" },
       { label: "Experience", value: user.experience || "-" },
       { label: "Skills", value: safeJoin(user.skills) },
-      { label: "Resume", value: user.resume_url || user.resume_path ? "Uploaded" : "-" },
+      { label: "Resume", value: user.resume_filename || (user.resume_url || user.resume_path ? "Uploaded" : "-") },
+      { label: "Resume parsing", value: resumeParserLabel(user.resume_parser_status) },
+      { label: "AI skills", value: safeJoin(user.resume_parsed_skills) },
       { label: "LinkedIn", value: user.linkedin || "-" },
       { label: "Portfolio", value: user.portfolio || "-" }
     ]);
@@ -1427,6 +1594,7 @@
     renderUserJobs();
     renderSavedJobs();
     renderUserApplications();
+    renderNotifications();
   }
 
   async function initUserPage() {
@@ -1522,6 +1690,26 @@
 
     byId("jobsGrid").addEventListener("click", handleUserJobAction);
     byId("savedJobsGrid").addEventListener("click", handleUserJobAction);
+    byId("notificationList").addEventListener("click", async function (event) {
+      var button = event.target.closest("[data-notification-read]");
+      if (!button) {
+        return;
+      }
+
+      button.disabled = true;
+      try {
+        var response = await window.FC_API.request("/api/notifications/" + Number(button.dataset.notificationRead) + "/read", {
+          method: "PATCH"
+        });
+        state.userDashboard.notifications = response.notifications || [];
+        state.userDashboard.notification_unread_count = response.unread_count || 0;
+        renderNotifications();
+        setMessage(byId("userFeedback"), "Notification marked as read.", "success");
+      } catch (error) {
+        button.disabled = false;
+        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update notification."), "error");
+      }
+    });
 
     document.addEventListener("submit", async function (event) {
       if (event.target.id !== "editProfileForm") {
@@ -1774,6 +1962,7 @@
     var company = byId("jobDetailCompany");
     var application = byId("jobDetailApplication");
     var job = detailState.job;
+    var factRows;
 
     if (!job) {
       hero.innerHTML = '<div class="empty-state">No job selected. Open the listing page and choose a role.</div>';
@@ -1836,12 +2025,18 @@
       '<div id="jobDetailMessage" class="form-message"></div>' +
       "</div>" +
       '<div class="job-facts-grid">' +
-      detailRowsMarkup([
-        { label: "Experience", value: job.experience_level || "Fresher" },
-        { label: "Degree", value: job.degree_required || "Any Graduate" },
-        { label: "Compensation", value: formatCompensation(job) },
-        { label: "Expires", value: formatExpiry(job.expires_at) }
-      ]) +
+      (function () {
+        factRows = [
+          { label: "Experience", value: job.experience_level || "Fresher" },
+          { label: "Degree", value: job.degree_required || "Any Graduate" },
+          { label: "Compensation", value: formatCompensation(job) },
+          { label: "Expires", value: formatExpiry(job.expires_at) }
+        ];
+        if (toNumber(job.match_score) !== null) {
+          factRows.push({ label: "AI Match", value: job.match_score + "% " + (job.match_label || "Match") });
+        }
+        return detailRowsMarkup(factRows);
+      }()) +
       "</div>";
 
     overview.innerHTML = detailParagraphMarkup("Role overview", job.role_overview || job.description, "Role overview not added.");
@@ -1861,7 +2056,7 @@
       { label: "Resume required", value: job.resume_required ? "Yes" : "No" },
       { label: "Portfolio required", value: job.portfolio_required ? "Yes" : "No" },
       { label: "Cover letter required", value: job.cover_letter_required ? "Yes" : "No" }
-    ]);
+    ]) + matchInsightsMarkup(job, { limit: 4 });
   }
 
   async function initJobDetailsPage() {
@@ -2432,7 +2627,13 @@
           '<div class="meta-line">' + window.FC_API.escapeHtml(window.FC_API.formatDate(application.applied_at)) + "</div>" +
           "</td>" +
           "<td>" +
-          window.FC_API.escapeHtml(safeJoin(candidate.skills)) +
+          '<div class="candidate-fit-stack">' +
+          '<div class="meta-line">Profile skills: ' + window.FC_API.escapeHtml(safeJoin(candidate.skills)) + "</div>" +
+          ((candidate.resume_parsed_skills || []).length
+            ? '<div class="meta-line">Resume skills: ' + window.FC_API.escapeHtml(safeJoin(candidate.resume_parsed_skills)) + "</div>"
+            : "") +
+          matchInsightsMarkup(application, { compact: true, limit: 3 }) +
+          "</div>" +
           "</td>" +
           "<td>" +
           '<form class="inline-form application-status-form" data-application-id="' +
@@ -2528,13 +2729,23 @@
       setMessage(message, "Publishing job...");
 
       try {
-        await window.FC_API.request("/api/company/jobs", {
+        var createResponse = await window.FC_API.request("/api/company/jobs", {
           method: "POST",
           body: readForm(form)
         });
         resetCompanyJobForm(state.companyDashboard.user);
         await loadCompanyDashboard();
-        setMessage(message, "Job published successfully.", "success");
+        var notificationSummary = createResponse.notification_summary || {};
+        var successMessage = "Job published successfully.";
+        if ((notificationSummary.notifications_created || 0) > 0) {
+          successMessage += " " + notificationSummary.notifications_created + " matched candidates notified";
+          if ((notificationSummary.emails_sent || 0) > 0) {
+            successMessage += ", " + notificationSummary.emails_sent + " by email.";
+          } else {
+            successMessage += ".";
+          }
+        }
+        setMessage(message, successMessage, "success");
       } catch (error) {
         setMessage(message, window.FC_API.getErrorMessage(error, "Unable to publish job."), "error");
       }

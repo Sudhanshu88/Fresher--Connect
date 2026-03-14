@@ -1096,6 +1096,64 @@ select:focus-visible {
   margin-bottom: 0;
 }
 
+.match-insights {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 149, 219, 0.18);
+  border-radius: 18px;
+  background: rgba(18, 149, 219, 0.06);
+}
+
+.match-insights.compact {
+  padding: 12px 14px;
+  gap: 8px;
+}
+
+.match-insights-top,
+.notification-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.match-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.match-pill.strong {
+  background: rgba(18, 131, 106, 0.14);
+  color: var(--success);
+}
+
+.match-pill.medium {
+  background: rgba(18, 149, 219, 0.14);
+  color: var(--brand-blue);
+}
+
+.match-pill.early {
+  background: rgba(255, 176, 0, 0.18);
+  color: var(--warning);
+}
+
+.match-pill.low {
+  background: rgba(239, 107, 0, 0.14);
+  color: var(--accent-strong);
+}
+
+.match-tag {
+  background: rgba(239, 107, 0, 0.14);
+  color: var(--accent-strong);
+}
+
 .job-card-footer {
   display: grid;
   grid-template-columns: auto auto;
@@ -1342,6 +1400,33 @@ select:focus-visible {
   margin: 0;
 }
 
+.notification-list,
+.candidate-fit-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.notification-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface-soft);
+}
+
+.notification-card.is-read {
+  opacity: 0.82;
+}
+
+.notification-card h3 {
+  margin-bottom: 0;
+}
+
+.resume-skill-note {
+  margin-top: 8px;
+}
+
 :root[data-theme="dark"] .topbar {
   border-bottom-color: rgba(255, 176, 0, 0.14);
   background:
@@ -1411,6 +1496,12 @@ select:focus-visible {
   background:
     radial-gradient(circle at top right, rgba(18, 149, 219, 0.18), transparent 30%),
     rgba(20, 41, 67, 0.96);
+}
+
+:root[data-theme="dark"] .match-insights,
+:root[data-theme="dark"] .notification-card {
+  background: rgba(18, 56, 89, 0.72);
+  border-color: rgba(159, 220, 255, 0.14);
 }
 
 :root[data-theme="dark"] .job-description,

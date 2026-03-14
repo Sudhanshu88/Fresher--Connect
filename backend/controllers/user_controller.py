@@ -8,6 +8,8 @@ from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 
+from backend.services.matching_service import attach_job_match
+from backend.services.notification_service import serialize_notification
 from backend.services.platform_service import (
     distinct_categories,
     get_store,
@@ -20,13 +22,24 @@ from backend.services.platform_service import (
     serialize_user,
     utcnow,
 )
+from backend.services.resume_service import merge_skill_lists, parse_resume_file
+
+
+def _candidate_notifications(store, candidate_id, limit=6):
+    notifications = [
+        serialize_notification(item)
+        for item in store.notifications.find({"user_id": int(candidate_id)}, {"_id": 0}).sort("created_at", DESCENDING).limit(limit)
+    ]
+    unread_count = store.notifications.count_documents({"user_id": int(candidate_id), "is_read": False})
+    return notifications, unread_count
 
 
 def user_dashboard(user):
     store = get_store()
     candidate_id = user.get("user_id") or user.get("id")
+    fresher = store.get_account("fresher", candidate_id) or user
     jobs = [
-        serialize_job(job)
+        attach_job_match(fresher, serialize_job(job))
         for job in store.jobs.find({}, {"_id": 0}).sort("posted_date", DESCENDING)
         if job_is_active(job)
     ]
@@ -41,17 +54,20 @@ def user_dashboard(user):
     for item in store.saved_jobs.find({"candidate_id": candidate_id}, {"_id": 0}).sort("created_at", DESCENDING):
         job = store.jobs.find_one({"$or": [{"id": item.get("job_id")}, {"job_id": item.get("job_id")}]}, {"_id": 0})
         if job:
-            data = serialize_job(job)
+            data = attach_job_match(fresher, serialize_job(job))
             data["saved_at"] = item.get("created_at")
             saved_jobs.append(data)
+    notifications, unread_count = _candidate_notifications(store, candidate_id)
     return jsonify(
         {
             "ok": True,
-            "user": serialize_user(user),
+            "user": serialize_user(fresher),
             "jobs": jobs,
             "categories": distinct_categories(jobs),
             "applications": applications,
             "saved_jobs": saved_jobs,
+            "notifications": notifications,
+            "notification_unread_count": unread_count,
         }
     )
 
@@ -152,6 +168,7 @@ def my_applications(user):
 def my_saved_jobs(user):
     store = get_store()
     candidate_id = user.get("user_id") or user.get("id")
+    fresher = store.get_account("fresher", candidate_id) or user
     saved = list(
         store.saved_jobs.find({"candidate_id": candidate_id}, {"_id": 0}).sort("created_at", DESCENDING)
     )
@@ -159,7 +176,7 @@ def my_saved_jobs(user):
     for item in saved:
         job = store.jobs.find_one({"$or": [{"id": item.get("job_id")}, {"job_id": item.get("job_id")}]}, {"_id": 0})
         if job:
-            data = serialize_job(job)
+            data = attach_job_match(fresher, serialize_job(job))
             data["saved_at"] = item.get("created_at")
             jobs.append(data)
     return jsonify({"ok": True, "saved_jobs": jobs})
@@ -218,12 +235,49 @@ def upload_resume(user):
     destination = os.path.join(current_app.config["UPLOAD_FOLDER"], stored_name)
     file.save(destination)
     resume_url = request.url_root.rstrip("/") + "/api/uploads/" + stored_name
+    resume_analysis = parse_resume_file(destination)
 
     profile = store.candidate_profiles.find_one({"user_id": candidate_id}, {"_id": 0}) or {
         "user_id": candidate_id,
         "created_at": utcnow(),
     }
     profile["resume_url"] = resume_url
+    profile["resume_filename"] = filename
+    profile["resume_parser_status"] = resume_analysis["parser_status"]
+    profile["resume_text_excerpt"] = resume_analysis["excerpt"]
+    profile["resume_parsed_skills"] = resume_analysis["skills"]
+    profile["skills"] = merge_skill_lists(profile.get("skills") or [], resume_analysis["skills"])
     profile["updated_at"] = utcnow()
     store.candidate_profiles.replace_one({"user_id": candidate_id}, profile, upsert=True)
-    return jsonify({"ok": True, "resume_url": resume_url, "user": serialize_user(store.get_account("fresher", candidate_id))})
+    return jsonify(
+        {
+            "ok": True,
+            "resume_url": resume_url,
+            "resume_analysis": {
+                "parser_status": resume_analysis["parser_status"],
+                "excerpt": resume_analysis["excerpt"],
+                "skills": resume_analysis["skills"],
+            },
+            "user": serialize_user(store.get_account("fresher", candidate_id)),
+        }
+    )
+
+
+def my_notifications(user):
+    store = get_store()
+    candidate_id = user.get("user_id") or user.get("id")
+    notifications, unread_count = _candidate_notifications(store, candidate_id, limit=20)
+    return jsonify({"ok": True, "notifications": notifications, "unread_count": unread_count})
+
+
+def mark_notification_read(user, notification_id):
+    store = get_store()
+    candidate_id = user.get("user_id") or user.get("id")
+    notification = store.notifications.find_one_and_update(
+        {"id": int(notification_id), "user_id": int(candidate_id)},
+        {"$set": {"is_read": True, "updated_at": utcnow()}},
+    )
+    if not notification:
+        return json_error("notification_not_found", 404)
+    notifications, unread_count = _candidate_notifications(store, candidate_id, limit=20)
+    return jsonify({"ok": True, "notifications": notifications, "unread_count": unread_count})

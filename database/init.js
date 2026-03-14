@@ -53,6 +53,13 @@ ensureCollection("candidate_profiles", {
     education: { bsonType: ["string", "null"] },
     experience: { bsonType: ["string", "null"] },
     resume_url: { bsonType: ["string", "null"] },
+    resume_filename: { bsonType: ["string", "null"] },
+    resume_parser_status: { bsonType: ["string", "null"] },
+    resume_text_excerpt: { bsonType: ["string", "null"] },
+    resume_parsed_skills: {
+      bsonType: ["array", "null"],
+      items: { bsonType: "string" }
+    },
     linkedin: { bsonType: ["string", "null"] },
     portfolio: { bsonType: ["string", "null"] },
     phone: { bsonType: ["string", "null"] },
@@ -159,12 +166,29 @@ ensureCollection("saved_jobs", {
   }
 });
 
+ensureCollection("notifications", {
+  bsonType: "object",
+  required: ["id", "user_id", "type", "title", "message", "is_read", "email_status", "created_at"],
+  properties: {
+    id: { bsonType: ["int", "long"] },
+    user_id: { bsonType: ["int", "long"] },
+    type: { bsonType: "string" },
+    title: { bsonType: "string" },
+    message: { bsonType: "string" },
+    is_read: { bsonType: "bool" },
+    email_status: { bsonType: "string" },
+    metadata: { bsonType: ["object", "null"] },
+    created_at: { bsonType: "date" },
+    updated_at: { bsonType: ["date", "null"] }
+  }
+});
+
 const countersExists = appDb.getCollectionInfos({ name: "counters" }).length > 0;
 if (!countersExists) {
   appDb.createCollection("counters");
 }
 
-["users", "companies", "jobs", "applications", "saved_jobs"].forEach(function (name) {
+["users", "companies", "jobs", "applications", "saved_jobs", "notifications"].forEach(function (name) {
   appDb.counters.updateOne(
     { _id: name },
     { $setOnInsert: { seq: 0 } },
@@ -201,6 +225,18 @@ ensureIndex(
   "saved_jobs",
   { candidate_id: 1, job_id: 1 },
   { unique: true, name: "uq_saved_jobs_candidate_job" }
+);
+
+ensureIndex("notifications", { id: 1 }, { unique: true, name: "uq_notifications_id" });
+ensureIndex(
+  "notifications",
+  { user_id: 1, created_at: -1 },
+  { name: "ix_notifications_user_created_at" }
+);
+ensureIndex(
+  "notifications",
+  { user_id: 1, is_read: 1, created_at: -1 },
+  { name: "ix_notifications_user_read_state" }
 );
 
 print("MongoDB schema ready for database: " + databaseName);

@@ -238,6 +238,7 @@ def profile_completion(account):
             account.get("skills"),
             account.get("summary"),
             account.get("resume_path"),
+            account.get("resume_parsed_skills"),
         ]
     completed = sum(1 for field in fields if field not in (None, "", []))
     return int(round((completed / max(len(fields), 1)) * 100))
@@ -301,6 +302,10 @@ def serialize_user(account):
         "summary": account.get("summary"),
         "resume_path": account.get("resume_path") or account.get("resume_url"),
         "resume_url": account.get("resume_url"),
+        "resume_filename": account.get("resume_filename"),
+        "resume_parser_status": account.get("resume_parser_status") or "not_uploaded",
+        "resume_text_excerpt": account.get("resume_text_excerpt"),
+        "resume_parsed_skills": account.get("resume_parsed_skills") or [],
         "linkedin": account.get("linkedin"),
         "portfolio": account.get("portfolio"),
     }
@@ -424,6 +429,7 @@ class MongoStore:
         self.jobs = self.db["jobs"]
         self.applications = self.db["applications"]
         self.saved_jobs = self.db["saved_jobs"]
+        self.notifications = self.db["notifications"]
         self.counters = self.db["counters"]
 
     def ping(self):
@@ -455,6 +461,15 @@ class MongoStore:
             [("candidate_id", ASCENDING), ("job_id", ASCENDING)],
             unique=True,
             name="uq_saved_jobs_candidate_job",
+        )
+        self.notifications.create_index([("id", ASCENDING)], unique=True, name="uq_notifications_id")
+        self.notifications.create_index(
+            [("user_id", ASCENDING), ("created_at", DESCENDING)],
+            name="ix_notifications_user_created_at",
+        )
+        self.notifications.create_index(
+            [("user_id", ASCENDING), ("is_read", ASCENDING), ("created_at", DESCENDING)],
+            name="ix_notifications_user_read_state",
         )
 
     def next_sequence(self, name):

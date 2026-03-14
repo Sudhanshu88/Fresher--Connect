@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import os
 import sys
 from pathlib import Path
@@ -126,10 +127,31 @@ def main():
     assert user_register.status_code == 201, user_register.get_data(as_text=True)
     user_token = user_register.get_json()["access_token"]
 
+    resume_upload = client.post(
+        "/api/user/resume",
+        data={"resume": (io.BytesIO(b"Python Docker AWS Git Kubernetes CI/CD"), "resume.pdf")},
+        headers=auth_headers(user_token),
+        content_type="multipart/form-data",
+    )
+    assert resume_upload.status_code == 200, resume_upload.get_data(as_text=True)
+    assert "Python" in resume_upload.get_json()["resume_analysis"]["skills"], resume_upload.get_json()
+
     dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_token))
     assert dashboard.status_code == 200, dashboard.get_data(as_text=True)
     assert any(job["id"] == job_id for job in dashboard.get_json()["jobs"])
     assert dashboard.get_json()["saved_jobs"] == []
+    matched_job = next(job for job in dashboard.get_json()["jobs"] if job["id"] == job_id)
+    assert matched_job["match_score"] >= 60, matched_job
+    assert "Docker" in dashboard.get_json()["user"]["resume_parsed_skills"], dashboard.get_json()["user"]
+
+    rest_jobs_for_user = client.get("/jobs", headers=auth_headers(user_token))
+    assert rest_jobs_for_user.status_code == 200, rest_jobs_for_user.get_data(as_text=True)
+    user_visible_job = next(job for job in rest_jobs_for_user.get_json()["jobs"] if job["id"] == job_id)
+    assert user_visible_job["match_score"] >= 60, user_visible_job
+
+    detail_for_user = client.get(f"/jobs/{job_id}", headers=auth_headers(user_token))
+    assert detail_for_user.status_code == 200, detail_for_user.get_data(as_text=True)
+    assert detail_for_user.get_json()["job"]["match_score"] >= 60, detail_for_user.get_json()
 
     save_job = client.post(
         "/api/saved-jobs",
@@ -173,6 +195,46 @@ def main():
     assert company_dashboard.status_code == 200, company_dashboard.get_data(as_text=True)
     applications = company_dashboard.get_json()["applications"]
     assert applications[0]["id"] == application_id, applications
+    assert applications[0]["match_score"] >= 60, applications[0]
+
+    matched_job_create = client.post(
+        "/jobs",
+        json={
+            "company_name": "Example Corp",
+            "company_logo": "https://example.com/logo.png",
+            "company_website": "https://example.com",
+            "industry_type": "IT",
+            "company_size": "11-50",
+            "company_description": "Example hiring company",
+            "title": "DevOps Graduate Engineer",
+            "department": "Engineering",
+            "job_type": "full-time",
+            "work_mode": "remote",
+            "country": "India",
+            "state": "Uttar Pradesh",
+            "city": "Noida",
+            "remote_option": "true",
+            "experience_level": "fresher",
+            "degree_required": "B.Tech",
+            "required_skills": "Python, Docker, AWS",
+            "description": "Support automation and cloud operations",
+            "role_overview": "Work on deployment pipelines and platform reliability.",
+            "responsibilities": "Automate tasks and support releases.",
+            "required_qualifications": "Strong fundamentals and scripting exposure.",
+            "preferred_qualifications": "Cloud certification or internship experience.",
+            "salary_range": "500000 - 900000",
+            "benefits": "Insurance, learning budget",
+            "application_method": "platform",
+            "resume_required": "true",
+            "portfolio_required": "false",
+            "cover_letter_required": "false",
+            "hiring_stages": "Resume Screening, Technical Interview, HR Interview",
+            "expiry_days": "30",
+        },
+        headers=auth_headers(company_login_token),
+    )
+    assert matched_job_create.status_code == 200, matched_job_create.get_data(as_text=True)
+    assert matched_job_create.get_json()["notification_summary"]["notifications_created"] == 1, matched_job_create.get_json()
 
     status_update = client.patch(
         f"/api/company/applications/{application_id}",
@@ -196,6 +258,20 @@ def main():
     final_applications = final_dashboard.get_json()["applications"]
     assert final_applications[0]["status"] == "shortlisted", final_applications
     assert final_dashboard.get_json()["saved_jobs"][0]["id"] == job_id
+    assert final_dashboard.get_json()["notifications"], final_dashboard.get_json()
+
+    notifications = client.get("/notifications", headers=auth_headers(user_login_token))
+    assert notifications.status_code == 200, notifications.get_data(as_text=True)
+    notification_payload = notifications.get_json()
+    assert notification_payload["unread_count"] >= 1, notification_payload
+
+    first_notification_id = notification_payload["notifications"][0]["id"]
+    notification_read = client.patch(
+        f"/notifications/{first_notification_id}/read",
+        headers=auth_headers(user_login_token),
+    )
+    assert notification_read.status_code == 200, notification_read.get_data(as_text=True)
+    assert notification_read.get_json()["unread_count"] < notification_payload["unread_count"], notification_read.get_json()
 
     with app.app_context():
         store = app.extensions["mongo_store"]
