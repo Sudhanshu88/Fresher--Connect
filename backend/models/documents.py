@@ -4,32 +4,29 @@ from __future__ import annotations
 def build_company_document(
     *,
     company_id,
-    name,
-    email,
-    password_hash,
+    owner_user_id,
     company_name,
+    website,
+    location,
+    description,
     company_logo,
-    company_website,
     industry_type,
     company_size,
-    company_description,
-    location,
     created_at,
 ):
     return {
+        "id": company_id,
         "company_id": company_id,
-        "role": "company",
-        "contact_name": name,
-        "name": name,
-        "email": email,
-        "password_hash": password_hash,
+        "owner_user_id": owner_user_id,
         "company_name": company_name,
+        "website": website,
+        "company_website": website,
+        "location": location,
+        "description": description,
+        "company_description": description,
         "company_logo": company_logo,
-        "company_website": company_website,
         "industry_type": industry_type,
         "company_size": company_size,
-        "company_description": company_description,
-        "location": location,
         "created_at": created_at,
         "updated_at": created_at,
     }
@@ -41,29 +38,47 @@ def build_user_document(
     name,
     email,
     password_hash,
-    phone,
-    location,
-    education,
-    grad_year,
+    role,
+    created_at,
+):
+    return {
+        "id": user_id,
+        "name": name,
+        "email": email,
+        "password_hash": password_hash,
+        "role": role,
+        "created_at": created_at,
+        "updated_at": created_at,
+    }
+
+
+def build_candidate_profile_document(
+    *,
+    user_id,
     skills,
+    education,
+    experience,
+    resume_url,
+    linkedin,
+    portfolio,
+    location,
+    phone,
     summary,
-    resume_path,
+    grad_year,
     created_at,
 ):
     return {
         "user_id": user_id,
-        "role": "fresher",
-        "name": name,
-        "email": email,
-        "password_hash": password_hash,
-        "phone": phone,
-        "location": location,
-        "education": education,
-        "grad_year": grad_year,
         "skills": skills,
+        "education": education,
+        "experience": experience,
+        "resume_url": resume_url,
+        "linkedin": linkedin,
+        "portfolio": portfolio,
+        "location": location,
+        "phone": phone,
         "summary": summary,
-        "resume_path": resume_path,
-        "is_premium": False,
+        "grad_year": grad_year,
         "created_at": created_at,
         "updated_at": created_at,
     }
@@ -71,14 +86,20 @@ def build_user_document(
 
 def merge_company_profile(company, payload, updated_at):
     updated = dict(company)
+    website = str(payload.get("company_website") or payload.get("website") or company.get("website") or "").strip()
+    description = str(
+        payload.get("company_description") or payload.get("description") or company.get("description") or ""
+    ).strip()
     updated.update(
         {
             "company_name": str(payload.get("company_name") or company.get("company_name") or "").strip(),
+            "website": website,
+            "company_website": website,
             "company_logo": str(payload.get("company_logo") or company.get("company_logo") or "").strip(),
-            "company_website": str(payload.get("company_website") or company.get("company_website") or "").strip(),
             "industry_type": str(payload.get("industry_type") or company.get("industry_type") or "").strip(),
             "company_size": str(payload.get("company_size") or company.get("company_size") or "").strip(),
-            "company_description": str(payload.get("company_description") or company.get("company_description") or "").strip(),
+            "description": description,
+            "company_description": description,
             "location": str(payload.get("location") or company.get("location") or "").strip(),
             "updated_at": updated_at,
         }
@@ -124,26 +145,38 @@ def build_job_document(
     categories,
     created_at,
 ):
+    canonical_salary_range = salary_range
+    if not canonical_salary_range and salary_min is not None and salary_max is not None:
+        canonical_salary_range = f"{salary_min} - {salary_max}"
+    if not canonical_salary_range:
+        canonical_salary_range = "Not disclosed"
+
     return {
+        "id": job_id,
         "job_id": job_id,
         "company_id": company_doc["company_id"],
+        "title": title,
         "job_title": title,
+        "description": description,
         "job_description": description,
         "experience_required": experience_required,
         "education_required": education_required,
         "salary_min": salary_min,
         "salary_max": salary_max,
+        "salary_range": canonical_salary_range,
         "location": location,
         "employment_type": employment_type,
+        "skills_required": required_skills,
         "skills": required_skills,
+        "created_at": created_at,
         "posted_date": posted_date,
         "expiry_date": expiry_date,
         "company_name": company_doc["company_name"],
         "company_logo": company_doc.get("company_logo"),
-        "company_website": company_doc.get("company_website"),
+        "company_website": company_doc.get("company_website") or company_doc.get("website"),
         "industry_type": company_doc.get("industry_type"),
         "company_size": company_doc.get("company_size"),
-        "company_description": company_doc.get("company_description"),
+        "company_description": company_doc.get("company_description") or company_doc.get("description"),
         "department": department,
         "experience_level": experience_required,
         "job_type": employment_type,
@@ -160,7 +193,6 @@ def build_job_document(
         "required_qualifications": required_qualifications,
         "preferred_qualifications": preferred_qualifications,
         "requirements": required_qualifications,
-        "salary_range": salary_range,
         "internship_stipend": internship_stipend,
         "benefits": benefits,
         "application_method": application_method,

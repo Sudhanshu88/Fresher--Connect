@@ -3,7 +3,7 @@ from __future__ import annotations
 from flask import jsonify, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from backend.models.documents import build_company_document, build_user_document
+from backend.models.documents import build_candidate_profile_document, build_company_document, build_user_document
 from backend.services.platform_service import (
     get_store,
     json_error,
@@ -47,23 +47,30 @@ def register_account():
         if not company_name:
             return json_error("company_name_required", 400)
 
-        company = build_company_document(
-            company_id=store.next_sequence("companies"),
+        user = build_user_document(
+            user_id=store.next_sequence("users"),
             name=name,
             email=email,
             password_hash=generate_password_hash(password),
-            company_name=company_name,
-            company_logo=str(payload.get("company_logo") or "").strip(),
-            company_website=str(payload.get("company_website") or "").strip(),
-            industry_type=str(payload.get("industry_type") or "").strip(),
-            company_size=str(payload.get("company_size") or "").strip(),
-            company_description=str(payload.get("company_description") or "").strip(),
-            location=str(payload.get("location") or "").strip(),
+            role="company",
             created_at=now,
         )
+        company = build_company_document(
+            company_id=store.next_sequence("companies"),
+            owner_user_id=user["id"],
+            company_name=company_name,
+            website=str(payload.get("company_website") or payload.get("website") or "").strip(),
+            location=str(payload.get("location") or "").strip(),
+            description=str(payload.get("company_description") or payload.get("description") or "").strip(),
+            company_logo=str(payload.get("company_logo") or "").strip(),
+            industry_type=str(payload.get("industry_type") or "").strip(),
+            company_size=str(payload.get("company_size") or "").strip(),
+            created_at=now,
+        )
+        store.users.insert_one(user)
         store.companies.insert_one(company)
-        _start_session(company["company_id"], "company")
-        return jsonify({"ok": True, "user": serialize_user(company)})
+        _start_session(user["id"], "company")
+        return jsonify({"ok": True, "user": serialize_user(store.get_account("company", user["id"]))})
 
     grad_year = parse_optional_int(payload.get("grad_year"))
     education = str(payload.get("education") or "").strip()
@@ -77,18 +84,27 @@ def register_account():
         name=name,
         email=email,
         password_hash=generate_password_hash(password),
-        phone=str(payload.get("phone") or "").strip(),
-        location=str(payload.get("location") or "").strip(),
-        education=education,
-        grad_year=grad_year,
+        role="candidate",
+        created_at=now,
+    )
+    profile = build_candidate_profile_document(
+        user_id=user["id"],
         skills=parse_skills(payload.get("skills")),
+        education=education,
+        experience=str(payload.get("experience") or "fresher").strip(),
+        resume_url=str(payload.get("resume_url") or payload.get("resume_path") or "").strip(),
+        linkedin=str(payload.get("linkedin") or "").strip(),
+        portfolio=str(payload.get("portfolio") or "").strip(),
+        location=str(payload.get("location") or "").strip(),
+        phone=str(payload.get("phone") or "").strip(),
         summary=str(payload.get("summary") or "").strip(),
-        resume_path=str(payload.get("resume_path") or "").strip(),
+        grad_year=grad_year,
         created_at=now,
     )
     store.users.insert_one(user)
-    _start_session(user["user_id"], "fresher")
-    return jsonify({"ok": True, "user": serialize_user(user)})
+    store.candidate_profiles.insert_one(profile)
+    _start_session(user["id"], "fresher")
+    return jsonify({"ok": True, "user": serialize_user(store.get_account("fresher", user["id"]))})
 
 
 def login_account():
@@ -103,10 +119,13 @@ def login_account():
     if not account or not check_password_hash(account.get("password_hash", ""), password):
         return json_error("invalid_credentials", 401)
 
-    role = account.get("role", "fresher")
-    account_id = account.get("company_id") if role == "company" else account.get("user_id")
-    _start_session(account_id, role)
-    return jsonify({"ok": True, "user": serialize_user(account)})
+    stored_role = account.get("role", "candidate")
+    if stored_role == "admin":
+        return json_error("admin_portal_not_available", 403)
+
+    session_role = "company" if stored_role == "company" else "fresher"
+    _start_session(account["id"], session_role)
+    return jsonify({"ok": True, "user": serialize_user(store.get_account(session_role, account["id"]))})
 
 
 def logout_account():

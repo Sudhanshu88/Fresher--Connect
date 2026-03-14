@@ -11,6 +11,8 @@ from flask import current_app, jsonify, session
 from pymongo import ASCENDING, DESCENDING, MongoClient, ReturnDocument
 from werkzeug.security import generate_password_hash
 
+from backend.models.documents import build_company_document, build_job_document, build_user_document
+
 try:
     import mongomock
 except ImportError:  # pragma: no cover
@@ -236,30 +238,34 @@ def serialize_user(account):
         return None
 
     if account.get("role") == "company":
+        company_id = account.get("company_id") or account.get("id")
         name = account.get("contact_name") or account.get("name") or account.get("company_name") or "Company"
         return {
-            "id": account.get("company_id"),
-            "company_id": account.get("company_id"),
+            "id": company_id,
+            "company_id": company_id,
             "name": name,
             "email": account.get("email"),
             "role": "company",
+            "db_role": account.get("db_role") or "company",
             "location": account.get("location"),
             "profile_completion": profile_completion(account),
             "created_at": isoformat(account.get("created_at")),
             "company_name": account.get("company_name") or name,
             "company_logo": account.get("company_logo"),
-            "company_website": account.get("company_website"),
+            "company_website": account.get("company_website") or account.get("website"),
             "industry_type": account.get("industry_type"),
             "company_size": account.get("company_size"),
-            "company_description": account.get("company_description"),
+            "company_description": account.get("company_description") or account.get("description"),
         }
 
+    candidate_id = account.get("user_id") or account.get("id")
     return {
-        "id": account.get("user_id"),
-        "user_id": account.get("user_id"),
+        "id": candidate_id,
+        "user_id": candidate_id,
         "name": account.get("name"),
         "email": account.get("email"),
         "role": "fresher",
+        "db_role": account.get("db_role") or "candidate",
         "location": account.get("location"),
         "profile_completion": profile_completion(account),
         "created_at": isoformat(account.get("created_at")),
@@ -267,9 +273,12 @@ def serialize_user(account):
         "education": account.get("education"),
         "grad_year": account.get("grad_year"),
         "skills": account.get("skills") or [],
+        "experience": account.get("experience"),
         "summary": account.get("summary"),
-        "resume_path": account.get("resume_path"),
-        "is_premium": bool(account.get("is_premium", False)),
+        "resume_path": account.get("resume_path") or account.get("resume_url"),
+        "resume_url": account.get("resume_url"),
+        "linkedin": account.get("linkedin"),
+        "portfolio": account.get("portfolio"),
     }
 
 
@@ -277,25 +286,33 @@ def serialize_job(job):
     if not job:
         return None
 
+    job_id = job.get("job_id") or job.get("id")
+    title = job.get("job_title") or job.get("title")
+    description = job.get("job_description") or job.get("description")
+    skills = job.get("skills") or job.get("skills_required") or []
+    required_skills = job.get("required_skills") or job.get("skills_required") or skills
+    created_at = job.get("created_at") or job.get("posted_date")
+    expiry_date = job.get("expiry_date")
+
     return {
-        "id": job.get("job_id"),
-        "job_id": job.get("job_id"),
+        "id": job_id,
+        "job_id": job_id,
         "company_id": job.get("company_id"),
-        "job_title": job.get("job_title"),
-        "job_description": job.get("job_description"),
+        "job_title": title,
+        "job_description": description,
         "experience_required": job.get("experience_required"),
         "education_required": job.get("education_required"),
         "salary_min": job.get("salary_min"),
         "salary_max": job.get("salary_max"),
         "location": job.get("location"),
         "employment_type": job.get("employment_type"),
-        "skills": job.get("skills") or [],
+        "skills": skills,
         "posted_date": isoformat(job.get("posted_date")),
-        "expiry_date": isoformat(job.get("expiry_date")),
-        "title": job.get("job_title"),
+        "expiry_date": isoformat(expiry_date),
+        "title": title,
         "company_name": job.get("company_name"),
         "company_logo": job.get("company_logo"),
-        "company_website": job.get("company_website"),
+        "company_website": job.get("company_website") or job.get("website"),
         "industry_type": job.get("industry_type"),
         "company_size": job.get("company_size"),
         "company_description": job.get("company_description"),
@@ -308,8 +325,9 @@ def serialize_job(job):
         "city": job.get("city"),
         "remote_option": bool(job.get("remote_option", False)),
         "degree_required": job.get("degree_required") or job.get("education_required"),
-        "required_skills": job.get("required_skills") or job.get("skills") or [],
-        "description": job.get("description") or job.get("job_description"),
+        "required_skills": required_skills,
+        "skills_required": required_skills,
+        "description": description,
         "role_overview": job.get("role_overview"),
         "responsibilities": job.get("responsibilities"),
         "required_qualifications": job.get("required_qualifications"),
@@ -325,25 +343,28 @@ def serialize_job(job):
         "portfolio_required": bool(job.get("portfolio_required", False)),
         "cover_letter_required": bool(job.get("cover_letter_required", False)),
         "hiring_stages": job.get("hiring_stages") or [],
-        "expires_at": isoformat(job.get("expiry_date")),
+        "expires_at": isoformat(expiry_date),
         "is_active": job_is_active(job),
         "categories": job.get("categories") or [],
-        "created_at": isoformat(job.get("created_at")),
+        "created_at": isoformat(created_at),
         "posted_by_company_id": job.get("company_id"),
     }
 
 
 def serialize_application(store, application, include_candidate=False):
-    job = store.jobs.find_one({"job_id": application.get("job_id")}, {"_id": 0})
+    application_id = application.get("application_id") or application.get("id")
+    candidate_id = application.get("candidate_id") or application.get("user_id")
+    job = store.jobs.find_one({"$or": [{"job_id": application.get("job_id")}, {"id": application.get("job_id")}]}, {"_id": 0})
     candidate = None
     if include_candidate:
-        fresher = store.users.find_one({"user_id": application.get("user_id")}, {"_id": 0})
+        fresher = store.get_account("fresher", candidate_id)
         candidate = serialize_user(fresher)
 
     return {
-        "id": application.get("application_id"),
-        "application_id": application.get("application_id"),
-        "user_id": application.get("user_id"),
+        "id": application_id,
+        "application_id": application_id,
+        "candidate_id": candidate_id,
+        "user_id": candidate_id,
         "company_id": application.get("company_id"),
         "status": application.get("status"),
         "applied_at": isoformat(application.get("applied_at")),
@@ -373,6 +394,7 @@ class MongoStore:
 
         self.db = self.client[self.database_name]
         self.users = self.db["users"]
+        self.candidate_profiles = self.db["candidate_profiles"]
         self.companies = self.db["companies"]
         self.jobs = self.db["jobs"]
         self.applications = self.db["applications"]
@@ -382,15 +404,20 @@ class MongoStore:
         self.client.admin.command("ping")
 
     def ensure_indexes(self):
-        self.users.create_index([("user_id", ASCENDING)], unique=True, name="uq_users_user_id")
+        self.users.create_index([("id", ASCENDING)], unique=True, name="uq_users_id")
         self.users.create_index([("email", ASCENDING)], unique=True, name="uq_users_email")
-        self.companies.create_index([("company_id", ASCENDING)], unique=True, name="uq_companies_company_id")
-        self.companies.create_index([("email", ASCENDING)], unique=True, name="uq_companies_email")
-        self.jobs.create_index([("job_id", ASCENDING)], unique=True, name="uq_jobs_job_id")
-        self.jobs.create_index([("company_id", ASCENDING), ("posted_date", DESCENDING)], name="ix_jobs_company_posted_date")
+        self.candidate_profiles.create_index([("user_id", ASCENDING)], unique=True, name="uq_candidate_profiles_user_id")
+        self.companies.create_index([("id", ASCENDING)], unique=True, name="uq_companies_id")
+        self.companies.create_index([("owner_user_id", ASCENDING)], unique=True, name="uq_companies_owner_user")
+        self.jobs.create_index([("id", ASCENDING)], unique=True, name="uq_jobs_id")
+        self.jobs.create_index([("company_id", ASCENDING), ("created_at", DESCENDING)], name="ix_jobs_company_created_at")
         self.jobs.create_index([("expiry_date", ASCENDING)], name="ix_jobs_expiry_date")
-        self.applications.create_index([("application_id", ASCENDING)], unique=True, name="uq_applications_application_id")
-        self.applications.create_index([("user_id", ASCENDING), ("job_id", ASCENDING)], unique=True, name="uq_applications_user_job")
+        self.applications.create_index([("id", ASCENDING)], unique=True, name="uq_applications_id")
+        self.applications.create_index(
+            [("candidate_id", ASCENDING), ("job_id", ASCENDING)],
+            unique=True,
+            name="uq_applications_candidate_job",
+        )
         self.applications.create_index(
             [("company_id", ASCENDING), ("status", ASCENDING), ("applied_at", DESCENDING)],
             name="ix_applications_company_status",
@@ -415,17 +442,48 @@ class MongoStore:
 
     def find_account_by_email(self, email):
         normalized = normalize_email(email)
-        user = self.users.find_one({"email": normalized}, {"_id": 0})
-        if user:
-            return user
-        return self.companies.find_one({"email": normalized}, {"_id": 0})
+        return self.users.find_one({"email": normalized}, {"_id": 0})
 
     def get_account(self, role, account_id):
         if account_id is None:
             return None
         if role == "company":
-            return self.companies.find_one({"company_id": int(account_id)}, {"_id": 0})
-        return self.users.find_one({"user_id": int(account_id)}, {"_id": 0})
+            user = self.users.find_one({"id": int(account_id)}, {"_id": 0})
+            company = self.companies.find_one({"owner_user_id": int(account_id)}, {"_id": 0})
+            if not company:
+                company = self.companies.find_one({"id": int(account_id)}, {"_id": 0})
+                if company and not user:
+                    user = self.users.find_one({"id": company.get("owner_user_id")}, {"_id": 0})
+            if not user or not company:
+                return None
+            return {
+                **company,
+                "company_id": company.get("company_id") or company.get("id"),
+                "contact_name": user.get("name"),
+                "name": user.get("name"),
+                "email": user.get("email"),
+                "role": "company",
+                "db_role": user.get("role", "company"),
+                "created_at": user.get("created_at") or company.get("created_at"),
+                "updated_at": company.get("updated_at") or user.get("updated_at"),
+            }
+
+        user = self.users.find_one({"id": int(account_id)}, {"_id": 0})
+        if not user:
+            return None
+        profile = self.candidate_profiles.find_one({"user_id": int(account_id)}, {"_id": 0}) or {}
+        return {
+            **profile,
+            "id": user.get("id"),
+            "user_id": user.get("id"),
+            "name": user.get("name"),
+            "email": user.get("email"),
+            "role": "fresher",
+            "db_role": user.get("role", "candidate"),
+            "created_at": user.get("created_at"),
+            "updated_at": profile.get("updated_at") or user.get("updated_at"),
+            "resume_path": profile.get("resume_url"),
+        }
 
 
 def seed_database(store):
@@ -484,23 +542,27 @@ def seed_database(store):
 
     inserted_companies = []
     for company in companies:
-        company_doc = {
-            "company_id": store.next_sequence("companies"),
-            "role": "company",
-            "contact_name": company["contact_name"],
-            "name": company["contact_name"],
-            "email": normalize_email(company["email"]),
-            "password_hash": generate_password_hash("password123"),
-            "company_name": company["company_name"],
-            "company_logo": company["company_logo"],
-            "company_website": company["company_website"],
-            "industry_type": company["industry_type"],
-            "company_size": company["company_size"],
-            "company_description": company["company_description"],
-            "location": company["location"],
-            "created_at": now,
-            "updated_at": now,
-        }
+        user_doc = build_user_document(
+            user_id=store.next_sequence("users"),
+            name=company["contact_name"],
+            email=normalize_email(company["email"]),
+            password_hash=generate_password_hash("password123"),
+            role="company",
+            created_at=now,
+        )
+        company_doc = build_company_document(
+            company_id=store.next_sequence("companies"),
+            owner_user_id=user_doc["id"],
+            company_name=company["company_name"],
+            website=company["company_website"],
+            location=company["location"],
+            description=company["company_description"],
+            company_logo=company["company_logo"],
+            industry_type=company["industry_type"],
+            company_size=company["company_size"],
+            created_at=now,
+        )
+        store.users.insert_one(user_doc)
         store.companies.insert_one(company_doc)
         inserted_companies.append(company_doc)
 
@@ -597,57 +659,43 @@ def seed_database(store):
         posted_date = now - timedelta(days=index + 1)
         expiry_date = posted_date + timedelta(days=job["expiry_days"])
         store.jobs.insert_one(
-            {
-                "job_id": store.next_sequence("jobs"),
-                "company_id": company["company_id"],
-                "job_title": job["title"],
-                "job_description": job["description"],
-                "experience_required": job["experience_level"],
-                "education_required": job["degree_required"],
-                "salary_min": salary_min,
-                "salary_max": salary_max,
-                "location": build_job_location(job),
-                "employment_type": job["job_type"],
-                "skills": job["required_skills"],
-                "posted_date": posted_date,
-                "expiry_date": expiry_date,
-                "company_name": company["company_name"],
-                "company_logo": company["company_logo"],
-                "company_website": company["company_website"],
-                "industry_type": company["industry_type"],
-                "company_size": company["company_size"],
-                "company_description": company["company_description"],
-                "department": job["department"],
-                "experience_level": job["experience_level"],
-                "job_type": job["job_type"],
-                "work_mode": job["work_mode"],
-                "country": job["country"],
-                "state": job["state"],
-                "city": job["city"],
-                "remote_option": job["work_mode"] == "remote",
-                "degree_required": job["degree_required"],
-                "required_skills": job["required_skills"],
-                "description": job["description"],
-                "role_overview": job["role_overview"],
-                "responsibilities": job["responsibilities"],
-                "required_qualifications": job["required_qualifications"],
-                "preferred_qualifications": job["preferred_qualifications"],
-                "requirements": job["required_qualifications"],
-                "salary_range": job.get("salary_range"),
-                "internship_stipend": job.get("internship_stipend"),
-                "benefits": job.get("benefits"),
-                "application_method": "platform",
-                "application_url": "",
-                "application_email": "",
-                "resume_required": True,
-                "portfolio_required": False,
-                "cover_letter_required": False,
-                "hiring_stages": ["Resume Screening", "Interview", "Offer"],
-                "categories": job["categories"],
-                "is_active": True,
-                "created_at": posted_date,
-                "updated_at": posted_date,
-            }
+            build_job_document(
+                job_id=store.next_sequence("jobs"),
+                company_doc=company,
+                title=job["title"],
+                description=job["description"],
+                experience_required=job["experience_level"],
+                education_required=job["degree_required"],
+                salary_min=salary_min,
+                salary_max=salary_max,
+                location=build_job_location(job),
+                employment_type=job["job_type"],
+                required_skills=job["required_skills"],
+                posted_date=posted_date,
+                expiry_date=expiry_date,
+                department=job["department"],
+                work_mode=job["work_mode"],
+                country=job["country"],
+                state=job["state"],
+                city=job["city"],
+                remote_option=job["work_mode"] == "remote",
+                role_overview=job["role_overview"],
+                responsibilities=job["responsibilities"],
+                required_qualifications=job["required_qualifications"],
+                preferred_qualifications=job["preferred_qualifications"],
+                salary_range=job.get("salary_range"),
+                internship_stipend=job.get("internship_stipend"),
+                benefits=job.get("benefits"),
+                application_method="platform",
+                application_url="",
+                application_email="",
+                resume_required=True,
+                portfolio_required=False,
+                cover_letter_required=False,
+                hiring_stages=["Resume Screening", "Interview", "Offer"],
+                categories=job["categories"],
+                created_at=posted_date,
+            )
         )
 
 
