@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from flask import jsonify, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.models.documents import build_candidate_profile_document, build_company_document, build_user_document
+from backend.services.auth_service import hash_password, issue_access_token, verify_password
 from backend.services.platform_service import (
     get_store,
     json_error,
@@ -15,11 +15,10 @@ from backend.services.platform_service import (
 )
 
 
-def _start_session(account_id, role):
-    session["account_id"] = account_id
-    session["user_id"] = account_id
-    session["user_role"] = role
-    session.permanent = True
+def _auth_response(user, *, subject_id, auth_role, db_role, status_code=200):
+    payload = issue_access_token(subject=subject_id, auth_role=auth_role, db_role=db_role)
+    response = {"ok": True, "user": user, **payload}
+    return jsonify(response), status_code
 
 
 def register_account():
@@ -51,7 +50,7 @@ def register_account():
             user_id=store.next_sequence("users"),
             name=name,
             email=email,
-            password_hash=generate_password_hash(password),
+            password_hash=hash_password(password),
             role="company",
             created_at=now,
         )
@@ -69,8 +68,13 @@ def register_account():
         )
         store.users.insert_one(user)
         store.companies.insert_one(company)
-        _start_session(user["id"], "company")
-        return jsonify({"ok": True, "user": serialize_user(store.get_account("company", user["id"]))})
+        return _auth_response(
+            serialize_user(store.get_account("company", user["id"])),
+            subject_id=user["id"],
+            auth_role="company",
+            db_role="company",
+            status_code=201,
+        )
 
     grad_year = parse_optional_int(payload.get("grad_year"))
     education = str(payload.get("education") or "").strip()
@@ -83,7 +87,7 @@ def register_account():
         user_id=store.next_sequence("users"),
         name=name,
         email=email,
-        password_hash=generate_password_hash(password),
+        password_hash=hash_password(password),
         role="candidate",
         created_at=now,
     )
@@ -103,8 +107,13 @@ def register_account():
     )
     store.users.insert_one(user)
     store.candidate_profiles.insert_one(profile)
-    _start_session(user["id"], "fresher")
-    return jsonify({"ok": True, "user": serialize_user(store.get_account("fresher", user["id"]))})
+    return _auth_response(
+        serialize_user(store.get_account("fresher", user["id"])),
+        subject_id=user["id"],
+        auth_role="fresher",
+        db_role="candidate",
+        status_code=201,
+    )
 
 
 def login_account():
@@ -116,16 +125,22 @@ def login_account():
         return json_error("email_and_password_required", 400)
 
     account = store.find_account_by_email(email)
-    if not account or not check_password_hash(account.get("password_hash", ""), password):
+    if not account or not verify_password(password, account.get("password_hash", "")):
         return json_error("invalid_credentials", 401)
 
     stored_role = account.get("role", "candidate")
-    if stored_role == "admin":
-        return json_error("admin_portal_not_available", 403)
+    session_role = "admin"
+    if stored_role == "company":
+        session_role = "company"
+    if stored_role == "candidate":
+        session_role = "fresher"
 
-    session_role = "company" if stored_role == "company" else "fresher"
-    _start_session(account["id"], session_role)
-    return jsonify({"ok": True, "user": serialize_user(store.get_account(session_role, account["id"]))})
+    return _auth_response(
+        serialize_user(store.get_account(session_role, account["id"])),
+        subject_id=account["id"],
+        auth_role=session_role,
+        db_role=stored_role,
+    )
 
 
 def logout_account():

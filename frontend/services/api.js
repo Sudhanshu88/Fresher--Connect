@@ -7,6 +7,8 @@
     "offered",
     "rejected"
   ];
+  var TOKEN_STORAGE_KEY = "fc_auth_token";
+  var TOKEN_EXPIRY_KEY = "fc_auth_expires_at";
 
   function normalizeBase(value) {
     return String(value || "").trim().replace(/\/+$/, "");
@@ -39,8 +41,31 @@
   var state = {
     apiBase: detectApiBase(),
     session: null,
-    pendingSession: null
+    pendingSession: null,
+    accessToken: window.localStorage.getItem(TOKEN_STORAGE_KEY) || "",
+    tokenExpiresAt: window.localStorage.getItem(TOKEN_EXPIRY_KEY) || ""
   };
+
+  function persistToken(token, expiresAt) {
+    state.accessToken = String(token || "");
+    state.tokenExpiresAt = String(expiresAt || "");
+
+    if (state.accessToken) {
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, state.accessToken);
+    } else {
+      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+
+    if (state.tokenExpiresAt) {
+      window.localStorage.setItem(TOKEN_EXPIRY_KEY, state.tokenExpiresAt);
+    } else {
+      window.localStorage.removeItem(TOKEN_EXPIRY_KEY);
+    }
+  }
+
+  function clearToken() {
+    persistToken("", "");
+  }
 
   function resolveUrl(path) {
     if (/^https?:\/\//i.test(path)) {
@@ -77,12 +102,22 @@
       return state.pendingSession;
     }
 
+    var headers = new Headers();
+    if (state.accessToken) {
+      headers.set("Authorization", "Bearer " + state.accessToken);
+    }
+
     state.pendingSession = fetch(resolveUrl("/api/session"), {
-      credentials: "include"
+      headers: headers
     })
       .then(async function (response) {
         var data = await parseResponse(response);
         if (!response.ok) {
+          if (response.status === 401) {
+            clearToken();
+            state.session = { ok: true, user: null };
+            return state.session;
+          }
           throw createError(response, data);
         }
         state.session = data;
@@ -106,24 +141,32 @@
       body = JSON.stringify(body);
     }
 
-    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
-      var session = await getSession(Boolean(config.refreshSession));
-      headers.set("X-CSRF-Token", session.csrf_token);
+    if (state.accessToken) {
+      headers.set("Authorization", "Bearer " + state.accessToken);
     }
 
     var response = await fetch(resolveUrl(path), {
       method: method,
       headers: headers,
-      body: body,
-      credentials: "include"
+      body: body
     });
     var data = await parseResponse(response);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        clearToken();
+        state.session = { ok: true, user: null };
+      }
       throw createError(response, data);
     }
 
+    if (data && data.access_token) {
+      persistToken(data.access_token, data.expires_at || "");
+      state.session = { ok: true, user: data.user || null };
+    }
+
     if (path === "/api/auth/logout") {
+      clearToken();
       state.session = null;
       return data;
     }
@@ -134,6 +177,10 @@
   function redirectByRole(user) {
     if (!user) {
       window.location.href = "login.html";
+      return;
+    }
+    if (user.role === "admin") {
+      window.location.href = "index.html";
       return;
     }
     window.location.href = user.role === "company" ? "company.html" : "user.html";
@@ -193,6 +240,10 @@
     },
     refreshSession: function () {
       return getSession(true);
+    },
+    clearToken: clearToken,
+    getAccessToken: function () {
+      return state.accessToken;
     },
     statusClass: statusClass,
     statuses: TRACKABLE_STATUSES.slice()

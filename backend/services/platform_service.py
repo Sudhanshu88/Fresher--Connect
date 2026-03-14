@@ -9,9 +9,9 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from flask import current_app, jsonify, session
 from pymongo import ASCENDING, DESCENDING, MongoClient, ReturnDocument
-from werkzeug.security import generate_password_hash
 
 from backend.models.documents import build_company_document, build_job_document, build_user_document
+from backend.services.auth_service import hash_password
 
 try:
     import mongomock
@@ -207,6 +207,14 @@ def distinct_categories(jobs):
 
 
 def profile_completion(account):
+    if account.get("role") == "admin":
+        fields = [
+            account.get("name"),
+            account.get("email"),
+        ]
+        completed = sum(1 for field in fields if field not in (None, "", []))
+        return int(round((completed / max(len(fields), 1)) * 100))
+
     if account.get("role") == "company":
         fields = [
             account.get("contact_name") or account.get("name"),
@@ -236,6 +244,17 @@ def profile_completion(account):
 def serialize_user(account):
     if not account:
         return None
+
+    if account.get("role") == "admin":
+        return {
+            "id": account.get("id"),
+            "name": account.get("name"),
+            "email": account.get("email"),
+            "role": "admin",
+            "db_role": "admin",
+            "profile_completion": profile_completion(account),
+            "created_at": isoformat(account.get("created_at")),
+        }
 
     if account.get("role") == "company":
         company_id = account.get("company_id") or account.get("id")
@@ -447,6 +466,19 @@ class MongoStore:
     def get_account(self, role, account_id):
         if account_id is None:
             return None
+        if role == "admin":
+            user = self.users.find_one({"id": int(account_id)}, {"_id": 0})
+            if not user or user.get("role") != "admin":
+                return None
+            return {
+                "id": user.get("id"),
+                "name": user.get("name"),
+                "email": user.get("email"),
+                "role": "admin",
+                "db_role": "admin",
+                "created_at": user.get("created_at"),
+                "updated_at": user.get("updated_at"),
+            }
         if role == "company":
             user = self.users.find_one({"id": int(account_id)}, {"_id": 0})
             company = self.companies.find_one({"owner_user_id": int(account_id)}, {"_id": 0})
@@ -546,7 +578,7 @@ def seed_database(store):
             user_id=store.next_sequence("users"),
             name=company["contact_name"],
             email=normalize_email(company["email"]),
-            password_hash=generate_password_hash("password123"),
+            password_hash=hash_password("password123"),
             role="company",
             created_at=now,
         )

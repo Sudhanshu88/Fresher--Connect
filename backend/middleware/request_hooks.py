@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from flask import request, session
+from flask import request
 from pymongo.errors import PyMongoError
 
 from backend.config.settings import is_allowed_origin
-from backend.services.platform_service import ensure_csrf_token, get_store, json_error
+from backend.services.platform_service import get_store, json_error
 
 
 def register_request_hooks(app):
@@ -14,8 +14,7 @@ def register_request_hooks(app):
         allowed_origins = app.config.get("FC_ALLOWED_ORIGINS", set())
         if is_allowed_origin(origin, allowed_origins):
             response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
+            response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, OPTIONS"
             response.headers["Vary"] = "Origin"
         return response
@@ -34,13 +33,4 @@ def register_request_hooks(app):
             get_store().bootstrap()
         except (PyMongoError, RuntimeError):
             return json_error("database_unavailable", 503)
-        return None
-
-    @app.before_request
-    def protect_mutation_routes():
-        ensure_csrf_token()
-        if request.method in {"GET", "HEAD", "OPTIONS"}:
-            return None
-        if request.headers.get("X-CSRF-Token", "") != session.get("csrf_token"):
-            return json_error("csrf_token_invalid", 403)
         return None

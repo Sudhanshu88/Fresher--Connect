@@ -4,7 +4,7 @@ from flask import jsonify
 from pymongo.errors import PyMongoError
 
 from backend.middleware.auth import current_account
-from backend.services.platform_service import ensure_csrf_token, get_store, serialize_user
+from backend.services.platform_service import get_store, serialize_user
 
 
 def index():
@@ -23,7 +23,6 @@ def api_session():
         {
             "ok": True,
             "user": serialize_user(current_account()),
-            "csrf_token": ensure_csrf_token(),
         }
     )
 

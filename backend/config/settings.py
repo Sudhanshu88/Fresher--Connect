@@ -67,6 +67,10 @@ def is_allowed_origin(origin, allowed_origins):
 def load_runtime_settings():
     return {
         "SECRET_KEY": os.getenv("SECRET_KEY", "change-this-before-production"),
+        "JWT_SECRET_KEY": os.getenv("JWT_SECRET_KEY", os.getenv("SECRET_KEY", "change-this-before-production")),
+        "JWT_ALGORITHM": os.getenv("JWT_ALGORITHM", "HS256"),
+        "JWT_EXPIRATION_HOURS": parse_optional_int(os.getenv("JWT_EXPIRATION_HOURS")) or 12,
+        "BCRYPT_LOG_ROUNDS": parse_optional_int(os.getenv("BCRYPT_LOG_ROUNDS")) or 12,
         "SESSION_COOKIE_HTTPONLY": True,
         "SESSION_COOKIE_SAMESITE": "Lax",
         "SESSION_COOKIE_SECURE": parse_bool(os.getenv("SESSION_COOKIE_SECURE"), default=False),
