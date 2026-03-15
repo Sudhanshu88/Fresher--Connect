@@ -178,6 +178,24 @@
     }
   };
 
+  var LANDING_REVIEWS_STORAGE_KEY = "fc_landing_reviews";
+  var DEFAULT_LANDING_REVIEWS = [
+    {
+      name: "Aarav",
+      role: "fresher",
+      rating: 5,
+      review: "Job listing se apply flow tak sab pages connected feel hote hain, isliye tracking easy ho gayi.",
+      submitted_at: "2026-03-12T00:00:00.000Z"
+    },
+    {
+      name: "Nisha",
+      role: "company",
+      rating: 4,
+      review: "Company dashboard aur applicant review workflow straightforward hai, especially fresher hiring ke liye.",
+      submitted_at: "2026-03-10T00:00:00.000Z"
+    }
+  ];
+
   function loadTheme() {
     var savedTheme = window.localStorage.getItem("fc_theme");
     return savedTheme === "dark" ? "dark" : "light";
@@ -647,6 +665,144 @@
     return payload;
   }
 
+  function normalizeLandingReviewRole(role) {
+    if (role === "company") {
+      return "company";
+    }
+    if (role === "guest") {
+      return "guest";
+    }
+    return "fresher";
+  }
+
+  function landingReviewRoleLabel(role) {
+    if (role === "company") {
+      return "Company";
+    }
+    if (role === "guest") {
+      return "Guest";
+    }
+    return "Fresher";
+  }
+
+  function normalizeLandingReview(raw) {
+    if (!raw || typeof raw !== "object") {
+      return null;
+    }
+
+    var rating = Math.max(1, Math.min(5, Math.round(toNumber(raw.rating) || 5)));
+    var reviewText = String(raw.review || "").trim();
+    if (!reviewText) {
+      return null;
+    }
+
+    return {
+      name: String(raw.name || "Fresher Connect user").trim() || "Fresher Connect user",
+      role: normalizeLandingReviewRole(raw.role),
+      rating: rating,
+      review: reviewText,
+      submitted_at: raw.submitted_at || new Date().toISOString()
+    };
+  }
+
+  function loadLandingReviews() {
+    var parsed = null;
+    try {
+      parsed = JSON.parse(window.localStorage.getItem(LANDING_REVIEWS_STORAGE_KEY) || "null");
+    } catch (_error) {
+      parsed = null;
+    }
+
+    var source = Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_LANDING_REVIEWS;
+    return source
+      .map(normalizeLandingReview)
+      .filter(Boolean)
+      .slice(0, 8);
+  }
+
+  function saveLandingReviews(reviews) {
+    try {
+      window.localStorage.setItem(LANDING_REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    } catch (_error) {
+      // Ignore storage failures and keep the current UI state.
+    }
+  }
+
+  function landingReviewStarsMarkup(rating) {
+    return "★".repeat(rating) + "☆".repeat(Math.max(0, 5 - rating));
+  }
+
+  function renderLandingReviews(reviews) {
+    var list = byId("reviewList");
+    if (!list) {
+      return;
+    }
+
+    if (!reviews.length) {
+      list.innerHTML = '<div class="review-empty">No reviews yet. Be the first to share your feedback.</div>';
+      return;
+    }
+
+    list.innerHTML = reviews
+      .map(function (review) {
+        return (
+          '<article class="review-card">' +
+          '<div class="review-card-top">' +
+          '<div class="review-author">' +
+          "<strong>" + window.FC_API.escapeHtml(review.name) + "</strong>" +
+          '<span class="review-meta">' +
+          window.FC_API.escapeHtml(landingReviewRoleLabel(review.role) + " | " + window.FC_API.formatDate(review.submitted_at)) +
+          "</span>" +
+          "</div>" +
+          '<span class="review-stars" aria-label="' + review.rating + ' out of 5 stars">' +
+          landingReviewStarsMarkup(review.rating) +
+          "</span>" +
+          "</div>" +
+          '<p class="review-body">' + window.FC_API.escapeHtml(review.review) + "</p>" +
+          "</article>"
+        );
+      })
+      .join("");
+  }
+
+  function initLandingReviews() {
+    var form = byId("reviewForm");
+    var message = byId("reviewMessage");
+    if (!form) {
+      return;
+    }
+
+    var reviews = loadLandingReviews();
+    renderLandingReviews(reviews);
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      var payload = readForm(form);
+      var review = normalizeLandingReview({
+        name: payload.name,
+        role: payload.role,
+        rating: payload.rating,
+        review: payload.review,
+        submitted_at: new Date().toISOString()
+      });
+
+      if (!review) {
+        setMessage(message, "Please enter a valid review before submitting.", "error");
+        return;
+      }
+
+      reviews.unshift(review);
+      reviews = reviews.slice(0, 8);
+      saveLandingReviews(reviews);
+      renderLandingReviews(reviews);
+      form.reset();
+      byId("reviewRole").value = "fresher";
+      byId("reviewRating").value = "5";
+      setMessage(message, "Review added successfully.", "success");
+    });
+  }
+
   function debounce(fn, delay) {
     var timeoutId = null;
     return function () {
@@ -937,6 +1093,7 @@
         .join("") +
       "</div>" +
       "</div>" +
+      '<div class="job-card-bottom">' +
       '<div class="job-card-footer">' +
       '<div class="tag-list">' +
       '<span class="tag experience-chip">' + window.FC_API.escapeHtml(job.experience_level || "entry-level") + "</span>" +
@@ -951,6 +1108,7 @@
         : isSaved
         ? '<span class="meta-line">Saved for quick comparison</span>'
         : '<span class="meta-line">Open details before applying</span>') +
+      "</div>" +
       "</div>" +
       "</article>"
     );
@@ -1268,6 +1426,8 @@
     if (apiBaseLabel) {
       apiBaseLabel.textContent = window.FC_API.getApiBase();
     }
+
+    initLandingReviews();
 
     setHeaderMenu({
       menuLabel: "Quick access",
