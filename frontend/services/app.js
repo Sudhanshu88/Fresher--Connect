@@ -97,6 +97,87 @@
     return user.role === "company" ? "company.html" : "user.html";
   }
 
+  function normalizeAuthRole(role) {
+    return role === "company" ? "company" : "fresher";
+  }
+
+  function replaceQueryParam(name, value) {
+    var url = new URL(window.location.href);
+    if (value) {
+      url.searchParams.set(name, value);
+    } else {
+      url.searchParams.delete(name);
+    }
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }
+
+  var LOGIN_ROLE_CONTENT = {
+    fresher: {
+      documentTitle: "Fresher Login | Fresher Connect",
+      pageLabel: "Fresher Login",
+      pageTitle: "Pick up your job search without losing track.",
+      pageDescription: "Candidate accounts open job discovery, saved applications, and clear status tracking in one place.",
+      roleSummary: "Use your fresher account to continue browsing roles, reviewing details, and tracking application progress.",
+      featureA: {
+        kicker: "Candidate Dashboard",
+        title: "Search, apply, track",
+        body: "Open jobs, save time with filters, and keep every application status in one place."
+      },
+      featureB: {
+        kicker: "Application Status",
+        title: "Stay clear on next steps",
+        body: "Check your current stage, revisit past applications, and continue from the right page faster."
+      },
+      flowLabel: "Fresher Flow",
+      flowPoints: [
+        "Job listing and job details stay available before login.",
+        "Application status is unlocked after fresher sign-in.",
+        "Session and CSRF protection continue through the backend API."
+      ],
+      cardLabel: "Candidate Access",
+      cardTitle: "Welcome back",
+      cardDescription: "Use the email and password already registered on the platform.",
+      noteTitle: "Fresher workspace",
+      noteBody: "Open jobs, revisit applications, and keep your next hiring step visible after sign in.",
+      submitText: "Login as fresher",
+      registerPrompt: "New here?",
+      registerText: "Create a fresher account",
+      registerHref: "register.html"
+    },
+    company: {
+      documentTitle: "Company Login | Fresher Connect",
+      pageLabel: "Company Login",
+      pageTitle: "Return to your hiring workspace and move candidates forward.",
+      pageDescription: "Company accounts open job posting, applicant review, and hiring pipeline management in one dashboard.",
+      roleSummary: "Use your company account to publish openings, review fresher profiles, and update every hiring stage.",
+      featureA: {
+        kicker: "Hiring Workspace",
+        title: "Post and manage openings",
+        body: "Create fresher roles with structured fields, keep details consistent, and stay ready for new applicants."
+      },
+      featureB: {
+        kicker: "Applicant Pipeline",
+        title: "Review and update candidates",
+        body: "Shortlist faster, move applicants between stages, and keep the hiring team aligned from one workspace."
+      },
+      flowLabel: "Company Flow",
+      flowPoints: [
+        "Company sign-in opens job posting, applicant review, and status updates.",
+        "Unauthenticated dashboard access returns to the recruiter login entry point.",
+        "Session and CSRF protection continue through the backend API."
+      ],
+      cardLabel: "Company Access",
+      cardTitle: "Recruiter sign in",
+      cardDescription: "Use the company email and password already registered on the platform.",
+      noteTitle: "Hiring workspace",
+      noteBody: "Create roles, review applicants, and keep every pipeline update inside the company dashboard.",
+      submitText: "Login to company dashboard",
+      registerPrompt: "Hiring for the first time?",
+      registerText: "Create a company account",
+      registerHref: "register.html?role=company"
+    }
+  };
+
   function loadTheme() {
     var savedTheme = window.localStorage.getItem("fc_theme");
     return savedTheme === "dark" ? "dark" : "light";
@@ -528,6 +609,14 @@
     node.className = "form-message" + (type ? " " + type : "");
   }
 
+  function setText(id, value) {
+    var node = byId(id);
+    if (!node) {
+      return;
+    }
+    node.textContent = value || "";
+  }
+
   function bindLogoutButtons() {
     document.querySelectorAll("[data-action='logout']").forEach(function (button) {
       button.addEventListener("click", async function () {
@@ -538,6 +627,10 @@
         }
         if (page === "landing") {
           window.location.href = "index.html";
+          return;
+        }
+        if (page === "company") {
+          window.location.href = "company-login.html";
           return;
         }
         window.location.href = "login.html";
@@ -1151,10 +1244,11 @@
   }
 
   async function requireRole(role) {
+    var loginHref = role === "company" ? "company-login.html" : "login.html";
     try {
       var session = await window.FC_API.refreshSession();
       if (!session.user) {
-        window.location.href = "login.html";
+        window.location.href = loginHref;
         return null;
       }
       state.currentUser = session.user;
@@ -1164,7 +1258,7 @@
       }
       return session.user;
     } catch (_error) {
-      window.location.href = "login.html";
+      window.location.href = loginHref;
       return null;
     }
   }
@@ -1250,6 +1344,60 @@
   async function initLogin() {
     var form = byId("loginForm");
     var message = byId("loginMessage");
+    var initialRole = normalizeAuthRole(getQueryParam("role"));
+
+    function applyLoginRole(role, syncUrl) {
+      var safeRole = normalizeAuthRole(role);
+      var config = LOGIN_ROLE_CONTENT[safeRole];
+      var registerLink = byId("loginRegisterLink");
+
+      document.body.dataset.loginRole = safeRole;
+      document.title = config.documentTitle;
+
+      setText("loginPageLabel", config.pageLabel);
+      setText("loginPageTitle", config.pageTitle);
+      setText("loginPageDescription", config.pageDescription);
+      setText("loginRoleSummary", config.roleSummary);
+      setText("loginFeatureKickerA", config.featureA.kicker);
+      setText("loginFeatureTitleA", config.featureA.title);
+      setText("loginFeatureBodyA", config.featureA.body);
+      setText("loginFeatureKickerB", config.featureB.kicker);
+      setText("loginFeatureTitleB", config.featureB.title);
+      setText("loginFeatureBodyB", config.featureB.body);
+      setText("loginFlowLabel", config.flowLabel);
+      setText("loginFlowPointA", config.flowPoints[0]);
+      setText("loginFlowPointB", config.flowPoints[1]);
+      setText("loginFlowPointC", config.flowPoints[2]);
+      setText("loginCardLabel", config.cardLabel);
+      setText("loginCardTitle", config.cardTitle);
+      setText("loginCardDescription", config.cardDescription);
+      setText("loginRoleNoteTitle", config.noteTitle);
+      setText("loginRoleNoteBody", config.noteBody);
+      setText("loginSubmitButton", config.submitText);
+      setText("loginRegisterPrompt", config.registerPrompt);
+
+      if (registerLink) {
+        registerLink.href = config.registerHref;
+        registerLink.textContent = config.registerText;
+      }
+
+      document.querySelectorAll("[data-login-role]").forEach(function (button) {
+        var active = button.dataset.loginRole === safeRole;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", active ? "true" : "false");
+      });
+
+      if (syncUrl) {
+        replaceQueryParam("role", safeRole === "company" ? safeRole : "");
+      }
+    }
+
+    document.querySelectorAll("[data-login-role]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        applyLoginRole(button.dataset.loginRole, true);
+      });
+    });
+    applyLoginRole(initialRole, false);
 
     try {
       var session = await window.FC_API.getSession();
@@ -1280,36 +1428,47 @@
   }
 
   function toggleRegisterRole(role) {
+    var safeRole = normalizeAuthRole(role);
     var fresherFields = byId("fresherFields");
     var companyFields = byId("companyFields");
     var roleInput = byId("accountRole");
     var companyName = byId("companyName");
     var education = byId("registerEducation");
     var gradYear = byId("registerGradYear");
+    var loginLink = byId("registerLoginLink");
 
-    roleInput.value = role;
-    fresherFields.classList.toggle("hidden", role !== "fresher");
-    companyFields.classList.toggle("hidden", role !== "company");
+    roleInput.value = safeRole;
+    document.body.dataset.registerRole = safeRole;
+    fresherFields.classList.toggle("hidden", safeRole !== "fresher");
+    companyFields.classList.toggle("hidden", safeRole !== "company");
 
-    education.required = role === "fresher";
-    gradYear.required = role === "fresher";
-    companyName.required = role === "company";
+    education.required = safeRole === "fresher";
+    gradYear.required = safeRole === "fresher";
+    companyName.required = safeRole === "company";
+
+    setText("registerLoginPrompt", safeRole === "company" ? "Already registered as a company?" : "Already registered?");
+    if (loginLink) {
+      loginLink.href = safeRole === "company" ? "company-login.html" : "login.html";
+      loginLink.textContent = safeRole === "company" ? "Login as company" : "Login as fresher";
+    }
 
     document.querySelectorAll("[data-role-button]").forEach(function (button) {
-      button.classList.toggle("active", button.dataset.roleButton === role);
+      button.classList.toggle("active", button.dataset.roleButton === safeRole);
     });
   }
 
   async function initRegister() {
     var form = byId("registerForm");
     var message = byId("registerMessage");
+    var initialRole = normalizeAuthRole(getQueryParam("role"));
 
     document.querySelectorAll("[data-role-button]").forEach(function (button) {
       button.addEventListener("click", function () {
         toggleRegisterRole(button.dataset.roleButton);
+        replaceQueryParam("role", button.dataset.roleButton === "company" ? "company" : "");
       });
     });
-    toggleRegisterRole("fresher");
+    toggleRegisterRole(initialRole);
 
     try {
       var session = await window.FC_API.getSession();

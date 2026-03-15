@@ -8,7 +8,7 @@
   <script defer src="../services/api.js"></script>
   <script defer src="../services/app.js"></script>
 </head>
-<body data-page="register">
+<body data-page="register" data-register-role="fresher">
   <main class="auth-shell">
     <section class="auth-copy">
       <a class="brand" href="index.html">
@@ -144,8 +144,8 @@
       </form>
 
       <div class="auth-inline-meta">
-        <span>Already registered?</span>
-        <a class="text-link" href="login.html">Login here</a>
+        <span id="registerLoginPrompt">Already registered?</span>
+        <a class="text-link" id="registerLoginLink" href="login.html">Login as fresher</a>
       </div>
     </section>
   </main>
