@@ -178,26 +178,13 @@
     }
   };
 
-  var LANDING_REVIEWS_STORAGE_KEY = "fc_landing_reviews";
-  var DEFAULT_LANDING_REVIEWS = [
-    {
-      name: "Aarav",
-      role: "fresher",
-      rating: 5,
-      review: "Job listing se apply flow tak sab pages connected feel hote hain, isliye tracking easy ho gayi.",
-      submitted_at: "2026-03-12T00:00:00.000Z"
-    },
-    {
-      name: "Nisha",
-      role: "company",
-      rating: 4,
-      review: "Company dashboard aur applicant review workflow straightforward hai, especially fresher hiring ke liye.",
-      submitted_at: "2026-03-10T00:00:00.000Z"
-    }
-  ];
-
   function loadTheme() {
-    var savedTheme = window.localStorage.getItem("fc_theme");
+    var savedTheme = "";
+    try {
+      savedTheme = window.sessionStorage.getItem("fc_theme") || "";
+    } catch (_error) {
+      savedTheme = "";
+    }
     return savedTheme === "dark" ? "dark" : "light";
   }
 
@@ -377,7 +364,11 @@
 
       event.preventDefault();
       applyTheme(themeButton.dataset.themeOption);
-      window.localStorage.setItem("fc_theme", state.theme);
+      try {
+        window.sessionStorage.setItem("fc_theme", state.theme);
+      } catch (_error) {
+        // Ignore storage failures and keep the current theme in memory.
+      }
       openSettingsSheet();
     });
   }
@@ -697,39 +688,25 @@
     }
 
     return {
+      id: raw.id,
       name: String(raw.name || "Fresher Connect user").trim() || "Fresher Connect user",
       role: normalizeLandingReviewRole(raw.role),
       rating: rating,
       review: reviewText,
-      submitted_at: raw.submitted_at || new Date().toISOString()
+      submitted_at: raw.created_at || raw.submitted_at || new Date().toISOString()
     };
   }
 
-  function loadLandingReviews() {
-    var parsed = null;
-    try {
-      parsed = JSON.parse(window.localStorage.getItem(LANDING_REVIEWS_STORAGE_KEY) || "null");
-    } catch (_error) {
-      parsed = null;
-    }
-
-    var source = Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_LANDING_REVIEWS;
-    return source
+  async function loadLandingReviews() {
+    var response = await window.FC_API.request("/api/reviews?limit=8");
+    return (response.reviews || [])
       .map(normalizeLandingReview)
       .filter(Boolean)
       .slice(0, 8);
   }
 
-  function saveLandingReviews(reviews) {
-    try {
-      window.localStorage.setItem(LANDING_REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
-    } catch (_error) {
-      // Ignore storage failures and keep the current UI state.
-    }
-  }
-
   function landingReviewStarsMarkup(rating) {
-    return "★".repeat(rating) + "☆".repeat(Math.max(0, 5 - rating));
+    return "&#9733;".repeat(rating) + "&#9734;".repeat(Math.max(0, 5 - rating));
   }
 
   function renderLandingReviews(reviews) {
@@ -765,20 +742,27 @@
       .join("");
   }
 
-  function initLandingReviews() {
+  async function initLandingReviews() {
     var form = byId("reviewForm");
     var message = byId("reviewMessage");
     if (!form) {
       return;
     }
 
-    var reviews = loadLandingReviews();
-    renderLandingReviews(reviews);
+    var reviews = [];
+    try {
+      reviews = await loadLandingReviews();
+      renderLandingReviews(reviews);
+    } catch (error) {
+      renderLandingReviews([]);
+      setMessage(message, window.FC_API.getErrorMessage(error, "Unable to load reviews right now."), "error");
+    }
 
-    form.addEventListener("submit", function (event) {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       var payload = readForm(form);
+      setMessage(message, "Submitting review...");
       var review = normalizeLandingReview({
         name: payload.name,
         role: payload.role,
@@ -792,14 +776,30 @@
         return;
       }
 
-      reviews.unshift(review);
-      reviews = reviews.slice(0, 8);
-      saveLandingReviews(reviews);
-      renderLandingReviews(reviews);
-      form.reset();
-      byId("reviewRole").value = "fresher";
-      byId("reviewRating").value = "5";
-      setMessage(message, "Review added successfully.", "success");
+      try {
+        var response = await window.FC_API.request("/api/reviews", {
+          method: "POST",
+          body: {
+            name: payload.name,
+            role: payload.role,
+            rating: payload.rating,
+            review: payload.review
+          }
+        });
+        if (response.review) {
+          reviews.unshift(normalizeLandingReview(response.review));
+        } else {
+          reviews = await loadLandingReviews();
+        }
+        reviews = reviews.filter(Boolean).slice(0, 8);
+        renderLandingReviews(reviews);
+        form.reset();
+        byId("reviewRole").value = "fresher";
+        byId("reviewRating").value = "5";
+        setMessage(message, "Review added successfully.", "success");
+      } catch (error) {
+        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to save review."), "error");
+      }
     });
   }
 
@@ -1427,7 +1427,7 @@
       apiBaseLabel.textContent = window.FC_API.getApiBase();
     }
 
-    initLandingReviews();
+    await initLandingReviews();
 
     setHeaderMenu({
       menuLabel: "Quick access",

@@ -430,6 +430,7 @@ class MongoStore:
         self.applications = self.db["applications"]
         self.saved_jobs = self.db["saved_jobs"]
         self.notifications = self.db["notifications"]
+        self.reviews = self.db["reviews"]
         self.counters = self.db["counters"]
 
     def ping(self):
@@ -471,6 +472,8 @@ class MongoStore:
             [("user_id", ASCENDING), ("is_read", ASCENDING), ("created_at", DESCENDING)],
             name="ix_notifications_user_read_state",
         )
+        self.reviews.create_index([("id", ASCENDING)], unique=True, name="uq_reviews_id")
+        self.reviews.create_index([("created_at", DESCENDING)], name="ix_reviews_created_at")
 
     def next_sequence(self, name):
         doc = self.counters.find_one_and_update(
@@ -554,8 +557,6 @@ class MongoStore:
 def seed_database(store):
     if parse_bool(os.getenv("DISABLE_SEED_DATA"), default=False):
         return
-    if store.jobs.count_documents({}) > 0:
-        return
 
     now = utcnow()
     admin_email = normalize_email(os.getenv("ADMIN_EMAIL", "admin@fresherconnect.local"))
@@ -571,210 +572,242 @@ def seed_database(store):
             )
         )
 
-    companies = [
-        {
-            "contact_name": "Aisha Verma",
-            "email": "hiring@brightstack.com",
-            "company_name": "BrightStack Labs",
-            "company_logo": "https://images.example.com/brightstack.png",
-            "company_website": "https://brightstack.example.com",
-            "industry_type": "IT",
-            "company_size": "50-200",
-            "company_description": "Build internal platforms and backend systems for fast-growing teams.",
-            "location": "Bengaluru",
-        },
-        {
-            "contact_name": "Rohan Gupta",
-            "email": "careers@insighthive.com",
-            "company_name": "Insight Hive",
-            "company_logo": "https://images.example.com/insighthive.png",
-            "company_website": "https://insighthive.example.com",
-            "industry_type": "Finance",
-            "company_size": "11-50",
-            "company_description": "Data analytics firm focused on reporting pipelines and business intelligence.",
-            "location": "Hyderabad",
-        },
-        {
-            "contact_name": "Neha Sharma",
-            "email": "jobs@growthdock.com",
-            "company_name": "GrowthDock",
-            "company_logo": "https://images.example.com/growthdock.png",
-            "company_website": "https://growthdock.example.com",
-            "industry_type": "Marketing",
-            "company_size": "11-50",
-            "company_description": "Performance marketing studio running paid growth experiments for digital brands.",
-            "location": "Remote",
-        },
-        {
-            "contact_name": "Karan Singh",
-            "email": "talent@campusbridge.com",
-            "company_name": "CampusBridge",
-            "company_logo": "https://images.example.com/campusbridge.png",
-            "company_website": "https://campusbridge.example.com",
-            "industry_type": "Operations",
-            "company_size": "50-200",
-            "company_description": "Campus operations partner helping companies streamline onboarding and hiring workflows.",
-            "location": "Pune",
-        },
-    ]
+    if store.jobs.count_documents({}) == 0:
+        companies = [
+            {
+                "contact_name": "Aisha Verma",
+                "email": "hiring@brightstack.com",
+                "company_name": "BrightStack Labs",
+                "company_logo": "https://images.example.com/brightstack.png",
+                "company_website": "https://brightstack.example.com",
+                "industry_type": "IT",
+                "company_size": "50-200",
+                "company_description": "Build internal platforms and backend systems for fast-growing teams.",
+                "location": "Bengaluru",
+            },
+            {
+                "contact_name": "Rohan Gupta",
+                "email": "careers@insighthive.com",
+                "company_name": "Insight Hive",
+                "company_logo": "https://images.example.com/insighthive.png",
+                "company_website": "https://insighthive.example.com",
+                "industry_type": "Finance",
+                "company_size": "11-50",
+                "company_description": "Data analytics firm focused on reporting pipelines and business intelligence.",
+                "location": "Hyderabad",
+            },
+            {
+                "contact_name": "Neha Sharma",
+                "email": "jobs@growthdock.com",
+                "company_name": "GrowthDock",
+                "company_logo": "https://images.example.com/growthdock.png",
+                "company_website": "https://growthdock.example.com",
+                "industry_type": "Marketing",
+                "company_size": "11-50",
+                "company_description": "Performance marketing studio running paid growth experiments for digital brands.",
+                "location": "Remote",
+            },
+            {
+                "contact_name": "Karan Singh",
+                "email": "talent@campusbridge.com",
+                "company_name": "CampusBridge",
+                "company_logo": "https://images.example.com/campusbridge.png",
+                "company_website": "https://campusbridge.example.com",
+                "industry_type": "Operations",
+                "company_size": "50-200",
+                "company_description": "Campus operations partner helping companies streamline onboarding and hiring workflows.",
+                "location": "Pune",
+            },
+        ]
 
-    inserted_companies = []
-    for company in companies:
-        user_doc = build_user_document(
-            user_id=store.next_sequence("users"),
-            name=company["contact_name"],
-            email=normalize_email(company["email"]),
-            password_hash=hash_password("password123"),
-            role="company",
-            created_at=now,
-        )
-        company_doc = build_company_document(
-            company_id=store.next_sequence("companies"),
-            owner_user_id=user_doc["id"],
-            company_name=company["company_name"],
-            website=company["company_website"],
-            location=company["location"],
-            description=company["company_description"],
-            company_logo=company["company_logo"],
-            industry_type=company["industry_type"],
-            company_size=company["company_size"],
-            created_at=now,
-        )
-        store.users.insert_one(user_doc)
-        store.companies.insert_one(company_doc)
-        inserted_companies.append(company_doc)
-
-    job_seed = [
-        {
-            "title": "Graduate Software Engineer",
-            "department": "Engineering",
-            "job_type": "full-time",
-            "work_mode": "onsite",
-            "country": "India",
-            "state": "Karnataka",
-            "city": "Bengaluru",
-            "experience_level": "fresher",
-            "degree_required": "B.Tech",
-            "required_skills": ["Python", "Git", "APIs"],
-            "description": "Build internal platform features, ship production code, and learn modern backend systems.",
-            "role_overview": "Join the backend team and contribute to production services.",
-            "responsibilities": "Develop APIs, fix bugs, and participate in code reviews.",
-            "required_qualifications": "Strong CS fundamentals and project experience in software development.",
-            "preferred_qualifications": "Internship or strong GitHub portfolio.",
-            "salary_range": "INR 4 LPA - INR 8 LPA",
-            "benefits": "Health insurance, mentorship, learning stipend",
-            "categories": ["CS", "IT"],
-            "expiry_days": 45,
-        },
-        {
-            "title": "Data Analyst Trainee",
-            "department": "Analytics",
-            "job_type": "full-time",
-            "work_mode": "onsite",
-            "country": "India",
-            "state": "Telangana",
-            "city": "Hyderabad",
-            "experience_level": "0-1 year",
-            "degree_required": "Any Graduate",
-            "required_skills": ["SQL", "Excel", "Dashboards"],
-            "description": "Work on dashboards, reporting pipelines, and stakeholder-ready analytics.",
-            "role_overview": "Support the analytics team with reporting and automation.",
-            "responsibilities": "Prepare dashboards and clean business datasets.",
-            "required_qualifications": "Comfort with spreadsheets and data storytelling.",
-            "preferred_qualifications": "Experience with BI tools.",
-            "salary_range": "INR 3 LPA - INR 5 LPA",
-            "benefits": "Training budget, hybrid flexibility",
-            "categories": ["CS", "Finance"],
-            "expiry_days": 40,
-        },
-        {
-            "title": "Performance Marketing Associate",
-            "department": "Marketing",
-            "job_type": "full-time",
-            "work_mode": "remote",
-            "country": "India",
-            "state": "",
-            "city": "Remote",
-            "experience_level": "entry-level",
-            "degree_required": "Any Graduate",
-            "required_skills": ["Meta Ads", "Google Ads", "Reporting"],
-            "description": "Support paid campaigns, creatives, and weekly growth experiments.",
-            "role_overview": "Own campaign execution with the performance team.",
-            "responsibilities": "Track campaign metrics and launch growth experiments.",
-            "required_qualifications": "Analytical mindset and good written communication.",
-            "preferred_qualifications": "Marketing internship or ad platform exposure.",
-            "salary_range": "INR 3 LPA - INR 6 LPA",
-            "benefits": "Remote allowance, performance bonus",
-            "categories": ["Marketing"],
-            "expiry_days": 35,
-        },
-        {
-            "title": "Operations Executive",
-            "department": "Operations",
-            "job_type": "internship",
-            "work_mode": "onsite",
-            "country": "India",
-            "state": "Maharashtra",
-            "city": "Pune",
-            "experience_level": "fresher",
-            "degree_required": "Any Graduate",
-            "required_skills": ["Coordination", "Documentation", "Excel"],
-            "description": "Coordinate fresher onboarding workflows and internal hiring operations.",
-            "role_overview": "Help the operations team run daily campus hiring workflows.",
-            "responsibilities": "Coordinate candidate schedules and update trackers.",
-            "required_qualifications": "Strong ownership and communication skills.",
-            "preferred_qualifications": "Campus ambassador or event coordination experience.",
-            "internship_stipend": "INR 18,000 / month",
-            "benefits": "Certificate, mentorship, potential PPO",
-            "categories": ["Operations"],
-            "expiry_days": 30,
-        },
-    ]
-
-    for index, job in enumerate(job_seed):
-        company = inserted_companies[index]
-        salary_min, salary_max = extract_salary_bounds(job.get("salary_range"))
-        posted_date = now - timedelta(days=index + 1)
-        expiry_date = posted_date + timedelta(days=job["expiry_days"])
-        store.jobs.insert_one(
-            build_job_document(
-                job_id=store.next_sequence("jobs"),
-                company_doc=company,
-                title=job["title"],
-                description=job["description"],
-                experience_required=job["experience_level"],
-                education_required=job["degree_required"],
-                salary_min=salary_min,
-                salary_max=salary_max,
-                location=build_job_location(job),
-                employment_type=job["job_type"],
-                required_skills=job["required_skills"],
-                posted_date=posted_date,
-                expiry_date=expiry_date,
-                department=job["department"],
-                work_mode=job["work_mode"],
-                country=job["country"],
-                state=job["state"],
-                city=job["city"],
-                remote_option=job["work_mode"] == "remote",
-                role_overview=job["role_overview"],
-                responsibilities=job["responsibilities"],
-                required_qualifications=job["required_qualifications"],
-                preferred_qualifications=job["preferred_qualifications"],
-                salary_range=job.get("salary_range"),
-                internship_stipend=job.get("internship_stipend"),
-                benefits=job.get("benefits"),
-                application_method="platform",
-                application_url="",
-                application_email="",
-                resume_required=True,
-                portfolio_required=False,
-                cover_letter_required=False,
-                hiring_stages=["Resume Screening", "Interview", "Offer"],
-                categories=job["categories"],
-                created_at=posted_date,
+        inserted_companies = []
+        for company in companies:
+            user_doc = build_user_document(
+                user_id=store.next_sequence("users"),
+                name=company["contact_name"],
+                email=normalize_email(company["email"]),
+                password_hash=hash_password("password123"),
+                role="company",
+                created_at=now,
             )
-        )
+            company_doc = build_company_document(
+                company_id=store.next_sequence("companies"),
+                owner_user_id=user_doc["id"],
+                company_name=company["company_name"],
+                website=company["company_website"],
+                location=company["location"],
+                description=company["company_description"],
+                company_logo=company["company_logo"],
+                industry_type=company["industry_type"],
+                company_size=company["company_size"],
+                created_at=now,
+            )
+            store.users.insert_one(user_doc)
+            store.companies.insert_one(company_doc)
+            inserted_companies.append(company_doc)
+
+        job_seed = [
+            {
+                "title": "Graduate Software Engineer",
+                "department": "Engineering",
+                "job_type": "full-time",
+                "work_mode": "onsite",
+                "country": "India",
+                "state": "Karnataka",
+                "city": "Bengaluru",
+                "experience_level": "fresher",
+                "degree_required": "B.Tech",
+                "required_skills": ["Python", "Git", "APIs"],
+                "description": "Build internal platform features, ship production code, and learn modern backend systems.",
+                "role_overview": "Join the backend team and contribute to production services.",
+                "responsibilities": "Develop APIs, fix bugs, and participate in code reviews.",
+                "required_qualifications": "Strong CS fundamentals and project experience in software development.",
+                "preferred_qualifications": "Internship or strong GitHub portfolio.",
+                "salary_range": "INR 4 LPA - INR 8 LPA",
+                "benefits": "Health insurance, mentorship, learning stipend",
+                "categories": ["CS", "IT"],
+                "expiry_days": 45,
+            },
+            {
+                "title": "Data Analyst Trainee",
+                "department": "Analytics",
+                "job_type": "full-time",
+                "work_mode": "onsite",
+                "country": "India",
+                "state": "Telangana",
+                "city": "Hyderabad",
+                "experience_level": "0-1 year",
+                "degree_required": "Any Graduate",
+                "required_skills": ["SQL", "Excel", "Dashboards"],
+                "description": "Work on dashboards, reporting pipelines, and stakeholder-ready analytics.",
+                "role_overview": "Support the analytics team with reporting and automation.",
+                "responsibilities": "Prepare dashboards and clean business datasets.",
+                "required_qualifications": "Comfort with spreadsheets and data storytelling.",
+                "preferred_qualifications": "Experience with BI tools.",
+                "salary_range": "INR 3 LPA - INR 5 LPA",
+                "benefits": "Training budget, hybrid flexibility",
+                "categories": ["CS", "Finance"],
+                "expiry_days": 40,
+            },
+            {
+                "title": "Performance Marketing Associate",
+                "department": "Marketing",
+                "job_type": "full-time",
+                "work_mode": "remote",
+                "country": "India",
+                "state": "",
+                "city": "Remote",
+                "experience_level": "entry-level",
+                "degree_required": "Any Graduate",
+                "required_skills": ["Meta Ads", "Google Ads", "Reporting"],
+                "description": "Support paid campaigns, creatives, and weekly growth experiments.",
+                "role_overview": "Own campaign execution with the performance team.",
+                "responsibilities": "Track campaign metrics and launch growth experiments.",
+                "required_qualifications": "Analytical mindset and good written communication.",
+                "preferred_qualifications": "Marketing internship or ad platform exposure.",
+                "salary_range": "INR 3 LPA - INR 6 LPA",
+                "benefits": "Remote allowance, performance bonus",
+                "categories": ["Marketing"],
+                "expiry_days": 35,
+            },
+            {
+                "title": "Operations Executive",
+                "department": "Operations",
+                "job_type": "internship",
+                "work_mode": "onsite",
+                "country": "India",
+                "state": "Maharashtra",
+                "city": "Pune",
+                "experience_level": "fresher",
+                "degree_required": "Any Graduate",
+                "required_skills": ["Coordination", "Documentation", "Excel"],
+                "description": "Coordinate fresher onboarding workflows and internal hiring operations.",
+                "role_overview": "Help the operations team run daily campus hiring workflows.",
+                "responsibilities": "Coordinate candidate schedules and update trackers.",
+                "required_qualifications": "Strong ownership and communication skills.",
+                "preferred_qualifications": "Campus ambassador or event coordination experience.",
+                "internship_stipend": "INR 18,000 / month",
+                "benefits": "Certificate, mentorship, potential PPO",
+                "categories": ["Operations"],
+                "expiry_days": 30,
+            },
+        ]
+
+        for index, job in enumerate(job_seed):
+            company = inserted_companies[index]
+            salary_min, salary_max = extract_salary_bounds(job.get("salary_range"))
+            posted_date = now - timedelta(days=index + 1)
+            expiry_date = posted_date + timedelta(days=job["expiry_days"])
+            store.jobs.insert_one(
+                build_job_document(
+                    job_id=store.next_sequence("jobs"),
+                    company_doc=company,
+                    title=job["title"],
+                    description=job["description"],
+                    experience_required=job["experience_level"],
+                    education_required=job["degree_required"],
+                    salary_min=salary_min,
+                    salary_max=salary_max,
+                    location=build_job_location(job),
+                    employment_type=job["job_type"],
+                    required_skills=job["required_skills"],
+                    posted_date=posted_date,
+                    expiry_date=expiry_date,
+                    department=job["department"],
+                    work_mode=job["work_mode"],
+                    country=job["country"],
+                    state=job["state"],
+                    city=job["city"],
+                    remote_option=job["work_mode"] == "remote",
+                    role_overview=job["role_overview"],
+                    responsibilities=job["responsibilities"],
+                    required_qualifications=job["required_qualifications"],
+                    preferred_qualifications=job["preferred_qualifications"],
+                    salary_range=job.get("salary_range"),
+                    internship_stipend=job.get("internship_stipend"),
+                    benefits=job.get("benefits"),
+                    application_method="platform",
+                    application_url="",
+                    application_email="",
+                    resume_required=True,
+                    portfolio_required=False,
+                    cover_letter_required=False,
+                    hiring_stages=["Resume Screening", "Interview", "Offer"],
+                    categories=job["categories"],
+                    created_at=posted_date,
+                )
+            )
+
+    if store.reviews.count_documents({}) == 0:
+        review_seed = [
+            {
+                "name": "Aarav",
+                "role": "fresher",
+                "rating": 5,
+                "review": "Job listing se apply flow tak sab pages connected feel hote hain, isliye tracking easy ho gayi.",
+            },
+            {
+                "name": "Nisha",
+                "role": "company",
+                "rating": 4,
+                "review": "Company dashboard aur applicant review workflow straightforward hai, especially fresher hiring ke liye.",
+            },
+        ]
+
+        for index, item in enumerate(review_seed):
+            created_at = now - timedelta(days=index + 2)
+            store.reviews.insert_one(
+                {
+                    "id": store.next_sequence("reviews"),
+                    "name": item["name"],
+                    "role": item["role"],
+                    "rating": item["rating"],
+                    "review": item["review"],
+                    "user_id": None,
+                    "created_at": created_at,
+                    "updated_at": created_at,
+                }
+            )
 
 
 def get_store():

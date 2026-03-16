@@ -7,7 +7,7 @@ from .company_controller import (
     update_company_application,
 )
 from .job_controller import list_jobs
-from .system_controller import api_session, healthcheck, index
+from .system_controller import api_session, create_review, healthcheck, index, list_reviews
 from .user_controller import create_application, my_applications, update_user_profile, user_dashboard
 
 __all__ = [
@@ -15,11 +15,13 @@ __all__ = [
     "company_applications",
     "company_dashboard",
     "company_jobs",
+    "create_review",
     "create_application",
     "create_company_job",
     "healthcheck",
     "index",
     "list_jobs",
+    "list_reviews",
     "login_account",
     "logout_account",
     "my_applications",

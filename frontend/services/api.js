@@ -10,6 +10,30 @@
   var TOKEN_STORAGE_KEY = "fc_auth_token";
   var TOKEN_EXPIRY_KEY = "fc_auth_expires_at";
 
+  function readSessionValue(key) {
+    try {
+      return window.sessionStorage.getItem(key) || "";
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  function writeSessionValue(key, value) {
+    try {
+      window.sessionStorage.setItem(key, value);
+    } catch (_error) {
+      // Ignore storage failures and continue with in-memory state.
+    }
+  }
+
+  function removeSessionValue(key) {
+    try {
+      window.sessionStorage.removeItem(key);
+    } catch (_error) {
+      // Ignore storage failures and continue with in-memory state.
+    }
+  }
+
   function normalizeBase(value) {
     return String(value || "").trim().replace(/\/+$/, "");
   }
@@ -18,7 +42,7 @@
     var params = new URLSearchParams(window.location.search);
     var queryBase = normalizeBase(params.get("api"));
     if (queryBase) {
-      window.localStorage.setItem("fc_api_base", queryBase);
+      writeSessionValue("fc_api_base", queryBase);
       return queryBase;
     }
 
@@ -26,7 +50,7 @@
       return normalizeBase(window.FC_API_BASE);
     }
 
-    var stored = normalizeBase(window.localStorage.getItem("fc_api_base"));
+    var stored = normalizeBase(readSessionValue("fc_api_base"));
     if (stored) {
       return stored;
     }
@@ -42,8 +66,8 @@
     apiBase: detectApiBase(),
     session: null,
     pendingSession: null,
-    accessToken: window.localStorage.getItem(TOKEN_STORAGE_KEY) || "",
-    tokenExpiresAt: window.localStorage.getItem(TOKEN_EXPIRY_KEY) || ""
+    accessToken: readSessionValue(TOKEN_STORAGE_KEY),
+    tokenExpiresAt: readSessionValue(TOKEN_EXPIRY_KEY)
   };
 
   function persistToken(token, expiresAt) {
@@ -51,15 +75,15 @@
     state.tokenExpiresAt = String(expiresAt || "");
 
     if (state.accessToken) {
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, state.accessToken);
+      writeSessionValue(TOKEN_STORAGE_KEY, state.accessToken);
     } else {
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+      removeSessionValue(TOKEN_STORAGE_KEY);
     }
 
     if (state.tokenExpiresAt) {
-      window.localStorage.setItem(TOKEN_EXPIRY_KEY, state.tokenExpiresAt);
+      writeSessionValue(TOKEN_EXPIRY_KEY, state.tokenExpiresAt);
     } else {
-      window.localStorage.removeItem(TOKEN_EXPIRY_KEY);
+      removeSessionValue(TOKEN_EXPIRY_KEY);
     }
   }
 
@@ -235,7 +259,7 @@
     },
     setApiBase: function (value) {
       state.apiBase = normalizeBase(value);
-      window.localStorage.setItem("fc_api_base", state.apiBase);
+      writeSessionValue("fc_api_base", state.apiBase);
       state.session = null;
     },
     refreshSession: function () {
