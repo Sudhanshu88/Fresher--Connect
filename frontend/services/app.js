@@ -1149,6 +1149,14 @@
     return Array.isArray(list) && list.length ? list.join(", ") : "-";
   }
 
+  function compactLinkLabel(value) {
+    var text = String(value || "").trim();
+    if (!text) {
+      return "-";
+    }
+    return text.replace(/^https?:\/\//i, "").replace(/\/+$/, "") || text;
+  }
+
   function computeSavedJobMap(savedJobs) {
     var map = {};
     (savedJobs || []).forEach(function (job) {
@@ -1661,12 +1669,23 @@
   function renderDetailList(target, items) {
     target.innerHTML = items
       .map(function (item) {
+        var href = String(item.href || "").trim();
+        var valueClass = "detail-value" + (item.valueClass ? " " + item.valueClass : "");
+        var valueMarkup = (
+          href && item.value && item.value !== "-"
+            ? '<a class="' + valueClass + ' detail-link" href="' + window.FC_API.escapeHtml(href) + '"' +
+                (href.indexOf("mailto:") === 0 ? "" : ' target="_blank" rel="noreferrer"') +
+                ">" +
+                window.FC_API.escapeHtml(item.value) +
+                "</a>"
+            : '<strong class="' + valueClass + '">' + window.FC_API.escapeHtml(item.value) + "</strong>"
+        );
         return (
           '<div class="detail-item"><span class="detail-label">' +
           window.FC_API.escapeHtml(item.label) +
-          "</span><strong class=\"detail-value\">" +
-          window.FC_API.escapeHtml(item.value) +
-          "</strong></div>"
+          "</span>" +
+          valueMarkup +
+          "</div>"
         );
       })
       .join("");
@@ -3011,9 +3030,19 @@
       { label: "Company", value: user.company_name || user.name || "-" },
       { label: "Industry", value: user.industry_type || "-" },
       { label: "Size", value: user.company_size || "-" },
-      { label: "Website", value: user.company_website || "-" },
+      {
+        label: "Website",
+        value: compactLinkLabel(user.company_website),
+        href: user.company_website || "",
+        valueClass: "detail-value-break"
+      },
       { label: "Logo", value: user.company_logo ? "Added" : "-" },
-      { label: "Email", value: user.email || "-" },
+      {
+        label: "Email",
+        value: user.email || "-",
+        href: user.email ? "mailto:" + user.email : "",
+        valueClass: "detail-value-break"
+      },
       { label: "Description", value: user.company_description || "-" }
     ]);
     prefillCompanyJobForm(user);

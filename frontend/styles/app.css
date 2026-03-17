@@ -527,7 +527,16 @@ p {
 .detail-item {
   display: grid;
   gap: 4px;
+  min-width: 0;
   min-height: 100%;
+}
+
+.detail-item > strong,
+.detail-item > span {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .compact-detail-list {
@@ -554,18 +563,69 @@ p {
   gap: 12px;
 }
 
+#companyDetailList {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: 1fr;
+}
+
+#companyDetailList .detail-item {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px 16px;
+  overflow: hidden;
+}
+
+#companyDetailList .detail-label {
+  margin: 2px 0 0;
+}
+
+#companyDetailList .detail-value {
+  display: block;
+  max-width: 100%;
+}
+
 .detail-label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .detail-value {
   color: var(--ink);
   font-size: 1rem;
   line-height: 1.35;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.detail-value-break {
+  word-break: break-all;
+}
+
+.detail-link {
+  display: block;
+  max-width: 100%;
+  color: var(--brand-blue);
+  text-decoration: none;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.detail-link:hover,
+.detail-link:focus-visible {
+  text-decoration: underline;
+  outline: none;
 }
 
 .target-highlight {
@@ -1078,7 +1138,10 @@ select:focus-visible {
 .profile-card {
   display: grid;
   gap: 18px;
+  width: 100%;
+  min-width: 0;
   padding: 22px;
+  overflow: hidden;
 }
 
 .profile-card h2 {
@@ -1087,11 +1150,18 @@ select:focus-visible {
 
 .profile-card .detail-list {
   margin-top: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .profile-meta {
   color: var(--muted);
   font-size: 0.94rem;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .card-head {
@@ -1329,12 +1399,17 @@ select:focus-visible {
 .meta-line {
   color: var(--muted);
   font-size: 0.92rem;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 .tag,
@@ -1352,6 +1427,11 @@ select:focus-visible {
 .tag {
   background: rgba(18, 149, 219, 0.12);
   color: var(--brand-blue);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
 }
 
 .status-pill {
@@ -2032,6 +2112,11 @@ body[data-login-role="company"] .auth-role-note {
   .job-card-footer,
   .compact-detail-list {
     grid-template-columns: 1fr;
+  }
+
+  #companyDetailList .detail-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .job-card-header {
