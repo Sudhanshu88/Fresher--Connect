@@ -1,9 +1,39 @@
-FROM nginx:1.27-alpine
+FROM node:20-alpine AS builder
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
-COPY frontend/ /usr/share/nginx/html/
+ENV NODE_ENV=development
 
-EXPOSE 80
+WORKDIR /app
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q -O - http://127.0.0.1/healthz || exit 1
+COPY frontend/package.json frontend/package-lock.json ./
+
+RUN npm ci
+
+COPY frontend/app ./app
+COPY frontend/components ./components
+COPY frontend/lib ./lib
+COPY frontend/public ./public
+COPY frontend/next-env.d.ts ./next-env.d.ts
+COPY frontend/next.config.ts ./next.config.ts
+COPY frontend/tsconfig.json ./tsconfig.json
+
+RUN npm run build
+
+
+FROM node:20-alpine AS runner
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+
+WORKDIR /app
+
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -q -O - http://127.0.0.1:3000/ || exit 1
+
+CMD ["node", "server.js"]

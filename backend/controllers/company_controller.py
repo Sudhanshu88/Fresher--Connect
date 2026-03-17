@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import os
+from secrets import token_hex
 
-from flask import jsonify, request
+from flask import current_app, jsonify, request
 from pymongo import DESCENDING, ReturnDocument
+from werkzeug.utils import secure_filename
 
 from backend.models.constants import TRACKABLE_STATUSES
 from backend.models.documents import build_job_document, merge_company_profile
@@ -28,6 +31,7 @@ from backend.services.platform_service import (
     serialize_user,
     utcnow,
 )
+from backend.services.storage_service import build_upload_url, storage_key, store_file
 from backend.services.workflow_service import normalize_company_verification_status, notify_candidate_status_change, process_application_sla
 
 
@@ -77,6 +81,72 @@ def company_jobs(company):
         data["application_count"] = store.applications.count_documents({"job_id": job["job_id"]})
         jobs.append(data)
     return jsonify({"ok": True, "jobs": jobs})
+
+
+def upload_company_logo(company):
+    store = get_store()
+    file = request.files.get("logo")
+    if not file or not file.filename:
+        return json_error("company_logo_file_required", 400)
+
+    filename = secure_filename(file.filename)
+    if not filename:
+        return json_error("invalid_file_name", 400)
+
+    extension = os.path.splitext(filename)[1].lower()
+    if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}:
+        return json_error("invalid_company_logo_type", 400)
+
+    stored_name = f"{company['company_id']}-{token_hex(8)}{extension}"
+    temp_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "_tmp")
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_path = os.path.join(temp_dir, stored_name)
+    file.save(temp_path)
+
+    stored_key = storage_key("company-logos", stored_name, config=current_app.config)
+    try:
+        storage_result = store_file(temp_path, stored_key, content_type=file.mimetype, config=current_app.config)
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    logo_url = build_upload_url(storage_result["storage_key"], request.url_root)
+    now = utcnow()
+    store.companies.update_one(
+        {"company_id": company["company_id"]},
+        {
+            "$set": {
+                "company_logo": logo_url,
+                "company_logo_storage_backend": storage_result["storage_backend"],
+                "company_logo_storage_key": storage_result["storage_key"],
+                "updated_at": now,
+            }
+        },
+    )
+    store.jobs.update_many(
+        {"company_id": company["company_id"]},
+        {
+            "$set": {
+                "company_logo": logo_url,
+                "updated_at": now,
+            }
+        },
+    )
+    updated_company = store.get_account("company", company["id"])
+    create_audit_event(
+        store,
+        action="company_logo_updated",
+        actor=updated_company,
+        company_id=company["company_id"],
+        target_type="company",
+        target_id=company["company_id"],
+        summary="Updated company logo.",
+        details={
+            "storage_backend": storage_result["storage_backend"],
+            "storage_key": storage_result["storage_key"],
+        },
+    )
+    return jsonify({"ok": True, "logo_url": logo_url, "user": serialize_user(updated_company)})
 
 
 def create_company_job(company):

@@ -1,3 +1,4 @@
+boto3==1.39.11
 bcrypt==4.2.1
 Flask==3.0.3
 gunicorn==23.0.0

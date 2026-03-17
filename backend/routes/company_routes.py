@@ -8,6 +8,7 @@ from backend.controllers.company_controller import (
     company_jobs,
     create_company_job,
     update_company_application,
+    upload_company_logo,
 )
 from backend.middleware.auth import role_required
 
@@ -17,6 +18,7 @@ company_bp = Blueprint("company", __name__)
 company_bp.get("/api/company/dashboard")(role_required("company")(company_dashboard))
 company_bp.get("/api/company/jobs")(role_required("company")(company_jobs))
 company_bp.post("/api/company/jobs")(role_required("company")(create_company_job))
+company_bp.post("/api/company/logo")(role_required("company")(upload_company_logo))
 company_bp.add_url_rule(
     "/jobs",
     endpoint="create_company_job_rest",

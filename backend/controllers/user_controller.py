@@ -24,6 +24,7 @@ from backend.services.platform_service import (
     utcnow,
 )
 from backend.services.resume_service import merge_skill_lists, parse_resume_file
+from backend.services.storage_service import build_upload_url, storage_key, store_file
 from backend.services.workflow_service import decision_deadline_for, notify_application_submitted, process_application_sla
 
 
@@ -260,16 +261,26 @@ def upload_resume(user):
         return json_error("invalid_resume_type", 400)
 
     stored_name = f"{candidate_id}-{token_hex(8)}{extension}"
-    destination = os.path.join(current_app.config["UPLOAD_FOLDER"], stored_name)
-    file.save(destination)
-    resume_url = request.url_root.rstrip("/") + "/api/uploads/" + stored_name
-    resume_analysis = parse_resume_file(destination)
+    temp_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "_tmp")
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_path = os.path.join(temp_dir, stored_name)
+    file.save(temp_path)
+    resume_analysis = parse_resume_file(temp_path)
+    stored_key = storage_key("resumes", stored_name, config=current_app.config)
+    try:
+        storage_result = store_file(temp_path, stored_key, content_type=file.mimetype, config=current_app.config)
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+    resume_url = build_upload_url(storage_result["storage_key"], request.url_root)
 
     profile = store.candidate_profiles.find_one({"user_id": candidate_id}, {"_id": 0}) or {
         "user_id": candidate_id,
         "created_at": utcnow(),
     }
     profile["resume_url"] = resume_url
+    profile["resume_storage_backend"] = storage_result["storage_backend"]
+    profile["resume_storage_key"] = storage_result["storage_key"]
     profile["resume_filename"] = filename
     profile["resume_parser_status"] = resume_analysis["parser_status"]
     profile["resume_text_excerpt"] = resume_analysis["excerpt"]

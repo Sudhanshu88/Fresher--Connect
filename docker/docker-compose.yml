@@ -31,6 +31,11 @@ services:
       MAX_CONTENT_LENGTH: ${MAX_CONTENT_LENGTH:-2097152}
       FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://127.0.0.1:3000,http://localhost:3000}
       DISABLE_SEED_DATA: ${DISABLE_SEED_DATA:-false}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      S3_BUCKET: ${S3_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_PREFIX: ${S3_PREFIX:-uploads}
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-240}
       RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
@@ -55,14 +60,14 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "3000:80"
+      - "3000:3000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/healthz"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/index.html"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
 volumes:
   mongodb-data:

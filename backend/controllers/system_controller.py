@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from flask import current_app, jsonify, request, send_from_directory
+from io import BytesIO
+
+from flask import current_app, jsonify, request, send_file, send_from_directory
 from pymongo import DESCENDING
 from pymongo.errors import PyMongoError
 
 from backend.middleware.auth import current_account
 from backend.services.platform_service import get_store, isoformat, json_error, parse_optional_int, serialize_user, utcnow
+from backend.services.storage_service import open_upload, storage_backend, upload_path_for_key
 
 
 def index():
@@ -39,7 +42,22 @@ def healthcheck():
 
 
 def uploaded_file(filename):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
+    as_attachment = str(request.args.get("download") or "").strip().lower() in {"1", "true", "yes"}
+    if storage_backend(current_app.config) == "s3":
+        payload = open_upload(filename, current_app.config)
+        if not payload:
+            return json_error("upload_not_found", 404)
+        return send_file(
+            BytesIO(payload["body"]),
+            mimetype=payload["content_type"],
+            download_name=payload["filename"],
+            as_attachment=as_attachment,
+        )
+
+    path = upload_path_for_key(filename, current_app.config)
+    if not path.exists():
+        return json_error("upload_not_found", 404)
+    return send_from_directory(path.parent, path.name, as_attachment=as_attachment)
 
 
 def serialize_review(review):

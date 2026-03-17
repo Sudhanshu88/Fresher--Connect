@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fresher Connect | Entry-Level Jobs and Hiring Platform for Freshers</title>
+  <meta name="description" content="Discover fresher-friendly jobs, detailed hiring flows, and structured dashboards for candidates and companies on Fresher Connect.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#123a72">
+  <link rel="stylesheet" href="styles/app.css">
+  <script defer src="services/api.js"></script>
+  <script defer src="services/app.js"></script>
+</head>
+<body data-page="landing">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark image-mark">
+          <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
+        </span>
+        <span>
+          <span class="brand-title">Fresher Connect</span>
+          <span class="brand-sub">Hiring journeys designed for both sides</span>
+        </span>
+      </a>
+      <div class="nav-actions header-actions">
+        <div class="menu-shell">
+          <button
+            class="menu-toggle"
+            type="button"
+            data-menu-toggle
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="headerMenu"
+          >
+            <span class="sr-only" id="menuButtonTitle">Open menu</span>
+            <span class="menu-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+
+          <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
+            <div class="menu-panel-head">
+              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Profile, settings, logout, and more</strong>
+            </div>
+            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
+            <button class="menu-item" type="button" data-menu-action="more">More</button>
+            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container landing-main">
+    <section class="hero hero-expanded">
+      <div class="hero-copy">
+        <span class="section-label">Entry-Level Hiring Platform</span>
+        <h1>Sharper job discovery for freshers. Cleaner hiring operations for companies.</h1>
+        <p>
+          Fresher Connect turns the full workflow into clear steps: discover jobs, open details,
+          apply once, and track every stage. Companies get a separate workspace to publish roles,
+          review candidates, and move the pipeline forward.
+        </p>
+
+        <div class="button-row">
+          <a class="btn primary" id="primaryCta" href="jobs.html">Explore jobs</a>
+          <a class="btn" id="secondaryCta" href="register.html">Create account</a>
+        </div>
+
+        <p class="helper-text" id="landingStatus">Built for structured fresher hiring and simple status tracking.</p>
+
+        <div class="trust-row">
+          <span class="trust-pill">Dedicated candidate dashboard</span>
+          <span class="trust-pill">Dedicated company dashboard</span>
+          <span class="trust-pill">Admin moderation and analytics workspace</span>
+        </div>
+      </div>
+
+      <section class="card hero-card primary hero-overview-card">
+        <span class="section-label">Platform Highlights</span>
+        <h2>Every important page is part of one connected flow.</h2>
+        <p class="muted">
+          Landing, auth, dashboards, job listing, job details, and application status all work as one
+          visual system instead of disconnected screens.
+        </p>
+        <div class="metric-grid">
+          <div class="metric">
+            <strong>8</strong>
+            <span>Important UI surfaces</span>
+          </div>
+          <div class="metric">
+            <strong>2</strong>
+            <span>Role-focused dashboards</span>
+          </div>
+          <div class="metric">
+            <strong>6</strong>
+            <span>Trackable hiring stages</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="page-intro">
+          <span class="section-label">Page Preview</span>
+          <h2>Important pages now feel connected and easier to scan.</h2>
+          <p class="muted">
+            The interface gives each step its own purpose without losing continuity across the product.
+          </p>
+        </div>
+      </div>
+
+      <div class="preview-grid">
+        <article class="preview-card">
+          <span class="preview-kicker">Landing</span>
+          <h3>Clear entry point</h3>
+          <p>Users understand where to start, which role to pick, and what pages exist before signing in.</p>
+        </article>
+        <article class="preview-card">
+          <span class="preview-kicker">Login/Register</span>
+          <h3>Fast role-based access</h3>
+          <p>Authentication feels lighter, with clear account guidance for freshers and companies.</p>
+        </article>
+        <article class="preview-card">
+          <span class="preview-kicker">Job Listing</span>
+          <h3>Search-first browsing</h3>
+          <p>Jobs can be searched, filtered, opened in detail view, and applied to without clutter.</p>
+        </article>
+        <article class="preview-card">
+          <span class="preview-kicker">Application Status</span>
+          <h3>Tracking without confusion</h3>
+          <p>Candidates can see the active stage, timeline, and next action from a dedicated page.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="page-intro">
+          <span class="section-label">Flow Overview</span>
+          <h2>One path for candidates. One path for recruiters.</h2>
+        </div>
+      </div>
+
+      <div class="workflow-grid">
+        <article class="workflow-step">
+          <span class="workflow-number">01</span>
+          <h3>Browse listings</h3>
+          <p>Freshers open the job listing page, search roles, and move into detailed job views.</p>
+        </article>
+        <article class="workflow-step">
+          <span class="workflow-number">02</span>
+          <h3>Review role details</h3>
+          <p>Each role shows company information, requirements, compensation, stages, and application method.</p>
+        </article>
+        <article class="workflow-step">
+          <span class="workflow-number">03</span>
+          <h3>Apply and track</h3>
+          <p>Applications move into a dedicated status page so the candidate always knows the current stage.</p>
+        </article>
+        <article class="workflow-step">
+          <span class="workflow-number">04</span>
+          <h3>Company updates pipeline</h3>
+          <p>Recruiters post jobs, manage applicants, and update the hiring pipeline from their own dashboard.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="reviewSection">
+      <div class="section-head">
+        <div class="page-intro">
+          <span class="section-label">Reviews</span>
+          <h2>Share your Fresher Connect review.</h2>
+          <p class="muted">
+            Add a quick review about the hiring flow, dashboard experience, or job search journey.
+          </p>
+        </div>
+      </div>
+
+      <div class="split-grid review-section-grid">
+        <section class="form-section-card review-form-card">
+          <div class="form-section-head">
+            <span class="preview-kicker">Give Review</span>
+            <h3>Tell us what is working and what should improve.</h3>
+            <p>Reviews added here appear instantly below and stay saved in the platform database.</p>
+          </div>
+
+          <form id="reviewForm" class="form-grid two-col">
+            <div class="field">
+              <label for="reviewName">Your name</label>
+              <input id="reviewName" name="name" type="text" placeholder="Enter your name" required>
+            </div>
+
+            <div class="field">
+              <label for="reviewRole">You are</label>
+              <select id="reviewRole" name="role">
+                <option value="fresher">Fresher</option>
+                <option value="company">Company</option>
+                <option value="guest">Guest</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="reviewRating">Rating</label>
+              <select id="reviewRating" name="rating">
+                <option value="5">5 stars</option>
+                <option value="4">4 stars</option>
+                <option value="3">3 stars</option>
+                <option value="2">2 stars</option>
+                <option value="1">1 star</option>
+              </select>
+            </div>
+
+            <div class="field full-span">
+              <label for="reviewText">Your review</label>
+              <textarea id="reviewText" name="review" rows="5" placeholder="Share your experience with Fresher Connect" required></textarea>
+            </div>
+
+            <div id="reviewMessage" class="form-message full-span"></div>
+
+            <button class="btn primary" type="submit">Submit review</button>
+          </form>
+        </section>
+
+        <section class="card review-list-shell">
+          <div class="form-section-head">
+            <span class="preview-kicker">Recent Reviews</span>
+            <h3>Latest feedback on the platform</h3>
+            <p>Freshers and companies can both leave quick feedback here.</p>
+          </div>
+          <div id="reviewList" class="review-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer footer-rich">
+    <div class="container footer-rich-grid">
+      <section class="footer-brand-block" aria-label="Fresher Connect footer introduction">
+        <a class="brand footer-brand" href="index.html">
+          <span class="brand-mark image-mark">
+            <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
+          </span>
+          <span>
+            <span class="brand-title footer-brand-title">Fresher Connect</span>
+            <span class="brand-sub footer-brand-sub">Connect with us</span>
+          </span>
+        </a>
+        <p class="footer-copy">
+          Fresher Connect helps freshers discover the right roles and gives companies a cleaner hiring workspace.
+        </p>
+        <div class="footer-social-row" aria-label="Social media links">
+          <a class="footer-social-link" href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="Fresher Connect on LinkedIn">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6.94 8.5H3.56V20h3.38zM5.25 3A1.97 1.97 0 1 0 5.3 6.94 1.97 1.97 0 0 0 5.25 3m6.82 5.5H8.83V20h3.24v-6.03c0-1.59.3-3.13 2.28-3.13 1.95 0 1.98 1.82 1.98 3.23V20h3.25v-6.59c0-3.24-.7-5.73-4.49-5.73-1.82 0-3.04 1-3.54 1.95h-.05z"/>
+            </svg>
+          </a>
+          <a class="footer-social-link" href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Fresher Connect on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3m0 1.8A2.7 2.7 0 0 0 4.8 7.5v9a2.7 2.7 0 0 0 2.7 2.7h9a2.7 2.7 0 0 0 2.7-2.7v-9a2.7 2.7 0 0 0-2.7-2.7zm9.45 1.35a1.05 1.05 0 1 1-1.05 1.05 1.05 1.05 0 0 1 1.05-1.05M12 7.8A4.2 4.2 0 1 1 7.8 12 4.2 4.2 0 0 1 12 7.8m0 1.8A2.4 2.4 0 1 0 14.4 12 2.4 2.4 0 0 0 12 9.6"/>
+            </svg>
+          </a>
+          <a class="footer-social-link" href="https://x.com" target="_blank" rel="noreferrer" aria-label="Fresher Connect on X">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.9 3H21l-4.6 5.26L21.8 21h-4.23l-3.3-4.95L9.9 21H7.8l4.92-5.62L2.2 3h4.34l2.98 4.47zm-1.48 16.2h1.17L5.9 4.7H4.65z"/>
+            </svg>
+          </a>
+          <a class="footer-social-link" href="https://www.youtube.com" target="_blank" rel="noreferrer" aria-label="Fresher Connect on YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21.58 7.19a2.98 2.98 0 0 0-2.1-2.11C17.63 4.6 12 4.6 12 4.6s-5.63 0-7.48.48a2.98 2.98 0 0 0-2.1 2.11A31.2 31.2 0 0 0 2 12a31.2 31.2 0 0 0 .42 4.81 2.98 2.98 0 0 0 2.1 2.11c1.85.48 7.48.48 7.48.48s5.63 0 7.48-.48a2.98 2.98 0 0 0 2.1-2.11A31.2 31.2 0 0 0 22 12a31.2 31.2 0 0 0-.42-4.81M9.75 15.08V8.92L15.25 12z"/>
+            </svg>
+          </a>
+        </div>
+      </section>
+
+      <nav class="footer-link-column" aria-label="Company links">
+        <span class="footer-column-title">Company</span>
+        <a class="footer-link" href="index.html">About us</a>
+        <a class="footer-link" href="jobs.html">Careers</a>
+        <a class="footer-link" href="company-login.html">Employer home</a>
+        <a class="footer-link" href="index.html">Sitemap</a>
+      </nav>
+
+      <nav class="footer-link-column" aria-label="Support links">
+        <span class="footer-column-title">Support</span>
+        <a class="footer-link" href="index.html">Credits</a>
+        <a class="footer-link" href="login.html">Help center</a>
+        <a class="footer-link" href="application-status.html">Summons/Notices</a>
+        <a class="footer-link" href="register.html">Grievances</a>
+        <a class="footer-link" href="register.html">Report issue</a>
+      </nav>
+
+      <nav class="footer-link-column" aria-label="Policy links">
+        <span class="footer-column-title">Policies</span>
+        <a class="footer-link" href="index.html">Privacy policy</a>
+        <a class="footer-link" href="index.html">Terms &amp; conditions</a>
+        <a class="footer-link" href="index.html">Fraud alert</a>
+        <a class="footer-link" href="index.html">Trust &amp; safety</a>
+      </nav>
+    </div>
+
+    <div class="container footer-bottom-row">
+      <span>Move from landing to listing, details, application, and dashboard without switching product context.</span>
+      <a class="text-link" href="jobs.html">Open job listing</a>
+    </div>
+  </footer>
+
+  <div class="sheet-backdrop hidden" data-menu-overlay></div>
+  <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
+    <div class="stack-between">
+      <div class="page-intro">
+        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
+        <h2 id="menuSheetTitle">Menu</h2>
+        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+      </div>
+      <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
+    </div>
+    <div id="menuSheetBody" class="sheet-body"></div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | Fresher Connect</title>
+  <meta name="description" content="Track saved jobs, applications, and candidate profile details on Fresher Connect.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#123a72">
+  <link rel="stylesheet" href="styles/app.css">
+  <script defer src="services/api.js"></script>
+  <script defer src="services/app.js"></script>
+</head>
+<body data-page="user">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark image-mark">
+          <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
+        </span>
+        <span>
+          <span class="brand-title">Fresher Connect</span>
+          <span class="brand-sub">Candidate dashboard</span>
+        </span>
+      </a>
+      <div class="nav-actions header-actions">
+        <div class="menu-shell">
+          <button
+            class="menu-toggle"
+            type="button"
+            data-menu-toggle
+            aria-label="User menu"
+            aria-expanded="false"
+            aria-controls="headerMenu"
+          >
+            <span class="sr-only" id="menuButtonTitle">User menu</span>
+            <span class="menu-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+
+          <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
+            <div class="menu-panel-head">
+              <span class="menu-panel-label" id="menuPanelLabel">Active account</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Loading account...</strong>
+            </div>
+            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
+            <button class="menu-item" type="button" data-menu-action="more">More</button>
+            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container dashboard-shell">
+    <section class="panel dashboard-hero-panel">
+      <div class="dashboard-hero-grid">
+        <div class="page-intro">
+          <span class="section-label">Candidate Dashboard</span>
+          <h1 class="page-title">Track your applications and keep the next job move visible.</h1>
+          <p class="muted">
+            Search live roles, open detailed job pages, apply once, and use the status page to see
+            exactly where each application stands.
+          </p>
+        </div>
+        <div class="hero-mini-grid" id="applicationSummaryGrid">
+          <div class="mini-stat">
+            <span>Applied</span>
+            <strong id="summaryApplied">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>In progress</span>
+            <strong id="summaryActive">0</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Offers</span>
+            <strong id="summaryOffered">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      <aside class="sidebar">
+        <section class="profile-card card" id="userProfileSection">
+          <div class="card-head">
+            <div class="page-intro">
+              <span class="section-label">Profile</span>
+              <h2 id="userName">Loading...</h2>
+              <p class="profile-meta" id="userMeta">Profile is loading.</p>
+            </div>
+            <button class="btn ghost compact-btn" type="button" id="editProfileButton">Edit profile</button>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="status-box">
+              <span>Profile</span>
+              <strong id="profileCompletion">0%</strong>
+            </div>
+            <div class="status-box">
+              <span>Applications</span>
+              <strong id="applicationCount">0</strong>
+            </div>
+          </div>
+
+          <div class="profile-summary-box" id="userSummaryBox">Your profile summary will appear here.</div>
+          <div class="detail-list" id="userDetailList"></div>
+        </section>
+
+        <section class="profile-card card">
+          <span class="section-label">Profile Tools</span>
+          <h3>Resume and tracking support</h3>
+          <div class="detail-list">
+            <div>Upload your latest resume from Edit profile so AI skill parsing can improve job matches.</div>
+            <div>Save jobs first if you want to compare openings before you apply.</div>
+            <div>Open any submitted application in a dedicated status page.</div>
+          </div>
+        </section>
+
+        <section class="profile-card card" id="userNotificationsSection">
+          <div class="section-head">
+            <div class="page-intro">
+              <span class="section-label">Notifications</span>
+              <h3>Job alerts and AI matches</h3>
+            </div>
+            <span class="tag" id="notificationCountBadge">0 unread</span>
+          </div>
+          <div id="notificationList" class="notification-list"></div>
+        </section>
+      </aside>
+
+      <section class="panel-stack">
+        <section class="panel" id="userJobsSection">
+          <div class="section-head">
+            <div class="page-intro">
+              <span class="section-label">Job Listing</span>
+              <h2 class="page-title page-title-small">Find fresher-friendly roles</h2>
+              <p class="muted">Use filters to refine the listing and open job details before applying.</p>
+            </div>
+            <a class="btn ghost compact-btn" href="jobs.html">Open full listing</a>
+          </div>
+
+          <div class="form-grid filter-grid">
+            <div class="field">
+              <label for="jobSearch">Search</label>
+              <input id="jobSearch" type="text" placeholder="Title, company, location">
+            </div>
+
+            <div class="field">
+              <label for="jobCategory">Category</label>
+              <select id="jobCategory">
+                <option value="">All categories</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="jobLocation">Location</label>
+              <input id="jobLocation" type="text" list="jobLocationList" placeholder="Remote, Noida, Pune">
+              <datalist id="jobLocationList"></datalist>
+            </div>
+            <div class="field">
+              <label for="jobCompany">Company</label>
+              <input id="jobCompany" type="text" list="jobCompanyList" placeholder="Search by company">
+              <datalist id="jobCompanyList"></datalist>
+            </div>
+            <div class="field">
+              <label for="jobSkills">Skills</label>
+              <input id="jobSkills" type="text" placeholder="Python, SQL, Git">
+            </div>
+            <div class="field">
+              <label for="jobExperience">Experience</label>
+              <select id="jobExperience">
+                <option value="">All experience levels</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="jobSalaryMin">Minimum Salary</label>
+              <input id="jobSalaryMin" type="number" min="0" step="1000" placeholder="300000">
+            </div>
+            <div class="field">
+              <label for="jobSalaryMax">Maximum Salary</label>
+              <input id="jobSalaryMax" type="number" min="0" step="1000" placeholder="800000">
+            </div>
+          </div>
+
+          <div class="chip-row dashboard-chip-row">
+            <span class="tag" id="jobCountChip">0 roles</span>
+            <span class="tag" id="applicationStageChip">0 active stages</span>
+          </div>
+
+          <div id="userFeedback" class="form-message"></div>
+        </section>
+
+        <section class="panel detail-highlight-panel">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Job Details Preview</span>
+              <h2 id="jobSpotlightHeading">Select a role from the listing</h2>
+            </div>
+            <a class="text-link" id="jobSpotlightLink" href="jobs.html">Open listing</a>
+          </div>
+          <div id="jobSpotlightCard" class="detail-highlight-card empty-state">
+            Search or browse jobs to see a focused role preview here.
+          </div>
+        </section>
+
+        <section class="panel" id="userSavedJobsSection">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Saved Jobs</span>
+              <h2 id="savedJobsHeading">Saved roles for later review</h2>
+            </div>
+          </div>
+          <div id="savedJobsGrid" class="jobs-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Live Job Cards</span>
+              <h2 id="jobsHeading">Available roles</h2>
+            </div>
+          </div>
+          <div id="jobsGrid" class="jobs-grid"></div>
+        </section>
+
+        <section class="panel" id="userApplicationsSection">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Application Status</span>
+              <h2>Your submitted applications</h2>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Company</th>
+                  <th>Applied</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <div class="sheet-backdrop hidden" data-menu-overlay></div>
+  <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
+    <div class="stack-between">
+      <div class="page-intro">
+        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
+        <h2 id="menuSheetTitle">Menu</h2>
+        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+      </div>
+      <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
+    </div>
+    <div id="menuSheetBody" class="sheet-body"></div>
+  </section>
+</body>
+</html>

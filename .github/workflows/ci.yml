@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   pull_request:
@@ -8,13 +8,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy latest main build to EC2"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
   packages: write
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: cicd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -32,6 +38,13 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Install backend dependencies
         run: pip install -r requirements.txt
 
@@ -40,6 +53,17 @@ jobs:
 
       - name: Verify mocked backend flow
         run: python scripts/verify_mock_backend_flow.py
+
+      - name: Syntax check static frontend scripts
+        run: |
+          node --check frontend/public/services/api.js
+          node --check frontend/public/services/app.js
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
 
       - name: Remove root .env before Compose validation
         run: rm -f .env
@@ -59,10 +83,13 @@ jobs:
     name: Publish Container Images
     runs-on: ubuntu-latest
     needs: ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       contents: read
       packages: write
+    outputs:
+      backend_image_ref: ${{ steps.refs.outputs.backend_image_ref }}
+      frontend_image_ref: ${{ steps.refs.outputs.frontend_image_ref }}
 
     steps:
       - name: Checkout repository
@@ -71,13 +98,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Prepare image names
-        id: prep
+      - name: Prepare image references
+        id: refs
         shell: bash
         run: |
           owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          echo "backend_image=ghcr.io/${owner}/fresher-connect-backend" >> "$GITHUB_OUTPUT"
-          echo "frontend_image=ghcr.io/${owner}/fresher-connect-frontend" >> "$GITHUB_OUTPUT"
+          backend_image="ghcr.io/${owner}/fresher-connect-backend"
+          frontend_image="ghcr.io/${owner}/fresher-connect-frontend"
+          sha_tag="sha-${GITHUB_SHA}"
+          echo "backend_image_ref=${backend_image}:${sha_tag}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image_ref=${frontend_image}:${sha_tag}" >> "$GITHUB_OUTPUT"
+          echo "backend_latest_ref=${backend_image}:latest" >> "$GITHUB_OUTPUT"
+          echo "frontend_latest_ref=${frontend_image}:latest" >> "$GITHUB_OUTPUT"
+          echo "oci_source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" >> "$GITHUB_OUTPUT"
+          echo "oci_revision=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -86,32 +120,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Backend image metadata
-        id: backend_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ steps.prep.outputs.backend_image }}
-          tags: |
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-
       - name: Publish backend image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: backend/Dockerfile.backend
           push: true
-          tags: ${{ steps.backend_meta.outputs.tags }}
-          labels: ${{ steps.backend_meta.outputs.labels }}
-
-      - name: Frontend image metadata
-        id: frontend_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ steps.prep.outputs.frontend_image }}
           tags: |
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+            ${{ steps.refs.outputs.backend_image_ref }}
+            ${{ steps.refs.outputs.backend_latest_ref }}
+          labels: |
+            org.opencontainers.image.source=${{ steps.refs.outputs.oci_source }}
+            org.opencontainers.image.revision=${{ steps.refs.outputs.oci_revision }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
 
       - name: Publish frontend image
         uses: docker/build-push-action@v6
@@ -119,5 +141,175 @@ jobs:
           context: .
           file: frontend/Dockerfile.frontend
           push: true
-          tags: ${{ steps.frontend_meta.outputs.tags }}
-          labels: ${{ steps.frontend_meta.outputs.labels }}
+          tags: |
+            ${{ steps.refs.outputs.frontend_image_ref }}
+            ${{ steps.refs.outputs.frontend_latest_ref }}
+          labels: |
+            org.opencontainers.image.source=${{ steps.refs.outputs.oci_source }}
+            org.opencontainers.image.revision=${{ steps.refs.outputs.oci_revision }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  deploy_ec2:
+    name: Deploy To EC2
+    runs-on: ubuntu-latest
+    needs: publish
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy)
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate EC2 secrets
+        run: |
+          test -n "${{ secrets.EC2_HOST }}" || (echo "Missing secret EC2_HOST" && exit 1)
+          test -n "${{ secrets.EC2_USER }}" || (echo "Missing secret EC2_USER" && exit 1)
+          test -n "${{ secrets.EC2_SSH_KEY }}" || (echo "Missing secret EC2_SSH_KEY" && exit 1)
+          test -n "${{ secrets.EC2_ENV_FILE_B64 }}" || (echo "Missing secret EC2_ENV_FILE_B64" && exit 1)
+          test -n "${{ secrets.GHCR_READ_TOKEN }}" || (echo "Missing secret GHCR_READ_TOKEN" && exit 1)
+
+      - name: Prepare deployment files
+        shell: bash
+        run: |
+          APP_DIR="${{ secrets.EC2_APP_DIR }}"
+          APP_DIR="${APP_DIR:-/opt/fresher-connect}"
+
+          GHCR_USERNAME="${{ secrets.GHCR_USERNAME }}"
+          if [ -z "$GHCR_USERNAME" ]; then
+            GHCR_USERNAME="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          fi
+
+          printf '%s' "${{ secrets.EC2_ENV_FILE_B64 }}" | base64 --decode > .ec2.env
+
+          {
+            echo "BACKEND_IMAGE=${{ needs.publish.outputs.backend_image_ref }}"
+            echo "FRONTEND_IMAGE=${{ needs.publish.outputs.frontend_image_ref }}"
+          } > .deploy-images.env
+
+          {
+            echo "GHCR_USERNAME=${GHCR_USERNAME}"
+            echo "GHCR_TOKEN=${{ secrets.GHCR_READ_TOKEN }}"
+          } > .ghcr.env
+
+          cat > docker-compose.ec2.yml <<'EOF'
+          services:
+            mongodb:
+              image: mongo:7
+              container_name: fresher-connect-mongodb
+              restart: unless-stopped
+              volumes:
+                - mongodb-data:/data/db
+              healthcheck:
+                test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
+                interval: 15s
+                timeout: 5s
+                retries: 5
+                start_period: 15s
+
+            backend:
+              image: ${BACKEND_IMAGE}
+              container_name: fresher-connect-backend
+              depends_on:
+                mongodb:
+                  condition: service_healthy
+              environment:
+                SECRET_KEY: ${SECRET_KEY}
+                JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+                SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+                MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/fresher_connect}
+                MAX_CONTENT_LENGTH: ${MAX_CONTENT_LENGTH:-2097152}
+                FRONTEND_ORIGINS: ${FRONTEND_ORIGINS}
+                DISABLE_SEED_DATA: ${DISABLE_SEED_DATA:-false}
+                STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+                S3_BUCKET: ${S3_BUCKET:-}
+                AWS_REGION: ${AWS_REGION:-}
+                S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+                S3_PREFIX: ${S3_PREFIX:-uploads}
+                RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+                RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-240}
+                RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+                AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-20}
+                AUTH_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:-300}
+              ports:
+                - "${BACKEND_PORT:-5000}:5000"
+              volumes:
+                - uploads-data:/app/instance/uploads
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/healthz').read()"]
+                interval: 30s
+                timeout: 5s
+                retries: 3
+                start_period: 20s
+
+            frontend:
+              image: ${FRONTEND_IMAGE}
+              container_name: fresher-connect-frontend
+              depends_on:
+                backend:
+                  condition: service_healthy
+              ports:
+                - "${FRONTEND_PORT:-3000}:3000"
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/index.html"]
+                interval: 30s
+                timeout: 5s
+                retries: 3
+                start_period: 15s
+
+          volumes:
+            mongodb-data:
+            uploads-data:
+          EOF
+
+          echo "APP_DIR=${APP_DIR}" >> "$GITHUB_ENV"
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          EC2_PORT="${{ secrets.EC2_PORT }}"
+          EC2_PORT="${EC2_PORT:-22}"
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$EC2_PORT" -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          echo "EC2_PORT=${EC2_PORT}" >> "$GITHUB_ENV"
+
+      - name: Create remote application directory
+        shell: bash
+        run: |
+          ssh -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p '$APP_DIR'"
+
+      - name: Upload compose and environment files
+        shell: bash
+        run: |
+          scp -P "$EC2_PORT" docker-compose.ec2.yml "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/docker-compose.yml"
+          scp -P "$EC2_PORT" .ec2.env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/.env"
+          scp -P "$EC2_PORT" .deploy-images.env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/.deploy-images.env"
+          scp -P "$EC2_PORT" .ghcr.env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/.ghcr.env"
+
+      - name: Deploy on EC2
+        shell: bash
+        run: |
+          ssh -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "bash -lc '
+            set -euo pipefail
+            cd \"$APP_DIR\"
+            set -a
+            . ./.ghcr.env
+            set +a
+            echo \"$GHCR_TOKEN\" | docker login ghcr.io -u \"$GHCR_USERNAME\" --password-stdin
+            rm -f .ghcr.env
+            docker compose --env-file .env --env-file .deploy-images.env -f docker-compose.yml pull
+            docker compose --env-file .env --env-file .deploy-images.env -f docker-compose.yml up -d --remove-orphans
+            for attempt in \$(seq 1 30); do
+              if curl -fsS http://127.0.0.1:\${BACKEND_PORT:-5000}/healthz >/dev/null && curl -fsS http://127.0.0.1:\${FRONTEND_PORT:-3000}/index.html >/dev/null; then
+                break
+              fi
+              sleep 5
+            done
+            docker compose --env-file .env --env-file .deploy-images.env -f docker-compose.yml ps
+            docker image prune -af --filter \"until=168h\" || true
+          '"

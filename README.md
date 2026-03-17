@@ -1,6 +1,6 @@
 # Fresher Connect
 
-Fresher Connect is a split frontend and backend hiring platform for freshers and recruiters. The frontend is a static app, the backend is a Flask API, and MongoDB stores users, companies, jobs, and applications.
+Fresher Connect is a fresher hiring platform with a Flask + MongoDB backend and a Next.js frontend runtime in `frontend/`. The live UI is served from `frontend/public/`, which holds the single static asset source used by the app.
 
 ## Repository Structure
 
@@ -16,11 +16,11 @@ Fresher--Connect
 |   |-- app.py
 |   `-- Dockerfile.backend
 |-- frontend
+|   |-- app
 |   |-- components
-|   |-- pages
-|   |-- services
-|   |-- styles
-|   |-- index.html
+|   |-- lib
+|   |-- public
+|   |-- package.json
 |   `-- Dockerfile.frontend
 |-- database
 |   |-- init.js
@@ -38,7 +38,8 @@ Fresher--Connect
 
 ## Stack
 
-- Frontend: static HTML, CSS, and JavaScript in `frontend/pages`, `frontend/styles`, and `frontend/services`
+- Frontend runtime: Next.js App Router + React + TypeScript + Zustand in `frontend/`
+- UI asset source: static HTML, CSS, and JavaScript in `frontend/public/`
 - Backend: Flask API with route, controller, middleware, and service layers in `backend/`
 - Database: MongoDB collections, plus SQL reference schema in `database/schema.sql`
 - Local verification mode: `mongomock`
@@ -50,7 +51,9 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
-python -m http.server 3000 -d frontend
+cd frontend
+npm install
+npm run dev
 ```
 
 Open:
@@ -58,7 +61,7 @@ Open:
 - Frontend: `http://127.0.0.1:3000/?api=http://127.0.0.1:5000`
 - Backend: `http://127.0.0.1:5000`
 
-Root HTML files in `frontend/` are compatibility redirects. Main page implementations live in `frontend/pages/`.
+The `frontend/` app redirects route entries such as `/`, `/jobs`, `/login`, and `/company` to the `.html` pages inside `frontend/public/`, so the visual output remains the same as the earlier UI while keeping only one asset source.
 
 ## Environment Variables
 
@@ -71,6 +74,11 @@ MONGODB_URI=mongodb://127.0.0.1:27017/fresher_connect
 MAX_CONTENT_LENGTH=2097152
 FRONTEND_ORIGINS=http://127.0.0.1:3000,http://localhost:3000
 DISABLE_SEED_DATA=false
+STORAGE_BACKEND=local
+S3_BUCKET=
+AWS_REGION=
+S3_ENDPOINT_URL=
+S3_PREFIX=uploads
 RATE_LIMIT_ENABLED=true
 RATE_LIMIT_MAX=240
 RATE_LIMIT_WINDOW_SECONDS=60
@@ -83,6 +91,7 @@ Notes:
 - If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`
 - Set `MONGODB_USE_MOCK=true` to run the backend against an in-memory mocked MongoDB
 - Set `DISABLE_SEED_DATA=true` to skip sample companies and jobs
+- Set `STORAGE_BACKEND=s3` with `S3_BUCKET` and `AWS_REGION` to store uploaded resumes in S3 instead of local disk
 
 ## Database
 
@@ -114,7 +123,15 @@ Frontend image:
 
 ```bash
 docker build -f frontend/Dockerfile.frontend -t fresher-connect-frontend .
-docker run -p 3000:80 fresher-connect-frontend
+docker run -p 3000:3000 fresher-connect-frontend
+```
+
+Frontend build:
+
+```bash
+cd frontend
+npm install
+npm run build
 ```
 
 Compose:
@@ -122,6 +139,8 @@ Compose:
 ```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
+
+Docker assets target the `frontend/` runtime and the single asset source in `frontend/public/`.
 
 ## CI
 
@@ -162,7 +181,9 @@ It verifies Python compilation, mocked backend flow, Docker Compose configuratio
 - `GET /api/company/dashboard`
 - `GET /api/company/jobs`
 - `GET /api/company/applications`
+- `POST /api/company/logo`
 - `PATCH /api/company/applications/:application_id`
+- `GET /api/uploads/:filename`
 - `GET /healthz`
 
 Legacy `/api/...` routes are still available for backward compatibility with the current frontend.

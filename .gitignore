@@ -5,3 +5,8 @@ __pycache__/
 *.log
 instance/
 .pytest_cache/
+node_modules/
+web/node_modules/
+.next/
+web/.next/
+npm-debug.log*

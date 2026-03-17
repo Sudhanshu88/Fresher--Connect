@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import request
 
@@ -148,6 +149,9 @@ def main():
     )
     assert resume_upload.status_code == 200, resume_upload.get_data(as_text=True)
     assert "Python" in resume_upload.get_json()["resume_analysis"]["skills"], resume_upload.get_json()
+    assert "/api/uploads/resumes/" in resume_upload.get_json()["resume_url"], resume_upload.get_json()
+    resume_download = client.get(urlparse(resume_upload.get_json()["resume_url"]).path, headers=auth_headers(user_token))
+    assert resume_download.status_code == 200, resume_download.get_data(as_text=True)
 
     dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_token))
     assert dashboard.status_code == 200, dashboard.get_data(as_text=True)
@@ -253,6 +257,21 @@ def main():
     )
     assert matched_job_create.status_code == 200, matched_job_create.get_data(as_text=True)
     assert matched_job_create.get_json()["notification_summary"]["notifications_created"] == 1, matched_job_create.get_json()
+
+    logo_upload = client.post(
+        "/api/company/logo",
+        data={"logo": (io.BytesIO(b"<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'></svg>"), "logo.svg")},
+        headers=auth_headers(company_login_token),
+        content_type="multipart/form-data",
+    )
+    assert logo_upload.status_code == 200, logo_upload.get_data(as_text=True)
+    assert "/api/uploads/company-logos/" in logo_upload.get_json()["logo_url"], logo_upload.get_json()
+    logo_fetch = client.get(urlparse(logo_upload.get_json()["logo_url"]).path)
+    assert logo_fetch.status_code == 200, logo_fetch.get_data(as_text=True)
+
+    company_dashboard_after_logo = client.get("/api/company/dashboard", headers=auth_headers(company_login_token))
+    assert company_dashboard_after_logo.status_code == 200, company_dashboard_after_logo.get_data(as_text=True)
+    assert company_dashboard_after_logo.get_json()["user"]["company_logo"] == logo_upload.get_json()["logo_url"], company_dashboard_after_logo.get_json()
 
     status_update = client.patch(
         f"/api/company/applications/{application_id}",
