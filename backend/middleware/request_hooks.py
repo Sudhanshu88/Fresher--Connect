@@ -5,6 +5,7 @@ from pymongo.errors import PyMongoError
 
 from backend.config.settings import is_allowed_origin
 from backend.services.platform_service import get_store, json_error
+from backend.services.rate_limit_service import check_rate_limit
 
 
 def register_request_hooks(app):
@@ -24,6 +25,15 @@ def register_request_hooks(app):
         if request.method == "OPTIONS":
             return ("", 204)
         return None
+
+    @app.before_request
+    def enforce_rate_limits():
+        result = check_rate_limit(app.config, request)
+        if result.get("allowed"):
+            return None
+        response, status_code = json_error("rate_limit_exceeded", 429)
+        response.headers["Retry-After"] = str(result.get("retry_after") or 60)
+        return response, status_code
 
     @app.before_request
     def bootstrap_database():

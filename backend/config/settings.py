@@ -79,4 +79,9 @@ def load_runtime_settings():
         "FC_ALLOWED_ORIGINS": build_allowed_origins(),
         "FC_MONGODB_URI": normalize_mongodb_uri(),
         "FC_USE_MOCK_DB": parse_bool(os.getenv("MONGODB_USE_MOCK"), default=False),
+        "FC_RATE_LIMIT_ENABLED": parse_bool(os.getenv("RATE_LIMIT_ENABLED"), default=True),
+        "FC_RATE_LIMIT_MAX": parse_optional_int(os.getenv("RATE_LIMIT_MAX")) or 240,
+        "FC_RATE_LIMIT_WINDOW": parse_optional_int(os.getenv("RATE_LIMIT_WINDOW_SECONDS")) or 60,
+        "FC_AUTH_RATE_LIMIT_MAX": parse_optional_int(os.getenv("AUTH_RATE_LIMIT_MAX")) or 20,
+        "FC_AUTH_RATE_LIMIT_WINDOW": parse_optional_int(os.getenv("AUTH_RATE_LIMIT_WINDOW_SECONDS")) or 300,
     }

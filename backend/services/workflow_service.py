@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from backend.services.audit_service import create_audit_event
 from backend.services.notification_service import create_notification
 from backend.services.platform_service import isoformat, parse_optional_datetime, utcnow
 
@@ -207,6 +208,21 @@ def process_application_sla(store, now=None):
                 email=company.get("email"),
             )
 
+        create_audit_event(
+            store,
+            action="sla_auto_rejected",
+            actor_role="system",
+            actor_name="SLA Monitor",
+            company_id=updated.get("company_id"),
+            target_type="application",
+            target_id=application_id,
+            summary=f"Auto-rejected application {application_id} after {APPLICATION_SLA_DAYS} days without recruiter action.",
+            details={
+                "job_id": updated.get("job_id"),
+                "candidate_id": updated.get("candidate_id") or updated.get("user_id"),
+                "reason": "decision_timeout",
+            },
+        )
         expired.append(updated)
 
     return {

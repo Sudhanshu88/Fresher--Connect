@@ -7,12 +7,15 @@ from pymongo import DESCENDING, ReturnDocument
 
 from backend.models.constants import TRACKABLE_STATUSES
 from backend.models.documents import build_job_document, merge_company_profile
+from backend.services.analytics_service import build_company_analytics
+from backend.services.audit_service import create_audit_event, list_recent_audit_events
 from backend.services.matching_service import match_candidate_to_job
 from backend.services.notification_service import notify_candidates_for_new_job
 from backend.services.platform_service import (
     build_job_location,
     extract_salary_bounds,
     get_store,
+    isoformat,
     json_error,
     parse_bool,
     parse_categories,
@@ -59,6 +62,8 @@ def company_dashboard(company):
             "applications": [_attach_application_match(store, item) for item in application_docs],
             "status_counts": status_counts,
             "overdue_applications": sum(1 for item in application_docs if item.get("status") in {"applied", "reviewing"} and parse_optional_datetime(item.get("decision_deadline")) and parse_optional_datetime(item.get("decision_deadline")) < utcnow()),
+            "analytics": build_company_analytics(store, company["company_id"]),
+            "recent_activity": list_recent_audit_events(store, company_id=company["company_id"], limit=10),
         }
     )
 
@@ -164,6 +169,23 @@ def create_company_job(company):
         job["is_active"] = False
 
     store.jobs.insert_one(job)
+    create_audit_event(
+        store,
+        action="company_job_created",
+        actor=company,
+        company_id=company["company_id"],
+        target_type="job",
+        target_id=job.get("job_id") or job.get("id"),
+        summary=(
+            f"Posted {job.get('title') or 'a new role'}"
+            + (" and queued it for verification review." if verification_status != "verified" else ".")
+        ),
+        details={
+            "job_title": job.get("title"),
+            "moderation_status": job.get("moderation_status"),
+            "is_active": bool(job.get("is_active", True)),
+        },
+    )
     notification_summary = (
         notify_candidates_for_new_job(store, job)
         if verification_status == "verified" and job.get("moderation_status") == "approved"
@@ -226,4 +248,22 @@ def update_company_application(company, application_id):
     candidate = store.get_account("fresher", application.get("candidate_id") or application.get("user_id"))
     job = store.jobs.find_one({"$or": [{"job_id": application.get("job_id")}, {"id": application.get("job_id")}]}, {"_id": 0}) or {}
     notify_candidate_status_change(store, application, candidate, job, original.get("status"))
+    create_audit_event(
+        store,
+        action="company_application_updated",
+        actor=company,
+        company_id=company["company_id"],
+        target_type="application",
+        target_id=application_id,
+        summary=(
+            f"Moved {(candidate or {}).get('name') or 'candidate'} for {job.get('title') or 'the role'} "
+            f"from {str(original.get('status') or 'applied').replace('_', ' ')} to {status.replace('_', ' ')}."
+        ),
+        details={
+            "previous_status": original.get("status"),
+            "new_status": status,
+            "interview_at": isoformat(parse_optional_datetime(application.get("interview_at"))),
+            "decision_reason": application.get("decision_reason"),
+        },
+    )
     return jsonify({"ok": True, "application": _attach_application_match(store, application)})

@@ -441,6 +441,7 @@ class MongoStore:
         self.saved_jobs = self.db["saved_jobs"]
         self.notifications = self.db["notifications"]
         self.reviews = self.db["reviews"]
+        self.audit_logs = self.db["audit_logs"]
         self.counters = self.db["counters"]
 
     def ping(self):
@@ -488,6 +489,10 @@ class MongoStore:
         )
         self.reviews.create_index([("id", ASCENDING)], unique=True, name="uq_reviews_id")
         self.reviews.create_index([("created_at", DESCENDING)], name="ix_reviews_created_at")
+        self.audit_logs.create_index([("id", ASCENDING)], unique=True, name="uq_audit_logs_id")
+        self.audit_logs.create_index([("created_at", DESCENDING)], name="ix_audit_logs_created_at")
+        self.audit_logs.create_index([("company_id", ASCENDING), ("created_at", DESCENDING)], name="ix_audit_logs_company_created")
+        self.audit_logs.create_index([("target_type", ASCENDING), ("target_id", ASCENDING), ("created_at", DESCENDING)], name="ix_audit_logs_target")
 
     def next_sequence(self, name):
         doc = self.counters.find_one_and_update(

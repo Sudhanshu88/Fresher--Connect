@@ -6,6 +6,8 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+from flask import request
+
 
 os.environ.setdefault("MONGODB_USE_MOCK", "true")
 os.environ.setdefault("DISABLE_SEED_DATA", "true")
@@ -19,6 +21,7 @@ from backend.app import create_app
 from backend.models.documents import build_user_document
 from backend.services.auth_service import hash_password
 from backend.services.platform_service import utcnow
+from backend.services.rate_limit_service import check_rate_limit
 from backend.services.workflow_service import process_application_sla
 
 
@@ -90,6 +93,14 @@ def main():
     list_jobs = client.get("/jobs")
     assert list_jobs.status_code == 200, list_jobs.get_data(as_text=True)
     assert any(job["id"] == job_id for job in list_jobs.get_json()["jobs"])
+    assert list_jobs.get_json()["pagination"]["page"] == 1, list_jobs.get_json()
+
+    paged_jobs = client.get("/api/jobs?page=1&page_size=1")
+    assert paged_jobs.status_code == 200, paged_jobs.get_data(as_text=True)
+    paged_payload = paged_jobs.get_json()
+    assert len(paged_payload["jobs"]) == 1, paged_payload
+    assert paged_payload["pagination"]["total"] >= 1, paged_payload
+    assert paged_payload["pagination"]["page_size"] == 1, paged_payload
 
     job_detail = client.get(f"/jobs/{job_id}")
     assert job_detail.status_code == 200, job_detail.get_data(as_text=True)
@@ -197,9 +208,12 @@ def main():
 
     company_dashboard = client.get("/api/company/dashboard", headers=auth_headers(company_login_token))
     assert company_dashboard.status_code == 200, company_dashboard.get_data(as_text=True)
-    applications = company_dashboard.get_json()["applications"]
+    company_dashboard_payload = company_dashboard.get_json()
+    applications = company_dashboard_payload["applications"]
     assert applications[0]["id"] == application_id, applications
     assert applications[0]["match_score"] >= 60, applications[0]
+    assert company_dashboard_payload["analytics"]["total_applicants"] == 1, company_dashboard_payload
+    assert company_dashboard_payload["recent_activity"], company_dashboard_payload
 
     matched_job_create = client.post(
         "/jobs",
@@ -380,6 +394,7 @@ def main():
     assert admin_dashboard.status_code == 200, admin_dashboard.get_data(as_text=True)
     assert admin_dashboard.get_json()["analytics"]["saved_jobs"] == 1
     assert admin_dashboard.get_json()["analytics"]["verified_companies"] == 1, admin_dashboard.get_json()
+    assert admin_dashboard.get_json()["recent_activity"], admin_dashboard.get_json()
 
     pending_company = client.patch(
         f"/api/admin/users/{company_register.get_json()['user']['id']}",
@@ -469,6 +484,18 @@ def main():
 
     health = client.get("/healthz")
     assert health.status_code == 200, health.get_data(as_text=True)
+
+    with app.test_request_context("/auth/login", headers={"X-Forwarded-For": "203.0.113.9"}):
+        original_max = app.config["FC_AUTH_RATE_LIMIT_MAX"]
+        original_window = app.config["FC_AUTH_RATE_LIMIT_WINDOW"]
+        app.config["FC_AUTH_RATE_LIMIT_MAX"] = 1
+        app.config["FC_AUTH_RATE_LIMIT_WINDOW"] = 60
+        first_limit = check_rate_limit(app.config, request)
+        second_limit = check_rate_limit(app.config, request)
+        app.config["FC_AUTH_RATE_LIMIT_MAX"] = original_max
+        app.config["FC_AUTH_RATE_LIMIT_WINDOW"] = original_window
+        assert first_limit["allowed"] is True, first_limit
+        assert second_limit["allowed"] is False, second_limit
 
     print("mock_backend_flow_ok")
 

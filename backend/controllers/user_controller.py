@@ -8,6 +8,7 @@ from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 
+from backend.services.audit_service import create_audit_event
 from backend.services.matching_service import attach_job_match
 from backend.services.notification_service import serialize_notification
 from backend.services.platform_service import (
@@ -160,6 +161,20 @@ def create_application(user, job_id=None):
     candidate = store.get_account("fresher", candidate_id)
     if candidate:
         notify_application_submitted(store, application, candidate, job)
+        create_audit_event(
+            store,
+            action="candidate_applied",
+            actor=candidate,
+            company_id=job.get("company_id"),
+            target_type="application",
+            target_id=application["application_id"],
+            summary=f"{candidate.get('name') or 'Candidate'} applied to {job.get('title') or 'the role'}.",
+            details={
+                "job_id": job.get("job_id") or job.get("id"),
+                "job_title": job.get("title"),
+                "status": application.get("status"),
+            },
+        )
 
     return jsonify({"ok": True, "application": serialize_application(store, application)})
 

@@ -12,6 +12,12 @@ def _parse_terms(value):
     return [item.strip().lower() for item in str(value or "").split(",") if item.strip()]
 
 
+def _pagination_params():
+    page = parse_optional_int(request.args.get("page")) or 1
+    page_size = parse_optional_int(request.args.get("page_size")) or 9
+    return max(1, page), max(1, min(page_size, 24))
+
+
 def _build_filter_options(jobs):
     locations = sorted({str(job.get("location") or "").strip() for job in jobs if str(job.get("location") or "").strip()}, key=str.lower)
     companies = sorted({str(job.get("company_name") or "").strip() for job in jobs if str(job.get("company_name") or "").strip()}, key=str.lower)
@@ -84,6 +90,7 @@ def list_jobs():
     store = get_store()
     viewer = current_account(store)
     candidate = viewer if viewer and viewer.get("role") == "fresher" else None
+    page, page_size = _pagination_params()
     filters = {
         "search": str(request.args.get("search") or "").strip().lower(),
         "category": str(request.args.get("category") or "").strip().lower(),
@@ -100,7 +107,12 @@ def list_jobs():
         for job in store.jobs.find({}, {"_id": 0}).sort("posted_date", DESCENDING)
         if job_is_active(job)
     ]
-    jobs = [job for job in all_jobs if _matches_job(job, filters)]
+    filtered_jobs = [job for job in all_jobs if _matches_job(job, filters)]
+    total = len(filtered_jobs)
+    total_pages = max(1, ((total - 1) // page_size) + 1) if total else 1
+    current_page = min(page, total_pages)
+    start = (current_page - 1) * page_size
+    jobs = filtered_jobs[start:start + page_size]
 
     return jsonify(
         {
@@ -108,6 +120,14 @@ def list_jobs():
             "jobs": jobs,
             "categories": distinct_categories(all_jobs),
             "filters": _build_filter_options(all_jobs),
+            "pagination": {
+                "page": current_page,
+                "page_size": page_size,
+                "total": total,
+                "total_pages": total_pages,
+                "has_prev": current_page > 1,
+                "has_next": current_page < total_pages,
+            },
             "applied_filters": {
                 "search": filters["search"],
                 "category": filters["category"],
@@ -117,6 +137,8 @@ def list_jobs():
                 "skills": request.args.get("skills") or "",
                 "salary_min": filters["salary_min"],
                 "salary_max": filters["salary_max"],
+                "page": current_page,
+                "page_size": page_size,
             },
         }
     )

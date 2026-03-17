@@ -7,9 +7,9 @@
   <meta name="description" content="Manage users, jobs, reviews, and moderation controls in the Fresher Connect admin dashboard.">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#123a72">
-  <link rel="stylesheet" href="../styles/app.css">
-  <script defer src="../services/api.js"></script>
-  <script defer src="../services/app.js"></script>
+  <link rel="stylesheet" href="../styles/app.css?v=20260317-phase1">
+  <script defer src="../services/api.js?v=20260317-phase1"></script>
+  <script defer src="../services/app.js?v=20260317-phase1"></script>
 </head>
 <body data-page="admin">
   <header class="topbar">
@@ -94,6 +94,16 @@
       </div>
       <div id="adminAnalyticsGrid" class="stats-grid"></div>
       <div id="adminStatusGrid" class="status-grid admin-status-grid"></div>
+    </section>
+
+    <section class="panel" id="adminAuditSection">
+      <div class="section-head">
+        <div>
+          <span class="section-label">Audit Trail</span>
+          <h2>Recent platform activity</h2>
+        </div>
+      </div>
+      <div id="adminAuditList" class="activity-list"></div>
     </section>
 
     <section class="panel" id="adminUsersSection">

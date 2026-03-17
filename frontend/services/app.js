@@ -1148,6 +1148,12 @@
     if (filters.salaryMax !== null) {
       params.set("salary_max", String(filters.salaryMax));
     }
+    if (toNumber(filters.page) !== null) {
+      params.set("page", String(Math.max(1, toNumber(filters.page))));
+    }
+    if (toNumber(filters.pageSize) !== null) {
+      params.set("page_size", String(Math.max(1, toNumber(filters.pageSize))));
+    }
     var query = params.toString();
     return "/api/jobs" + (query ? "?" + query : "");
   }
@@ -1584,6 +1590,55 @@
       return "";
     }
     return "Decision by " + window.FC_API.formatDate(application.decision_deadline) + (application.is_overdue ? " (overdue)" : "");
+  }
+
+  function formatPercentValue(value) {
+    var numeric = toNumber(value);
+    if (numeric === null) {
+      return "0%";
+    }
+    return (Math.round(numeric * 10) / 10).toString().replace(/\.0$/, "") + "%";
+  }
+
+  function formatHoursValue(value) {
+    var numeric = toNumber(value);
+    if (numeric === null) {
+      return "0h";
+    }
+    return (Math.round(numeric * 10) / 10).toString().replace(/\.0$/, "") + "h";
+  }
+
+  function auditActivityMarkup(item) {
+    var summary = item.summary || toTitleCase(String(item.action || "activity").replace(/_/g, " "));
+    var actor = item.actor_name || toTitleCase(item.actor_role || "system");
+    var target = item.target_type ? toTitleCase(item.target_type) + " #" + String(item.target_id || "-") : "Platform";
+
+    return (
+      '<article class="activity-card">' +
+      '<div class="activity-summary">' + window.FC_API.escapeHtml(summary) + "</div>" +
+      '<div class="activity-meta">' +
+      window.FC_API.escapeHtml(actor) +
+      " | " +
+      window.FC_API.escapeHtml(target) +
+      " | " +
+      window.FC_API.escapeHtml(formatDateTime(item.created_at)) +
+      "</div>" +
+      "</article>"
+    );
+  }
+
+  function renderActivityList(targetId, items, emptyMessage) {
+    var target = byId(targetId);
+    if (!target) {
+      return;
+    }
+
+    if (!(items || []).length) {
+      target.innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(emptyMessage || "No recent activity yet.") + "</div>";
+      return;
+    }
+
+    target.innerHTML = (items || []).map(auditActivityMarkup).join("");
   }
 
   function resumeParserLabel(status) {
@@ -2509,14 +2564,31 @@
     var grid = byId("jobsPageGrid");
     var heading = byId("jobsPageHeading");
     var jobs = state.jobsPage.jobs || [];
+    var pagination = state.jobsPage.pagination || {};
     var applicationMap = computeApplicationMap(state.jobsPage.applications || []);
     var savedJobMap = computeSavedJobMap(state.jobsPage.saved_jobs || []);
     var allowApply = Boolean(state.currentUser && state.currentUser.role === "fresher");
     var allowSave = allowApply;
+    var total = toNumber(pagination.total);
+    var pageSize = toNumber(pagination.page_size) || jobs.length;
+    var page = toNumber(pagination.page) || 1;
+    var start = jobs.length ? ((page - 1) * pageSize) + 1 : 0;
+    var end = jobs.length ? start + jobs.length - 1 : 0;
 
-    heading.textContent = jobs.length + " jobs match your filters";
-    byId("jobsPageCount").textContent = String(jobs.length);
+    heading.textContent = String(total !== null ? total : jobs.length) + " jobs match your filters";
+    byId("jobsPageCount").textContent = String(total !== null ? total : jobs.length);
     byId("jobsPageCategories").textContent = String((((state.jobsPage.filter_options || {}).categories) || []).length);
+    if (byId("jobsPagePaginationSummary")) {
+      byId("jobsPagePaginationSummary").textContent = jobs.length
+        ? "Showing " + start + "-" + end + " of " + String(total !== null ? total : jobs.length) + " roles."
+        : "Showing 0 roles.";
+    }
+    if (byId("jobsPagePrev")) {
+      byId("jobsPagePrev").disabled = !pagination.has_prev;
+    }
+    if (byId("jobsPageNext")) {
+      byId("jobsPageNext").disabled = !pagination.has_next;
+    }
 
     if (!jobs.length) {
       grid.innerHTML = '<div class="empty-state">No jobs match the current listing filters.</div>';
@@ -2540,6 +2612,19 @@
     state.jobsPage.jobs = jobsResponse.jobs || [];
     state.jobsPage.categories = jobsResponse.categories || [];
     state.jobsPage.filter_options = jobsResponse.filters || buildJobFilterOptions(state.jobsPage.jobs);
+    state.jobsPage.pagination = jobsResponse.pagination || {};
+    state.jobsPage.query = {
+      search: filters.search || "",
+      category: filters.category || "",
+      location: filters.location || "",
+      company: filters.company || "",
+      skills: filters.skills || "",
+      experience: filters.experience || "",
+      salaryMin: filters.salaryMin,
+      salaryMax: filters.salaryMax,
+      page: toNumber(filters.page) || 1,
+      pageSize: toNumber(filters.pageSize) || 9
+    };
     populateJobFilterControls("jobsPage", state.jobsPage.jobs, state.jobsPage.filter_options);
     renderJobsPage();
   }
@@ -2581,10 +2666,12 @@
         jobs: [],
         categories: [],
         filter_options: {},
+        pagination: {},
+        query: { page: 1, pageSize: 9 },
         applications: applications,
         saved_jobs: savedJobs
       };
-      await loadJobsPageListing(readJobFilters("jobsPage"));
+      await loadJobsPageListing(Object.assign(readJobFilters("jobsPage"), { page: 1, pageSize: 9 }));
     } catch (error) {
       setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load job listing."), "error");
       return;
@@ -2593,7 +2680,7 @@
     var refreshJobsPage = debounce(async function () {
       try {
         setMessage(byId("jobsPageMessage"), "Updating filters...");
-        await loadJobsPageListing(readJobFilters("jobsPage"));
+        await loadJobsPageListing(Object.assign(readJobFilters("jobsPage"), { page: 1, pageSize: 9 }));
         setMessage(byId("jobsPageMessage"), "", "");
       } catch (error) {
         setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update listing filters."), "error");
@@ -2619,6 +2706,30 @@
         field.addEventListener("change", refreshJobsPage);
       }
     });
+    if (byId("jobsPagePrev")) {
+      byId("jobsPagePrev").addEventListener("click", async function () {
+        if (!state.jobsPage || !state.jobsPage.pagination || !state.jobsPage.pagination.has_prev) {
+          return;
+        }
+        try {
+          await loadJobsPageListing(Object.assign({}, state.jobsPage.query || {}, { page: Math.max(1, (toNumber((state.jobsPage.pagination || {}).page) || 1) - 1) }));
+        } catch (error) {
+          setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load the previous page."), "error");
+        }
+      });
+    }
+    if (byId("jobsPageNext")) {
+      byId("jobsPageNext").addEventListener("click", async function () {
+        if (!state.jobsPage || !state.jobsPage.pagination || !state.jobsPage.pagination.has_next) {
+          return;
+        }
+        try {
+          await loadJobsPageListing(Object.assign({}, state.jobsPage.query || {}, { page: (toNumber((state.jobsPage.pagination || {}).page) || 1) + 1 }));
+        } catch (error) {
+          setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load the next page."), "error");
+        }
+      });
+    }
     byId("jobsPageGrid").addEventListener("click", async function (event) {
       var applyButton = event.target.closest(".apply-button");
       var saveButton = event.target.closest(".save-job-button");
@@ -3046,6 +3157,58 @@
       .join("");
   }
 
+  function renderCompanyAnalytics(analytics) {
+    var grid = byId("companyAnalyticsGrid");
+    var topJobs = byId("companyTopJobsList");
+    if (!grid) {
+      return;
+    }
+
+    grid.innerHTML = [
+      { label: "Decision rate", value: formatPercentValue(analytics.decision_rate) },
+      { label: "Shortlist rate", value: formatPercentValue(analytics.shortlisted_rate) },
+      { label: "Interview rate", value: formatPercentValue(analytics.interview_rate) },
+      { label: "Offer rate", value: formatPercentValue(analytics.offer_rate) },
+      { label: "Avg decision time", value: formatHoursValue(analytics.avg_decision_hours) },
+      { label: "SLA breaches", value: String(analytics.sla_breaches || 0) }
+    ]
+      .map(function (item) {
+        return (
+          '<div class="metric admin-metric">' +
+          '<span class="detail-label">' + window.FC_API.escapeHtml(item.label) + "</span>" +
+          '<strong>' + window.FC_API.escapeHtml(item.value) + "</strong>" +
+          "</div>"
+        );
+      })
+      .join("");
+
+    if (!topJobs) {
+      return;
+    }
+
+    if (!((analytics.top_jobs || []).length)) {
+      topJobs.innerHTML = '<div class="empty-state">Post roles and review applicants to unlock job-level analytics.</div>';
+      return;
+    }
+
+    topJobs.innerHTML = (analytics.top_jobs || [])
+      .map(function (job) {
+        return (
+          '<article class="activity-card">' +
+          '<div class="activity-summary">' + window.FC_API.escapeHtml(job.title || "Job") + "</div>" +
+          '<div class="activity-meta">' +
+          window.FC_API.escapeHtml(String(job.application_count || 0)) +
+          " applicants | Decision rate " +
+          window.FC_API.escapeHtml(formatPercentValue(job.decision_rate)) +
+          " | Interviews " +
+          window.FC_API.escapeHtml(String(job.interview_count || 0)) +
+          "</div>" +
+          "</article>"
+        );
+      })
+      .join("");
+  }
+
   function companyVerificationOptions(selected) {
     return ["verified", "pending", "rejected"]
       .map(function (status) {
@@ -3187,6 +3350,7 @@
     });
 
     renderAdminAnalytics(data.analytics || {});
+    renderActivityList("adminAuditList", data.recent_activity || [], "No audit activity recorded yet.");
     renderAdminUsers();
     renderAdminJobs();
   }
@@ -3613,6 +3777,8 @@
     state.companyDashboard = data;
     renderCompanyProfile(data.user);
     renderStatusGrid(data.status_counts || {});
+    renderCompanyAnalytics(data.analytics || {});
+    renderActivityList("companyRecentActivity", data.recent_activity || [], "No company activity recorded yet.");
     renderCompanyJobs();
     renderCompanyApplications();
   }

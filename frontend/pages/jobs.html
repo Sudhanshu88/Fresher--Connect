@@ -7,9 +7,9 @@
   <meta name="description" content="Browse entry-level jobs, internships, and fresher-friendly roles with searchable filters, compensation details, and hiring stages.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#123a72">
-  <link rel="stylesheet" href="../styles/app.css">
-  <script defer src="../services/api.js"></script>
-  <script defer src="../services/app.js"></script>
+  <link rel="stylesheet" href="../styles/app.css?v=20260317-phase1">
+  <script defer src="../services/api.js?v=20260317-phase1"></script>
+  <script defer src="../services/app.js?v=20260317-phase1"></script>
 </head>
 <body data-page="jobs">
   <header class="topbar">
@@ -133,6 +133,13 @@
         <div>
           <span class="section-label">Results</span>
           <h2 id="jobsPageHeading">Available jobs</h2>
+        </div>
+      </div>
+      <div class="listing-toolbar">
+        <p class="helper-text" id="jobsPagePaginationSummary">Showing 0 roles.</p>
+        <div class="button-row">
+          <button class="btn ghost compact-btn" id="jobsPagePrev" type="button">Previous</button>
+          <button class="btn ghost compact-btn" id="jobsPageNext" type="button">Next</button>
         </div>
       </div>
       <div id="jobsPageGrid" class="jobs-grid"></div>

@@ -7,9 +7,9 @@
   <meta name="description" content="Manage jobs, candidates, and hiring workflows in the company dashboard.">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#123a72">
-  <link rel="stylesheet" href="../styles/app.css?v=20260317-seo-refresh">
-  <script defer src="../services/api.js?v=20260317-seo-refresh"></script>
-  <script defer src="../services/app.js?v=20260317-seo-refresh"></script>
+  <link rel="stylesheet" href="../styles/app.css?v=20260317-phase1">
+  <script defer src="../services/api.js?v=20260317-phase1"></script>
+  <script defer src="../services/app.js?v=20260317-phase1"></script>
 </head>
 <body data-page="company">
   <header class="topbar">
@@ -126,6 +126,18 @@
             </div>
           </div>
           <div id="statusGrid" class="status-grid"></div>
+          <div id="companyAnalyticsGrid" class="stats-grid"></div>
+          <div id="companyTopJobsList" class="activity-list"></div>
+        </section>
+
+        <section class="panel" id="companyActivitySection">
+          <div class="section-head">
+            <div>
+              <span class="section-label">Recent Activity</span>
+              <h2>Trace company actions and SLA events</h2>
+            </div>
+          </div>
+          <div id="companyRecentActivity" class="activity-list"></div>
         </section>
 
         <section class="panel" id="companyJobFormSection">

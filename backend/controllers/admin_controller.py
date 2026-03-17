@@ -4,6 +4,7 @@ from flask import jsonify, request
 from pymongo import DESCENDING
 
 from backend.models.constants import TRACKABLE_STATUSES
+from backend.services.audit_service import create_audit_event, list_recent_audit_events
 from backend.services.platform_service import get_store, job_is_active, json_error, serialize_job, serialize_user, utcnow
 from backend.services.workflow_service import normalize_company_verification_status, process_application_sla
 
@@ -85,6 +86,7 @@ def admin_dashboard(admin):
             "analytics": _analytics_snapshot(store),
             "users": users,
             "jobs": jobs,
+            "recent_activity": list_recent_audit_events(store, limit=14),
         }
     )
 
@@ -109,16 +111,22 @@ def update_admin_user(admin, user_id):
         return json_error("cannot_disable_self", 400)
 
     updated = dict(target)
+    change_details = {}
     if "is_active" in payload:
         updated["is_active"] = bool(payload.get("is_active"))
+        if bool(target.get("is_active", True)) != updated["is_active"]:
+            change_details["is_active"] = updated["is_active"]
     if payload.get("role") in {"candidate", "company", "admin"}:
         updated["role"] = str(payload.get("role")).strip().lower()
+        if str(target.get("role") or "").strip().lower() != updated["role"]:
+            change_details["role"] = updated["role"]
     updated["updated_at"] = utcnow()
     store.users.replace_one({"id": int(user_id)}, updated)
 
     company = store.companies.find_one({"owner_user_id": int(user_id)}, {"_id": 0})
     if company and "verification_status" in payload:
         verification_status = normalize_company_verification_status(payload.get("verification_status"), default=company.get("verification_status") or "verified")
+        change_details["verification_status"] = verification_status
         store.companies.update_one(
             {"company_id": company.get("company_id") or company.get("id")},
             {
@@ -127,6 +135,18 @@ def update_admin_user(admin, user_id):
                     "verification_updated_at": utcnow(),
                 }
             },
+        )
+
+    if change_details:
+        create_audit_event(
+            store,
+            action="admin_user_updated",
+            actor=admin,
+            company_id=(company or {}).get("company_id"),
+            target_type="user",
+            target_id=int(user_id),
+            summary=f"Updated access settings for {updated.get('email') or updated.get('name') or 'user'}.",
+            details=change_details,
         )
 
     return jsonify({"ok": True, "user": _serialize_managed_user(store, updated)})
@@ -164,6 +184,19 @@ def moderate_admin_job(admin, job_id):
         updated["is_active"] = False
     updated["updated_at"] = utcnow()
     store.jobs.replace_one({"id": int(job_id)}, updated)
+    create_audit_event(
+        store,
+        action="admin_job_moderated",
+        actor=admin,
+        company_id=updated.get("company_id"),
+        target_type="job",
+        target_id=int(job_id),
+        summary=f"Set moderation for {updated.get('title') or 'job'} to {moderation_status}.",
+        details={
+            "moderation_status": moderation_status,
+            "is_active": bool(updated.get("is_active", True)),
+        },
+    )
     serialized = serialize_job(updated)
     serialized["is_active"] = bool(updated.get("is_active", True))
     serialized["publicly_visible"] = job_is_active(updated)
