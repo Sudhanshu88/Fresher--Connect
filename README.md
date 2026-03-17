@@ -66,10 +66,16 @@ Copy `.env.example` to `.env` if needed.
 
 ```env
 SESSION_COOKIE_SECURE=false
+JWT_SECRET_KEY=change-this-before-production
 MONGODB_URI=mongodb://127.0.0.1:27017/fresher_connect
 MAX_CONTENT_LENGTH=2097152
 FRONTEND_ORIGINS=http://127.0.0.1:3000,http://localhost:3000
 DISABLE_SEED_DATA=false
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_MAX=240
+RATE_LIMIT_WINDOW_SECONDS=60
+AUTH_RATE_LIMIT_MAX=20
+AUTH_RATE_LIMIT_WINDOW_SECONDS=300
 ```
 
 Notes:
