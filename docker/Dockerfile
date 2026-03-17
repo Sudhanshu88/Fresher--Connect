@@ -53,13 +53,13 @@ CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "
 
 FROM node:20-alpine AS frontend-builder
 
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 
 WORKDIR /app
 
 COPY frontend/package.json frontend/package-lock.json ./
 
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY frontend/app ./app
 COPY frontend/components ./components
