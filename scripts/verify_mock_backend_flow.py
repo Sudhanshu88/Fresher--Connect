@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import os
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 
@@ -18,6 +19,7 @@ from backend.app import create_app
 from backend.models.documents import build_user_document
 from backend.services.auth_service import hash_password
 from backend.services.platform_service import utcnow
+from backend.services.workflow_service import process_application_sla
 
 
 def auth_headers(token):
@@ -169,7 +171,9 @@ def main():
         headers=auth_headers(user_token),
     )
     assert apply_once.status_code == 200, apply_once.get_data(as_text=True)
-    application_id = apply_once.get_json()["application"]["id"]
+    application_payload = apply_once.get_json()["application"]
+    application_id = application_payload["id"]
+    assert application_payload["decision_deadline"], application_payload
 
     apply_twice = client.post(
         f"/apply/{job_id}",
@@ -238,13 +242,73 @@ def main():
 
     status_update = client.patch(
         f"/api/company/applications/{application_id}",
-        json={"status": "shortlisted"},
+        json={"status": "interview", "interview_at": "2026-04-15T10:30"},
         headers=auth_headers(company_login_token),
     )
     assert status_update.status_code == 200, status_update.get_data(as_text=True)
+    status_payload = status_update.get_json()["application"]
+    assert status_payload["status"] == "interview", status_payload
+    assert status_payload["interview_at"], status_payload
 
     logout_company_again = client.post("/auth/logout", headers=auth_headers(company_login_token))
     assert logout_company_again.status_code == 200, logout_company_again.get_data(as_text=True)
+
+    late_user_register = client.post(
+        "/auth/register",
+        json={
+            "role": "fresher",
+            "name": "Late User",
+            "email": "late.user@example.com",
+            "password": "password123",
+            "phone": "8888888888",
+            "location": "Noida",
+            "education": "B.Tech",
+            "grad_year": 2026,
+            "skills": "Python",
+            "summary": "Late workflow candidate",
+            "resume_path": "late-resume.pdf",
+        },
+    )
+    assert late_user_register.status_code == 201, late_user_register.get_data(as_text=True)
+    late_user_token = late_user_register.get_json()["access_token"]
+
+    late_apply = client.post(
+        f"/apply/{job_id}",
+        headers=auth_headers(late_user_token),
+    )
+    assert late_apply.status_code == 200, late_apply.get_data(as_text=True)
+    late_application_id = late_apply.get_json()["application"]["id"]
+
+    with app.app_context():
+        store = app.extensions["mongo_store"]
+        overdue_applied_at = utcnow() - timedelta(days=8)
+        overdue_deadline = overdue_applied_at + timedelta(days=7)
+        store.applications.update_one(
+            {"application_id": late_application_id},
+            {
+                "$set": {
+                    "status": "reviewing",
+                    "applied_at": overdue_applied_at,
+                    "updated_at": overdue_applied_at,
+                    "decision_deadline": overdue_deadline,
+                }
+            },
+        )
+        sla_result = process_application_sla(store)
+        assert late_application_id in sla_result["expired_application_ids"], sla_result
+        late_application_doc = store.applications.find_one({"application_id": late_application_id}, {"_id": 0})
+        assert late_application_doc["status"] == "rejected", late_application_doc
+        assert late_application_doc["decision_reason"] == "Auto-closed after 7 days without recruiter action.", late_application_doc
+        company_timeout_notifications = list(
+            store.notifications.find(
+                {"type": "application_timeout_company", "metadata.application_id": late_application_id},
+                {"_id": 0},
+            )
+        )
+        assert company_timeout_notifications, "Expected company SLA notification"
+
+    logout_late_user = client.post("/auth/logout", headers=auth_headers(late_user_token))
+    assert logout_late_user.status_code == 200, logout_late_user.get_data(as_text=True)
 
     user_login = client.post(
         "/auth/login",
@@ -256,7 +320,8 @@ def main():
     final_dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_login_token))
     assert final_dashboard.status_code == 200, final_dashboard.get_data(as_text=True)
     final_applications = final_dashboard.get_json()["applications"]
-    assert final_applications[0]["status"] == "shortlisted", final_applications
+    assert final_applications[0]["status"] == "interview", final_applications
+    assert final_applications[0]["interview_at"], final_applications[0]
     assert final_dashboard.get_json()["saved_jobs"][0]["id"] == job_id
     assert final_dashboard.get_json()["notifications"], final_dashboard.get_json()
 
@@ -272,6 +337,24 @@ def main():
     )
     assert notification_read.status_code == 200, notification_read.get_data(as_text=True)
     assert notification_read.get_json()["unread_count"] < notification_payload["unread_count"], notification_read.get_json()
+
+    late_user_login = client.post(
+        "/auth/login",
+        json={"email": "late.user@example.com", "password": "password123"},
+    )
+    assert late_user_login.status_code == 200, late_user_login.get_data(as_text=True)
+    late_user_token = late_user_login.get_json()["access_token"]
+
+    late_user_applications = client.get("/applications", headers=auth_headers(late_user_token))
+    assert late_user_applications.status_code == 200, late_user_applications.get_data(as_text=True)
+    assert late_user_applications.get_json()["applications"][0]["status"] == "rejected", late_user_applications.get_json()
+
+    late_user_notifications = client.get("/notifications", headers=auth_headers(late_user_token))
+    assert late_user_notifications.status_code == 200, late_user_notifications.get_data(as_text=True)
+    assert any(item["type"] == "application_timeout" for item in late_user_notifications.get_json()["notifications"]), late_user_notifications.get_json()
+
+    logout_late_user_again = client.post("/auth/logout", headers=auth_headers(late_user_token))
+    assert logout_late_user_again.status_code == 200, logout_late_user_again.get_data(as_text=True)
 
     with app.app_context():
         store = app.extensions["mongo_store"]
@@ -296,6 +379,20 @@ def main():
     admin_dashboard = client.get("/api/admin/dashboard", headers=auth_headers(admin_token))
     assert admin_dashboard.status_code == 200, admin_dashboard.get_data(as_text=True)
     assert admin_dashboard.get_json()["analytics"]["saved_jobs"] == 1
+    assert admin_dashboard.get_json()["analytics"]["verified_companies"] == 1, admin_dashboard.get_json()
+
+    pending_company = client.patch(
+        f"/api/admin/users/{company_register.get_json()['user']['id']}",
+        json={"is_active": True, "verification_status": "pending"},
+        headers=auth_headers(admin_token),
+    )
+    assert pending_company.status_code == 200, pending_company.get_data(as_text=True)
+    assert pending_company.get_json()["user"]["verification_status"] == "pending", pending_company.get_json()
+
+    admin_dashboard_after_pending = client.get("/api/admin/dashboard", headers=auth_headers(admin_token))
+    assert admin_dashboard_after_pending.status_code == 200, admin_dashboard_after_pending.get_data(as_text=True)
+    analytics_after_pending = admin_dashboard_after_pending.get_json()["analytics"]
+    assert analytics_after_pending["pending_companies"] == 1, analytics_after_pending
 
     moderate_job = client.patch(
         f"/api/admin/jobs/{job_id}",
@@ -317,6 +414,58 @@ def main():
 
     disabled_dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_login_token))
     assert disabled_dashboard.status_code == 403, disabled_dashboard.get_data(as_text=True)
+
+    company_login_pending = client.post(
+        "/auth/login",
+        json={"email": "company@example.com", "password": "password123"},
+    )
+    assert company_login_pending.status_code == 200, company_login_pending.get_data(as_text=True)
+    company_pending_token = company_login_pending.get_json()["access_token"]
+
+    pending_job_create = client.post(
+        "/jobs",
+        json={
+            "company_name": "Example Corp",
+            "company_logo": "https://example.com/logo.png",
+            "company_website": "https://example.com",
+            "industry_type": "IT",
+            "company_size": "11-50",
+            "company_description": "Example hiring company",
+            "title": "Verification Queue Role",
+            "department": "Engineering",
+            "job_type": "full-time",
+            "work_mode": "onsite",
+            "country": "India",
+            "state": "Uttar Pradesh",
+            "city": "Noida",
+            "remote_option": "false",
+            "experience_level": "fresher",
+            "degree_required": "B.Tech",
+            "required_skills": "Python, Git",
+            "description": "Awaiting verification approval",
+            "role_overview": "Held for moderation while company verification is pending.",
+            "responsibilities": "Contribute to product delivery.",
+            "required_qualifications": "Strong fundamentals.",
+            "preferred_qualifications": "Internship experience.",
+            "salary_range": "300000 - 500000",
+            "benefits": "Learning budget",
+            "application_method": "platform",
+            "resume_required": "true",
+            "portfolio_required": "false",
+            "cover_letter_required": "false",
+            "hiring_stages": "Resume Screening, HR Interview",
+            "expiry_days": "30",
+        },
+        headers=auth_headers(company_pending_token),
+    )
+    assert pending_job_create.status_code == 200, pending_job_create.get_data(as_text=True)
+    pending_job_payload = pending_job_create.get_json()
+    assert pending_job_payload["job"]["moderation_status"] == "pending", pending_job_payload
+    assert pending_job_payload["job"]["is_active"] is False, pending_job_payload
+    assert pending_job_payload["notification_summary"]["notifications_created"] == 0, pending_job_payload
+
+    logout_pending_company = client.post("/auth/logout", headers=auth_headers(company_pending_token))
+    assert logout_pending_company.status_code == 200, logout_pending_company.get_data(as_text=True)
 
     health = client.get("/healthz")
     assert health.status_code == 200, health.get_data(as_text=True)

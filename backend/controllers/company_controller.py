@@ -25,6 +25,7 @@ from backend.services.platform_service import (
     serialize_user,
     utcnow,
 )
+from backend.services.workflow_service import normalize_company_verification_status, notify_candidate_status_change, process_application_sla
 
 
 def _attach_application_match(store, application):
@@ -35,6 +36,7 @@ def _attach_application_match(store, application):
 
 def company_dashboard(company):
     store = get_store()
+    process_application_sla(store)
     posted_jobs = []
     for job in store.jobs.find({"company_id": company["company_id"]}, {"_id": 0}).sort("posted_date", DESCENDING):
         data = serialize_job(job)
@@ -56,12 +58,14 @@ def company_dashboard(company):
             "posted_jobs": posted_jobs,
             "applications": [_attach_application_match(store, item) for item in application_docs],
             "status_counts": status_counts,
+            "overdue_applications": sum(1 for item in application_docs if item.get("status") in {"applied", "reviewing"} and parse_optional_datetime(item.get("decision_deadline")) and parse_optional_datetime(item.get("decision_deadline")) < utcnow()),
         }
     )
 
 
 def company_jobs(company):
     store = get_store()
+    process_application_sla(store)
     jobs = []
     for job in store.jobs.find({"company_id": company["company_id"]}, {"_id": 0}).sort("posted_date", DESCENDING):
         data = serialize_job(job)
@@ -153,13 +157,24 @@ def create_company_job(company):
         categories=parse_categories(payload, company_doc),
         created_at=utcnow(),
     )
+
+    verification_status = normalize_company_verification_status(company_doc.get("verification_status"), default="verified")
+    if verification_status != "verified":
+        job["moderation_status"] = "pending"
+        job["is_active"] = False
+
     store.jobs.insert_one(job)
-    notification_summary = notify_candidates_for_new_job(store, job)
+    notification_summary = (
+        notify_candidates_for_new_job(store, job)
+        if verification_status == "verified" and job.get("moderation_status") == "approved"
+        else {"notifications_created": 0, "emails_sent": 0, "email_mode": "in_app_only"}
+    )
     return jsonify({"ok": True, "job": serialize_job(job), "notification_summary": notification_summary})
 
 
 def company_applications(company):
     store = get_store()
+    process_application_sla(store)
     applications = [
         _attach_application_match(store, item)
         for item in store.applications.find({"company_id": company["company_id"]}, {"_id": 0}).sort("applied_at", DESCENDING)
@@ -169,16 +184,46 @@ def company_applications(company):
 
 def update_company_application(company, application_id):
     store = get_store()
+    process_application_sla(store)
     payload = request.get_json(silent=True) or {}
     status = str(payload.get("status") or "").strip().lower()
     if status not in TRACKABLE_STATUSES:
         return json_error("invalid_status", 400)
 
+    original = store.applications.find_one({"application_id": application_id, "company_id": company["company_id"]}, {"_id": 0})
+    if not original:
+        return json_error("application_not_found", 404)
+
+    interview_at = None
+    if "interview_at" in payload and str(payload.get("interview_at") or "").strip():
+        interview_at = parse_optional_datetime(payload.get("interview_at"))
+        if interview_at is None:
+            return json_error("invalid_interview_time", 400)
+    elif status == "interview":
+        interview_at = parse_optional_datetime(original.get("interview_at"))
+
+    updates = {
+        "status": status,
+        "updated_at": utcnow(),
+        "last_company_action_at": utcnow(),
+    }
+    if status == "interview":
+        updates["interview_at"] = interview_at
+    elif "interview_at" in payload:
+        updates["interview_at"] = None
+
+    if "decision_reason" in payload:
+        updates["decision_reason"] = str(payload.get("decision_reason") or "").strip()
+    elif status != "rejected":
+        updates["decision_reason"] = ""
+
     application = store.applications.find_one_and_update(
         {"application_id": application_id, "company_id": company["company_id"]},
-        {"$set": {"status": status, "updated_at": utcnow()}},
+        {"$set": updates},
         return_document=ReturnDocument.AFTER,
     )
-    if not application:
-        return json_error("application_not_found", 404)
+
+    candidate = store.get_account("fresher", application.get("candidate_id") or application.get("user_id"))
+    job = store.jobs.find_one({"$or": [{"job_id": application.get("job_id")}, {"id": application.get("job_id")}]}, {"_id": 0}) or {}
+    notify_candidate_status_change(store, application, candidate, job, original.get("status"))
     return jsonify({"ok": True, "application": _attach_application_match(store, application)})

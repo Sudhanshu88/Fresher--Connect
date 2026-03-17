@@ -280,6 +280,8 @@ def serialize_user(account):
             "industry_type": account.get("industry_type"),
             "company_size": account.get("company_size"),
             "company_description": account.get("company_description") or account.get("description"),
+            "verification_status": account.get("verification_status") or "verified",
+            "verification_updated_at": isoformat(account.get("verification_updated_at")),
         }
 
     candidate_id = account.get("user_id") or account.get("id")
@@ -382,6 +384,8 @@ def serialize_job(job):
 
 
 def serialize_application(store, application, include_candidate=False):
+    from backend.services.workflow_service import decision_deadline_for, is_application_overdue
+
     application_id = application.get("application_id") or application.get("id")
     candidate_id = application.get("candidate_id") or application.get("user_id")
     job = store.jobs.find_one({"$or": [{"job_id": application.get("job_id")}, {"id": application.get("job_id")}]}, {"_id": 0})
@@ -389,6 +393,8 @@ def serialize_application(store, application, include_candidate=False):
     if include_candidate:
         fresher = store.get_account("fresher", candidate_id)
         candidate = serialize_user(fresher)
+
+    decision_deadline = application.get("decision_deadline") or decision_deadline_for(application.get("applied_at"))
 
     return {
         "id": application_id,
@@ -399,6 +405,10 @@ def serialize_application(store, application, include_candidate=False):
         "status": application.get("status"),
         "applied_at": isoformat(application.get("applied_at")),
         "updated_at": isoformat(application.get("updated_at")),
+        "decision_deadline": isoformat(decision_deadline),
+        "is_overdue": bool(is_application_overdue({**application, "decision_deadline": decision_deadline})),
+        "interview_at": isoformat(application.get("interview_at")),
+        "decision_reason": application.get("decision_reason") or "",
         "job": serialize_job(job) if job else {"id": application.get("job_id"), "title": "Job removed", "company_name": "-"},
         "candidate": candidate,
     }
@@ -457,6 +467,10 @@ class MongoStore:
             [("company_id", ASCENDING), ("status", ASCENDING), ("applied_at", DESCENDING)],
             name="ix_applications_company_status",
         )
+        self.applications.create_index(
+            [("status", ASCENDING), ("decision_deadline", ASCENDING)],
+            name="ix_applications_status_deadline",
+        )
         self.saved_jobs.create_index([("id", ASCENDING)], unique=True, name="uq_saved_jobs_id")
         self.saved_jobs.create_index(
             [("candidate_id", ASCENDING), ("job_id", ASCENDING)],
@@ -490,6 +504,9 @@ class MongoStore:
         self.ping()
         self.ensure_indexes()
         seed_database(self)
+        from backend.services.workflow_service import ensure_workflow_defaults
+
+        ensure_workflow_defaults(self)
         self._bootstrapped = True
 
     def find_account_by_email(self, email):

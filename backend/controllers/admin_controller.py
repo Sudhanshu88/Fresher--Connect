@@ -5,13 +5,17 @@ from pymongo import DESCENDING
 
 from backend.models.constants import TRACKABLE_STATUSES
 from backend.services.platform_service import get_store, job_is_active, json_error, serialize_job, serialize_user, utcnow
+from backend.services.workflow_service import normalize_company_verification_status, process_application_sla
 
 
 def _analytics_snapshot(store):
+    process_application_sla(store)
     users = store.users.count_documents({})
     candidates = store.users.count_documents({"role": "candidate"})
     companies = store.users.count_documents({"role": "company"})
     admins = store.users.count_documents({"role": "admin"})
+    verified_companies = store.companies.count_documents({"verification_status": "verified"})
+    pending_companies = store.companies.count_documents({"verification_status": "pending"})
     active_jobs = store.jobs.count_documents({"is_active": True, "moderation_status": "approved"})
     moderated_jobs = store.jobs.count_documents({"moderation_status": {"$in": ["pending", "rejected"]}})
     applications = store.applications.count_documents({})
@@ -25,6 +29,8 @@ def _analytics_snapshot(store):
         "users": users,
         "candidates": candidates,
         "companies": companies,
+        "verified_companies": verified_companies,
+        "pending_companies": pending_companies,
         "admins": admins,
         "active_jobs": active_jobs,
         "moderated_jobs": moderated_jobs,
@@ -52,11 +58,14 @@ def _serialize_managed_user(store, user_doc):
     data["user_id"] = user_doc.get("id")
     data["db_role"] = db_role
     data["is_active"] = bool(user_doc.get("is_active", True))
+    if db_role == "company":
+        data["verification_status"] = (account or {}).get("verification_status") or "verified"
     return data
 
 
 def admin_dashboard(admin):
     store = get_store()
+    process_application_sla(store)
     users = [
         _serialize_managed_user(store, user)
         for user in store.users.find({}, {"_id": 0}).sort("created_at", DESCENDING)
@@ -82,6 +91,7 @@ def admin_dashboard(admin):
 
 def admin_users(admin):
     store = get_store()
+    process_application_sla(store)
     users = [
         _serialize_managed_user(store, user)
         for user in store.users.find({}, {"_id": 0}).sort("created_at", DESCENDING)
@@ -105,11 +115,26 @@ def update_admin_user(admin, user_id):
         updated["role"] = str(payload.get("role")).strip().lower()
     updated["updated_at"] = utcnow()
     store.users.replace_one({"id": int(user_id)}, updated)
+
+    company = store.companies.find_one({"owner_user_id": int(user_id)}, {"_id": 0})
+    if company and "verification_status" in payload:
+        verification_status = normalize_company_verification_status(payload.get("verification_status"), default=company.get("verification_status") or "verified")
+        store.companies.update_one(
+            {"company_id": company.get("company_id") or company.get("id")},
+            {
+                "$set": {
+                    "verification_status": verification_status,
+                    "verification_updated_at": utcnow(),
+                }
+            },
+        )
+
     return jsonify({"ok": True, "user": _serialize_managed_user(store, updated)})
 
 
 def admin_jobs(admin):
     store = get_store()
+    process_application_sla(store)
     jobs = []
     for original in store.jobs.find({}, {"_id": 0}).sort("created_at", DESCENDING):
         job = serialize_job(original)

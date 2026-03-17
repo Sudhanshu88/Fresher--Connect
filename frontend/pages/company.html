@@ -474,6 +474,29 @@
               <h2>Manage fresher applications</h2>
             </div>
           </div>
+          <div id="companyApplicationFilters" class="form-grid filter-grid">
+            <div class="field">
+              <label for="companyApplicationSearch">Search applicant or job</label>
+              <input id="companyApplicationSearch" type="text" placeholder="Name, email, job title">
+            </div>
+            <div class="field">
+              <label for="companyApplicationSkills">Skills</label>
+              <input id="companyApplicationSkills" type="text" placeholder="Python, SQL, React">
+            </div>
+            <div class="field">
+              <label for="companyApplicationExperienceFilter">Experience</label>
+              <select id="companyApplicationExperienceFilter">
+                <option value="">All experience</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="companyApplicationStatusFilter">Status</label>
+              <select id="companyApplicationStatusFilter">
+                <option value="">All statuses</option>
+              </select>
+            </div>
+          </div>
+          <p class="helper-text" id="companyApplicationFilterSummary">Showing all applicants.</p>
           <div class="table-wrap">
             <table>
               <thead>

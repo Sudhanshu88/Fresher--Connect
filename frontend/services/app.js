@@ -1550,6 +1550,42 @@
     return dateValue ? window.FC_API.formatDate(dateValue) : "No expiry";
   }
 
+  function formatDateTime(value) {
+    if (!value) {
+      return "-";
+    }
+
+    try {
+      return new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(new Date(value));
+    } catch (_error) {
+      return String(value);
+    }
+  }
+
+  function toDatetimeLocalValue(value) {
+    if (!value) {
+      return "";
+    }
+
+    var parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return "";
+    }
+
+    var local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  function applicationDecisionLabel(application) {
+    if (!application || !application.decision_deadline) {
+      return "";
+    }
+    return "Decision by " + window.FC_API.formatDate(application.decision_deadline) + (application.is_overdue ? " (overdue)" : "");
+  }
+
   function resumeParserLabel(status) {
     var safeStatus = String(status || "not_uploaded").toLowerCase();
     if (safeStatus === "parsed") {
@@ -1649,6 +1685,14 @@
     var metadata = notification.metadata || {};
     var matchMarkup = matchPillMarkup(metadata.match_score, "match");
     var matchedSkills = (metadata.matched_skills || []).slice(0, 3);
+    var primaryLink = metadata.application_id
+      ? '<a class="text-link" href="' + applicationStatusHref(metadata.application_id) + '">Open application status</a>'
+      : metadata.job_id
+        ? '<a class="text-link" href="' + jobDetailsHref(metadata.job_id) + '">Open linked job</a>'
+        : '<span class="meta-line">No linked job</span>';
+    var interviewMeta = metadata.interview_at
+      ? '<span class="meta-line">Interview: ' + window.FC_API.escapeHtml(formatDateTime(metadata.interview_at)) + "</span>"
+      : "";
 
     return (
       '<article class="notification-card' + (notification.is_read ? " is-read" : "") + '">' +
@@ -1668,9 +1712,8 @@
           "</div>"
         : "") +
       '<div class="card-link-row">' +
-      (metadata.job_id
-        ? '<a class="text-link" href="' + jobDetailsHref(metadata.job_id) + '">Open matched job</a>'
-        : '<span class="meta-line">No linked job</span>') +
+      primaryLink +
+      interviewMeta +
       '<span class="meta-line">' + window.FC_API.escapeHtml(notificationStatusLabel(notification.email_status)) + "</span>" +
       (!notification.is_read
         ? '<button class="btn ghost compact-btn" type="button" data-notification-read="' + notification.id + '">Mark read</button>'
@@ -2110,12 +2153,18 @@
 
     tbody.innerHTML = applications
       .map(function (application) {
+        var interviewLine = application.interview_at
+          ? '<div class="meta-line">Interview ' + window.FC_API.escapeHtml(formatDateTime(application.interview_at)) + "</div>"
+          : "";
+        var deadlineLine = applicationDecisionLabel(application)
+          ? '<div class="meta-line">' + window.FC_API.escapeHtml(applicationDecisionLabel(application)) + "</div>"
+          : "";
         return (
           "<tr>" +
           "<td><div class=\"table-title\">" + window.FC_API.escapeHtml(application.job.title) + "</div></td>" +
           "<td><div class=\"table-title\">" + window.FC_API.escapeHtml(application.job.company_name) + "</div></td>" +
           "<td>" + window.FC_API.formatDate(application.applied_at) + "</td>" +
-          "<td>" + renderStatusPill(application.status) + "</td>" +
+          "<td>" + renderStatusPill(application.status) + deadlineLine + interviewLine + "</td>" +
           '<td><a class="text-link" href="' + applicationStatusHref(application.id) + '">Open status</a></td>' +
           "</tr>"
         );
@@ -2874,6 +2923,7 @@
       '<span class="section-label">Application Status</span>' +
       '<h1 class="page-title page-title-small">' + window.FC_API.escapeHtml(selected.job.title) + "</h1>" +
       '<p class="meta-line">' + window.FC_API.escapeHtml(selected.job.company_name) + " | " + window.FC_API.escapeHtml(selected.job.location || "Location flexible") + "</p>" +
+      (selected.interview_at ? '<p class="meta-line">Interview scheduled for ' + window.FC_API.escapeHtml(formatDateTime(selected.interview_at)) + "</p>" : "") +
       '<div class="button-row">' +
       renderStatusPill(selected.status) +
       '<a class="btn ghost compact-btn" href="' + jobDetailsHref(selected.job.id) + '">Open job details</a>' +
@@ -2884,6 +2934,8 @@
       detailRowsMarkup([
         { label: "Applied", value: window.FC_API.formatDate(selected.applied_at) },
         { label: "Current stage", value: toTitleCase(selected.status) },
+        { label: "Decision deadline", value: selected.decision_deadline ? window.FC_API.formatDate(selected.decision_deadline) : "-" },
+        { label: "Interview", value: selected.interview_at ? formatDateTime(selected.interview_at) : "-" },
         { label: "Work mode", value: toTitleCase(selected.job.work_mode || "onsite") },
         { label: "Compensation", value: formatCompensation(selected.job) }
       ]) +
@@ -2899,7 +2951,8 @@
       { label: "Company", value: selected.job.company_name || "-" },
       { label: "Location", value: selected.job.location || "-" },
       { label: "Department", value: selected.job.department || "-" },
-      { label: "Employment type", value: toTitleCase(selected.job.job_type || "full-time") }
+      { label: "Employment type", value: toTitleCase(selected.job.job_type || "full-time") },
+      { label: "Decision note", value: selected.decision_reason || "-" }
     ]);
     jobDetails.innerHTML = detailRowsMarkup([
       { label: "Role", value: selected.job.title || "-" },
@@ -2964,6 +3017,8 @@
     analyticsGrid.innerHTML = [
       { label: "Candidates", value: analytics.candidates || 0 },
       { label: "Companies", value: analytics.companies || 0 },
+      { label: "Verified companies", value: analytics.verified_companies || 0 },
+      { label: "Verification queue", value: analytics.pending_companies || 0 },
       { label: "Admins", value: analytics.admins || 0 },
       { label: "Moderation queue", value: analytics.moderated_jobs || 0 },
       { label: "Saved jobs", value: analytics.saved_jobs || 0 },
@@ -2991,6 +3046,18 @@
       .join("");
   }
 
+  function companyVerificationOptions(selected) {
+    return ["verified", "pending", "rejected"]
+      .map(function (status) {
+        return (
+          '<option value="' + window.FC_API.escapeHtml(status) + '"' + (status === selected ? " selected" : "") + ">" +
+          window.FC_API.escapeHtml(toTitleCase(status)) +
+          "</option>"
+        );
+      })
+      .join("");
+  }
+
   function adminUserActionMarkup(user) {
     return (
       '<form class="inline-form admin-user-form" data-user-id="' + (user.user_id || user.id) + '">' +
@@ -2998,6 +3065,9 @@
       '<option value="true"' + (user.is_active ? " selected" : "") + ">Active</option>" +
       '<option value="false"' + (!user.is_active ? " selected" : "") + ">Disabled</option>" +
       "</select>" +
+      ((user.db_role || user.role) === "company"
+        ? '<select name="verification_status">' + companyVerificationOptions(user.verification_status || "verified") + "</select>"
+        : "") +
       '<button class="btn primary" type="submit">Save</button>' +
       "</form>"
     );
@@ -3035,6 +3105,9 @@
           "<td>" +
           '<div class="meta-line">Created ' + window.FC_API.escapeHtml(window.FC_API.formatDate(user.created_at)) + "</div>" +
           '<div class="meta-line">Completion ' + window.FC_API.escapeHtml(String(user.profile_completion || 0)) + "%</div>" +
+          (((user.db_role || user.role) === "company")
+            ? '<div class="meta-line">Verification ' + window.FC_API.escapeHtml(toTitleCase(user.verification_status || "verified")) + "</div>"
+            : "") +
           "</td>" +
           "<td>" + pillMarkup(user.is_active ? "Active" : "Disabled", user.is_active ? "status-pill offered" : "status-pill rejected") + "</td>" +
           "<td>" + adminUserActionMarkup(user) + "</td>" +
@@ -3141,9 +3214,13 @@
       var button = form.querySelector("button");
       button.disabled = true;
       try {
+        var body = { is_active: form.elements.is_active.value === "true" };
+        if (form.elements.verification_status) {
+          body.verification_status = form.elements.verification_status.value;
+        }
         await window.FC_API.request("/api/admin/users/" + form.dataset.userId, {
           method: "PATCH",
-          body: { is_active: form.elements.is_active.value === "true" }
+          body: body
         });
         await loadAdminDashboard();
         setMessage(byId("adminMessage"), "User updated successfully.", "success");
@@ -3278,6 +3355,109 @@
       .join("");
   }
 
+  function companyApplicationStatusOptions(selected) {
+    return (
+      '<option value="">All statuses</option>' +
+      window.FC_API.statuses
+        .map(function (status) {
+          return (
+            '<option value="' + window.FC_API.escapeHtml(status) + '"' + (status === selected ? " selected" : "") + ">" +
+            window.FC_API.escapeHtml(toTitleCase(status)) +
+            "</option>"
+          );
+        })
+        .join("")
+    );
+  }
+
+  function populateCompanyApplicationFilters(applications) {
+    var statusField = byId("companyApplicationStatusFilter");
+    var experienceField = byId("companyApplicationExperienceFilter");
+    var currentStatus = statusField ? statusField.value : "";
+    var currentExperience = experienceField ? experienceField.value : "";
+    var experienceOptions = [];
+
+    (applications || []).forEach(function (application) {
+      var experience = String(((application.candidate || {}).experience) || "").trim();
+      if (experience && experienceOptions.indexOf(experience) === -1) {
+        experienceOptions.push(experience);
+      }
+    });
+
+    experienceOptions.sort(function (left, right) {
+      return left.localeCompare(right);
+    });
+
+    if (statusField) {
+      statusField.innerHTML = companyApplicationStatusOptions(currentStatus);
+      statusField.value = currentStatus;
+    }
+
+    if (experienceField) {
+      experienceField.innerHTML =
+        '<option value="">All experience</option>' +
+        experienceOptions
+          .map(function (item) {
+            return '<option value="' + window.FC_API.escapeHtml(item) + '"' + (item === currentExperience ? " selected" : "") + ">" +
+              window.FC_API.escapeHtml(item) +
+              "</option>";
+          })
+          .join("");
+      experienceField.value = currentExperience;
+    }
+  }
+
+  function readCompanyApplicationFilters() {
+    return {
+      search: String(readInputValue("companyApplicationSearch") || "").trim().toLowerCase(),
+      skills: splitFilterTerms(readInputValue("companyApplicationSkills")),
+      experience: String(readInputValue("companyApplicationExperienceFilter") || "").trim().toLowerCase(),
+      status: String(readInputValue("companyApplicationStatusFilter") || "").trim().toLowerCase()
+    };
+  }
+
+  function filterCompanyApplications(applications) {
+    var filters = readCompanyApplicationFilters();
+
+    return (applications || []).filter(function (application) {
+      var candidate = application.candidate || {};
+      var haystack = [
+        candidate.name || "",
+        candidate.email || "",
+        candidate.location || "",
+        candidate.experience || "",
+        application.job.title || "",
+        application.job.company_name || ""
+      ]
+        .join(" ")
+        .toLowerCase();
+      var skillHaystack = [
+        safeJoin(candidate.skills),
+        safeJoin(candidate.resume_parsed_skills),
+        safeJoin(application.matched_skills)
+      ]
+        .join(" ")
+        .toLowerCase();
+      var matchesSearch = !filters.search || haystack.indexOf(filters.search) >= 0;
+      var matchesExperience = !filters.experience || String(candidate.experience || "").toLowerCase().indexOf(filters.experience) >= 0;
+      var matchesStatus = !filters.status || String(application.status || "").toLowerCase() === filters.status;
+      var matchesSkills = !filters.skills.length || filters.skills.every(function (term) {
+        return skillHaystack.indexOf(term) >= 0;
+      });
+      return matchesSearch && matchesExperience && matchesStatus && matchesSkills;
+    });
+  }
+
+  function syncCompanyApplicationForm(form) {
+    if (!form || !form.elements || !form.elements.interview_at) {
+      return;
+    }
+
+    var showInterview = form.elements.status.value === "interview";
+    form.elements.interview_at.disabled = !showInterview;
+    form.elements.interview_at.classList.toggle("hidden", !showInterview);
+  }
+
   function renderCompanyApplications() {
     var applications = state.companyDashboard.applications;
     var tbody = byId("companyApplicationsBody");
@@ -3292,26 +3472,44 @@
       );
     }
 
+    populateCompanyApplicationFilters(applications);
+
     if (!applications.length) {
       tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No candidates have applied yet.</div></td></tr>';
+      if (byId("companyApplicationFilterSummary")) {
+        byId("companyApplicationFilterSummary").textContent = "No applicants yet.";
+      }
       return;
     }
 
-    tbody.innerHTML = applications
+    var filteredApplications = filterCompanyApplications(applications);
+    if (byId("companyApplicationFilterSummary")) {
+      byId("companyApplicationFilterSummary").textContent = "Showing " + filteredApplications.length + " of " + applications.length + " applicants.";
+    }
+
+    if (!filteredApplications.length) {
+      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No applicants match the current filters.</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filteredApplications
       .map(function (application) {
         var candidate = application.candidate || {};
+        var deadlineLabel = applicationDecisionLabel(application);
         return (
           "<tr>" +
           "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(candidate.name || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.email || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.location || "-") + "</div>" +
+          '<div class="meta-line">Experience: ' + window.FC_API.escapeHtml(candidate.experience || "fresher") + "</div>" +
           candidateResourceLinks(candidate) +
           "</td>" +
           "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(application.job.title) + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(application.job.company_name) + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(window.FC_API.formatDate(application.applied_at)) + "</div>" +
+          (deadlineLabel ? '<div class="meta-line">' + window.FC_API.escapeHtml(deadlineLabel) + "</div>" : "") +
           "</td>" +
           "<td>" +
           '<div class="candidate-fit-stack">' +
@@ -3323,18 +3521,30 @@
           "</div>" +
           "</td>" +
           "<td>" +
+          '<div class="candidate-fit-stack">' +
+          renderStatusPill(application.status) +
+          (application.interview_at ? '<div class="meta-line">Interview ' + window.FC_API.escapeHtml(formatDateTime(application.interview_at)) + "</div>" : "") +
+          (application.decision_reason ? '<div class="meta-line">' + window.FC_API.escapeHtml(application.decision_reason) + "</div>" : "") +
           '<form class="inline-form application-status-form" data-application-id="' +
           application.id +
           '">' +
           '<select name="status">' + statusOptions(application.status) + "</select>" +
+          '<input class="inline-input" name="interview_at" type="datetime-local" value="' + window.FC_API.escapeHtml(toDatetimeLocalValue(application.interview_at)) + '">' +
           '<button class="btn primary" type="submit">Update</button>' +
           '<button class="btn ghost compact-btn" type="button" data-status-shortcut="shortlisted" data-application-id="' + application.id + '">Shortlist</button>' +
+          '<button class="btn ghost compact-btn" type="button" data-status-shortcut="interview" data-application-id="' + application.id + '">Interview</button>' +
+          '<button class="btn ghost compact-btn" type="button" data-status-shortcut="rejected" data-application-id="' + application.id + '">Reject</button>' +
           "</form>" +
+          "</div>" +
           "</td>" +
           "</tr>"
         );
       })
       .join("");
+
+    Array.prototype.forEach.call(tbody.querySelectorAll(".application-status-form"), function (form) {
+      syncCompanyApplicationForm(form);
+    });
   }
 
   function renderCompanyProfile(user) {
@@ -3377,6 +3587,7 @@
 
     renderDetailList(byId("companyDetailList"), [
       { label: "Company", value: user.company_name || user.name || "-" },
+      { label: "Verified", value: toTitleCase(user.verification_status || "verified") },
       { label: "Industry", value: user.industry_type || "-" },
       { label: "Size", value: user.company_size || "-" },
       {
@@ -3451,6 +3662,10 @@
     byId("jobType").addEventListener("change", syncCompanyJobForm);
     byId("jobWorkMode").addEventListener("change", syncCompanyJobForm);
     byId("applicationMethod").addEventListener("change", syncCompanyJobForm);
+    if (byId("companyApplicationFilters")) {
+      byId("companyApplicationFilters").addEventListener("input", renderCompanyApplications);
+      byId("companyApplicationFilters").addEventListener("change", renderCompanyApplications);
+    }
     resetCompanyJobForm(state.companyDashboard.user);
 
     byId("companyApplicationsBody").addEventListener("submit", async function (event) {
@@ -3464,9 +3679,13 @@
       button.disabled = true;
 
       try {
+        var body = { status: form.elements.status.value };
+        if (form.elements.interview_at && !form.elements.interview_at.disabled && form.elements.interview_at.value) {
+          body.interview_at = form.elements.interview_at.value;
+        }
         await window.FC_API.request("/api/company/applications/" + form.dataset.applicationId, {
           method: "PATCH",
-          body: { status: form.elements.status.value }
+          body: body
         });
         await loadCompanyDashboard();
         setMessage(byId("jobFormMessage"), "Application status updated.", "success");
@@ -3474,6 +3693,16 @@
         setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Status update failed."), "error");
       } finally {
         button.disabled = false;
+      }
+    });
+
+    byId("companyApplicationsBody").addEventListener("change", function (event) {
+      var form = event.target.closest(".application-status-form");
+      if (!form) {
+        return;
+      }
+      if (event.target.name === "status") {
+        syncCompanyApplicationForm(form);
       }
     });
 
@@ -3485,12 +3714,17 @@
 
       shortcut.disabled = true;
       try {
+        var shortcutBody = { status: shortcut.dataset.statusShortcut };
+        var shortcutForm = shortcut.closest(".application-status-form");
+        if (shortcut.dataset.statusShortcut === "interview" && shortcutForm && shortcutForm.elements.interview_at && shortcutForm.elements.interview_at.value) {
+          shortcutBody.interview_at = shortcutForm.elements.interview_at.value;
+        }
         await window.FC_API.request("/api/company/applications/" + shortcut.dataset.applicationId, {
           method: "PATCH",
-          body: { status: shortcut.dataset.statusShortcut }
+          body: shortcutBody
         });
         await loadCompanyDashboard();
-        setMessage(byId("jobFormMessage"), "Candidate shortlisted.", "success");
+        setMessage(byId("jobFormMessage"), "Candidate status updated.", "success");
       } catch (error) {
         setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Unable to update candidate status."), "error");
       } finally {

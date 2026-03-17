@@ -1752,6 +1752,12 @@ select:focus-visible {
   align-items: center;
 }
 
+.inline-input {
+  width: auto;
+  min-width: 190px;
+  max-width: 100%;
+}
+
 .resource-link-row {
   display: flex;
   flex-wrap: wrap;

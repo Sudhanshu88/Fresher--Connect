@@ -27,6 +27,8 @@ def build_company_document(
         "company_logo": company_logo,
         "industry_type": industry_type,
         "company_size": company_size,
+        "verification_status": "verified",
+        "verification_updated_at": created_at,
         "created_at": created_at,
         "updated_at": created_at,
     }

@@ -23,6 +23,7 @@ from backend.services.platform_service import (
     utcnow,
 )
 from backend.services.resume_service import merge_skill_lists, parse_resume_file
+from backend.services.workflow_service import decision_deadline_for, notify_application_submitted, process_application_sla
 
 
 def _candidate_notifications(store, candidate_id, limit=6):
@@ -36,6 +37,7 @@ def _candidate_notifications(store, candidate_id, limit=6):
 
 def user_dashboard(user):
     store = get_store()
+    process_application_sla(store)
     candidate_id = user.get("user_id") or user.get("id")
     fresher = store.get_account("fresher", candidate_id) or user
     jobs = [
@@ -120,6 +122,7 @@ def update_user_profile(user):
 
 def create_application(user, job_id=None):
     store = get_store()
+    process_application_sla(store)
     candidate_id = user.get("user_id") or user.get("id")
     payload = request.get_json(silent=True) or {}
     resolved_job_id = parse_optional_int(job_id)
@@ -132,6 +135,7 @@ def create_application(user, job_id=None):
     if not job or not job_is_active(job):
         return json_error("job_not_available", 404)
 
+    applied_at = utcnow()
     application = {
         "id": store.next_sequence("applications"),
         "application_id": None,
@@ -140,8 +144,12 @@ def create_application(user, job_id=None):
         "company_id": job["company_id"],
         "job_id": job.get("job_id") or job.get("id"),
         "status": "applied",
-        "applied_at": utcnow(),
-        "updated_at": utcnow(),
+        "applied_at": applied_at,
+        "updated_at": applied_at,
+        "decision_deadline": decision_deadline_for(applied_at),
+        "interview_at": None,
+        "decision_reason": "",
+        "last_company_action_at": None,
     }
     application["application_id"] = application["id"]
     try:
@@ -149,11 +157,16 @@ def create_application(user, job_id=None):
     except DuplicateKeyError:
         return json_error("already_applied", 409)
 
+    candidate = store.get_account("fresher", candidate_id)
+    if candidate:
+        notify_application_submitted(store, application, candidate, job)
+
     return jsonify({"ok": True, "application": serialize_application(store, application)})
 
 
 def my_applications(user):
     store = get_store()
+    process_application_sla(store)
     candidate_id = user.get("user_id") or user.get("id")
     applications = [
         serialize_application(store, application)
