@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# Private dashboards and auth pages are controlled with meta robots tags.

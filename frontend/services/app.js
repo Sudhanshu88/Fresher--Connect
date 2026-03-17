@@ -20,6 +20,7 @@
     bindHeaderMenu();
     bindThemeControls();
     bindLogoutButtons();
+    applyDefaultSeo();
 
     if (page === "landing") {
       initLanding();
@@ -109,6 +110,217 @@
       url.searchParams.delete(name);
     }
     window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }
+
+  function pageSeoDefaults(pageName) {
+    if (pageName === "landing") {
+      return {
+        title: "Fresher Connect | Entry-Level Jobs and Hiring Platform for Freshers",
+        description: "Discover fresher-friendly jobs, review detailed hiring workflows, and help companies manage structured entry-level hiring from one platform.",
+        robots: "index,follow,max-image-preview:large"
+      };
+    }
+
+    if (pageName === "jobs") {
+      return {
+        title: "Fresher Jobs | Fresher Connect",
+        description: "Browse entry-level jobs, internships, and fresher-friendly roles with searchable filters, detailed requirements, compensation, and hiring stages.",
+        robots: "index,follow,max-image-preview:large"
+      };
+    }
+
+    if (pageName === "job-details") {
+      return {
+        title: "Job Details | Fresher Connect",
+        description: "Open a fresher-friendly job, review role requirements, compensation, company information, and hiring stages before applying.",
+        robots: "index,follow,max-image-preview:large"
+      };
+    }
+
+    if (pageName === "login") {
+      return {
+        title: "Login | Fresher Connect",
+        description: "Access your Fresher Connect account to continue job search or company hiring workflows.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "register") {
+      return {
+        title: "Register | Fresher Connect",
+        description: "Create a fresher or company account on Fresher Connect.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "company-login") {
+      return {
+        title: "Company Login | Fresher Connect",
+        description: "Sign in to the Fresher Connect company dashboard.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "company") {
+      return {
+        title: "Company Dashboard | Fresher Connect",
+        description: "Manage jobs, candidates, and hiring workflows in the company dashboard.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "user") {
+      return {
+        title: "Candidate Dashboard | Fresher Connect",
+        description: "Track applications, saved jobs, and candidate profile details.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "admin") {
+      return {
+        title: "Admin Dashboard | Fresher Connect",
+        description: "Manage users, jobs, and moderation controls in the admin dashboard.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "application-status") {
+      return {
+        title: "Application Status | Fresher Connect",
+        description: "Track current hiring stage and application progress.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    return {
+      title: document.title,
+      description: "Fresher Connect helps freshers discover jobs and gives companies a cleaner hiring workspace.",
+      robots: "index,follow,max-image-preview:large"
+    };
+  }
+
+  function buildCanonicalUrl(keepParams) {
+    var current = new URL(window.location.href);
+    var canonical = new URL(current.pathname, current.origin);
+    (keepParams || []).forEach(function (key) {
+      var value = current.searchParams.get(key);
+      if (value) {
+        canonical.searchParams.set(key, value);
+      }
+    });
+    return canonical.toString();
+  }
+
+  function upsertMetaTag(attributeName, attributeValue, content) {
+    var selector = 'meta[' + attributeName + '="' + attributeValue + '"]';
+    var tag = document.head.querySelector(selector);
+    if (!tag) {
+      tag = document.createElement("meta");
+      tag.setAttribute(attributeName, attributeValue);
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute("content", content);
+  }
+
+  function upsertLinkTag(rel, href) {
+    var selector = 'link[rel="' + rel + '"]';
+    var tag = document.head.querySelector(selector);
+    if (!tag) {
+      tag = document.createElement("link");
+      tag.setAttribute("rel", rel);
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute("href", href);
+  }
+
+  function setSeoStructuredData(data) {
+    var id = "seo-structured-data";
+    var script = document.getElementById(id);
+    if (!data) {
+      if (script) {
+        script.remove();
+      }
+      return;
+    }
+
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = id;
+      document.head.appendChild(script);
+    }
+
+    script.textContent = JSON.stringify(data);
+  }
+
+  function applySeo(config) {
+    var effectiveConfig = config || {};
+    var title = effectiveConfig.title || document.title;
+    var description = effectiveConfig.description || "";
+    var canonicalUrl = effectiveConfig.canonicalUrl || buildCanonicalUrl(effectiveConfig.keepParams || []);
+
+    document.title = title;
+
+    upsertMetaTag("name", "description", description);
+    upsertMetaTag("name", "robots", effectiveConfig.robots || "index,follow,max-image-preview:large");
+    upsertMetaTag("name", "theme-color", "#123a72");
+    upsertMetaTag("property", "og:site_name", "Fresher Connect");
+    upsertMetaTag("property", "og:type", effectiveConfig.ogType || "website");
+    upsertMetaTag("property", "og:title", effectiveConfig.ogTitle || title);
+    upsertMetaTag("property", "og:description", effectiveConfig.ogDescription || description);
+    upsertMetaTag("property", "og:url", canonicalUrl);
+    upsertMetaTag("name", "twitter:card", effectiveConfig.twitterCard || "summary");
+    upsertMetaTag("name", "twitter:title", effectiveConfig.twitterTitle || title);
+    upsertMetaTag("name", "twitter:description", effectiveConfig.twitterDescription || description);
+    upsertLinkTag("canonical", canonicalUrl);
+    setSeoStructuredData(effectiveConfig.jsonLd || null);
+  }
+
+  function buildLandingStructuredData() {
+    var homeUrl = buildCanonicalUrl([]);
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Fresher Connect",
+        url: homeUrl,
+        description: "Entry-level hiring platform for freshers and companies."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Fresher Connect",
+        url: homeUrl,
+        logo: window.location.origin + "/components/fc-logo.svg",
+        sameAs: [
+          "https://www.linkedin.com",
+          "https://www.instagram.com",
+          "https://x.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ];
+  }
+
+  function buildJobsStructuredData() {
+    return {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Fresher Jobs | Fresher Connect",
+      url: buildCanonicalUrl([]),
+      description: "Browse entry-level jobs, internships, and fresher-friendly roles with searchable filters and detailed hiring workflows."
+    };
+  }
+
+  function applyDefaultSeo() {
+    var defaults = pageSeoDefaults(page);
+    if (page === "landing") {
+      defaults.jsonLd = buildLandingStructuredData();
+    } else if (page === "jobs") {
+      defaults.jsonLd = buildJobsStructuredData();
+    }
+    applySeo(defaults);
   }
 
   var LOGIN_ROLE_CONTENT = {
@@ -1155,6 +1367,128 @@
       return "-";
     }
     return text.replace(/^https?:\/\//i, "").replace(/\/+$/, "") || text;
+  }
+
+  function normalizeIsoDate(value) {
+    if (!value) {
+      return "";
+    }
+    var parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString();
+  }
+
+  function jobEmploymentType(jobType) {
+    if (jobType === "internship") {
+      return "INTERN";
+    }
+    if (jobType === "contract") {
+      return "CONTRACTOR";
+    }
+    return "FULL_TIME";
+  }
+
+  function jobPostingDescription(job) {
+    var sections = [];
+    if (job.description) {
+      sections.push("<p>" + window.FC_API.escapeHtml(job.description) + "</p>");
+    }
+    if (job.role_overview) {
+      sections.push("<p>" + window.FC_API.escapeHtml(job.role_overview) + "</p>");
+    }
+    if (job.responsibilities) {
+      sections.push("<p><strong>Responsibilities:</strong> " + window.FC_API.escapeHtml(job.responsibilities) + "</p>");
+    }
+    if (job.required_qualifications || job.requirements) {
+      sections.push("<p><strong>Required qualifications:</strong> " + window.FC_API.escapeHtml(job.required_qualifications || job.requirements) + "</p>");
+    }
+    if (job.preferred_qualifications) {
+      sections.push("<p><strong>Preferred qualifications:</strong> " + window.FC_API.escapeHtml(job.preferred_qualifications) + "</p>");
+    }
+    if ((job.required_skills || []).length) {
+      sections.push(
+        "<p><strong>Skills:</strong></p><ul>" +
+          (job.required_skills || [])
+            .map(function (skill) {
+              return "<li>" + window.FC_API.escapeHtml(skill) + "</li>";
+            })
+            .join("") +
+          "</ul>"
+      );
+    }
+    return sections.join("");
+  }
+
+  function buildJobPostingStructuredData(job) {
+    if (!job || !job.id) {
+      return null;
+    }
+
+    var schema = {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: job.title || "Fresher role",
+      description: jobPostingDescription(job),
+      identifier: {
+        "@type": "PropertyValue",
+        name: job.company_name || "Fresher Connect",
+        value: String(job.id)
+      },
+      datePosted: normalizeIsoDate(job.created_at || job.posted_date),
+      validThrough: normalizeIsoDate(job.expires_at || job.expiry_date),
+      employmentType: jobEmploymentType(job.job_type),
+      hiringOrganization: {
+        "@type": "Organization",
+        name: job.company_name || "Fresher Connect",
+        sameAs: job.company_website || window.location.origin + "/pages/index.html",
+        logo: job.company_logo || window.location.origin + "/components/fc-logo.svg"
+      },
+      industry: job.industry_type || undefined,
+      jobLocation: {
+        "@type": "Place",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: job.city || job.location || "",
+          addressRegion: job.state || "",
+          addressCountry: job.country || ""
+        }
+      }
+    };
+
+    if (job.work_mode === "remote") {
+      schema.jobLocationType = "TELECOMMUTE";
+      delete schema.jobLocation;
+      if (job.country) {
+        schema.applicantLocationRequirements = {
+          "@type": "Country",
+          name: job.country
+        };
+      }
+    }
+
+    if (job.salary_min || job.salary_max) {
+      schema.baseSalary = {
+        "@type": "MonetaryAmount",
+        currency: "INR",
+        value: {
+          "@type": "QuantitativeValue",
+          minValue: job.salary_min || job.salary_max || 0,
+          maxValue: job.salary_max || job.salary_min || 0,
+          unitText: job.job_type === "internship" ? "MONTH" : "YEAR"
+        }
+      };
+    }
+
+    if (!schema.datePosted) {
+      delete schema.datePosted;
+    }
+    if (!schema.validThrough) {
+      delete schema.validThrough;
+    }
+    if (!schema.industry) {
+      delete schema.industry;
+    }
+
+    return schema;
   }
 
   function computeSavedJobMap(savedJobs) {
@@ -2303,6 +2637,12 @@
     var factRows;
 
     if (!job) {
+      applySeo({
+        title: "Job Details | Fresher Connect",
+        description: "Open a fresher-friendly job, review role requirements, compensation, company information, and hiring stages before applying.",
+        robots: "noindex,follow",
+        canonicalUrl: buildCanonicalUrl([])
+      });
       hero.innerHTML = '<div class="empty-state">No job selected. Open the listing page and choose a role.</div>';
       overview.innerHTML = '<div class="empty-state">Job content is not available.</div>';
       responsibilities.innerHTML = '<div class="empty-state">Responsibilities are not available.</div>';
@@ -2313,6 +2653,15 @@
       application.innerHTML = '<div class="empty-state">Application actions are not available.</div>';
       return;
     }
+
+    applySeo({
+      title: job.title + " at " + job.company_name + " | Fresher Connect",
+      description: (job.description || "Explore this fresher-friendly job opening on Fresher Connect.").slice(0, 155),
+      robots: "index,follow,max-image-preview:large",
+      canonicalUrl: buildCanonicalUrl(["job"]),
+      ogType: "article",
+      jsonLd: buildJobPostingStructuredData(job)
+    });
 
     var currentUser = detailState.user;
     var currentApplication = (detailState.applications || []).find(function (item) {
