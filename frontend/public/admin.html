@@ -12,18 +12,46 @@
   <script defer src="services/app.js?v=20260317-phase1"></script>
 </head>
 <body data-page="admin">
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <a class="brand" href="index.html">
-        <span class="brand-mark image-mark">
-          <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
-        </span>
-        <span>
-          <span class="brand-title">Fresher Connect</span>
-          <span class="brand-sub">Admin dashboard</span>
-        </span>
-      </a>
-      <div class="nav-actions header-actions">
+        <header class="topbar">
+    <div class="container topbar-inner topbar-modern">
+      <div class="topbar-left">
+        <a class="brand" href="index.html">
+          <span class="brand-mark image-mark">
+            <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
+          </span>
+          <span>
+            <span class="brand-title">Fresher Connect</span>
+            <span class="brand-sub">Jobs for modern hiring teams</span>
+          </span>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary">
+          <a class="header-nav-link" data-header-link="jobs" href="jobs.html">
+            <span>Jobs</span>
+            <span class="nav-badge is-hidden" data-nav-badge="jobs" aria-hidden="true"></span>
+          </a>
+          <a class="header-nav-link" data-header-link="companies" href="jobs.html">
+            <span>Companies</span>
+            <span class="nav-badge is-hidden" data-nav-badge="companies" aria-hidden="true"></span>
+          </a>
+          <a class="header-nav-link" data-header-link="services" href="jobs.html?search=services">
+            <span>Services</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="topbar-right">
+        <form class="header-search" action="jobs.html" method="get" role="search">
+          <label class="sr-only" for="headerSearch">Search jobs here</label>
+          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search jobs here">
+          <button class="header-search-button" type="submit" aria-label="Search jobs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="m20 20-4.35-4.35"></path>
+            </svg>
+          </button>
+        </form>
+
         <div class="menu-shell">
           <button
             class="menu-toggle"
@@ -43,8 +71,8 @@
 
           <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
             <div class="menu-panel-head">
-              <span class="menu-panel-label" id="menuPanelLabel">Active account</span>
-              <strong class="menu-panel-title" id="menuPanelTitle">Admin workspace</strong>
+              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Profile, settings, logout, and more</strong>
             </div>
             <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
             <button class="menu-item" type="button" data-menu-action="settings">Settings</button>

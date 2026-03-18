@@ -429,6 +429,121 @@
     };
   }
 
+  function findHeaderLink(key) {
+    return document.querySelector('[data-header-link="' + key + '"]');
+  }
+
+  function findHeaderBadge(key) {
+    return document.querySelector('[data-nav-badge="' + key + '"]');
+  }
+
+  function setHeaderBadge(key, count, description) {
+    var badge = findHeaderBadge(key);
+    var normalizedCount = toNumber(count);
+    if (!badge) {
+      return;
+    }
+
+    if (normalizedCount === null || normalizedCount <= 0) {
+      badge.textContent = "";
+      badge.classList.add("is-hidden");
+      badge.setAttribute("aria-hidden", "true");
+      badge.removeAttribute("aria-label");
+      return;
+    }
+
+    var displayCount = normalizedCount > 99 ? "99+" : String(normalizedCount);
+    badge.textContent = displayCount;
+    badge.classList.remove("is-hidden");
+    badge.setAttribute("aria-hidden", "false");
+    badge.setAttribute("aria-label", displayCount + " " + description);
+  }
+
+  function uniqueCompanyCount(jobs) {
+    return Array.from(new Set((jobs || []).map(function (job) {
+      return String((job && job.company_name) || "").trim();
+    }).filter(Boolean))).length;
+  }
+
+  function isExperiencedValue(value) {
+    var normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) {
+      return false;
+    }
+
+    if (/^0+\s*(year|years|yr|yrs)\b/.test(normalized)) {
+      return false;
+    }
+
+    return [
+      "fresher",
+      "0-1 year",
+      "0-1 years",
+      "0 to 1 year",
+      "0 to 1 years",
+      "internship",
+      "student",
+      "entry level",
+      "entry-level"
+    ].every(function (item) {
+      return normalized.indexOf(item) === -1;
+    });
+  }
+
+  function hasExperiencedProfile(user) {
+    if (!user || user.role !== "fresher") {
+      return true;
+    }
+    return isExperiencedValue(user.experience);
+  }
+
+  function updateHeaderNavigation(config) {
+    var options = config || {};
+    var servicesLink = findHeaderLink("services");
+
+    setHeaderBadge("jobs", options.jobsCount, "matching jobs");
+    setHeaderBadge("companies", options.companiesCount, "matching companies");
+
+    if (servicesLink) {
+      servicesLink.classList.toggle("is-hidden", options.showServices === false);
+    }
+  }
+
+  function applyCandidateHeaderCounts(user, jobs) {
+    updateHeaderNavigation({
+      jobsCount: (jobs || []).length,
+      companiesCount: uniqueCompanyCount(jobs || []),
+      showServices: hasExperiencedProfile(user)
+    });
+  }
+
+  async function hydrateCandidateHeaderCounts() {
+    if (!state.currentUser || state.currentUser.role !== "fresher") {
+      updateHeaderNavigation({
+        jobsCount: null,
+        companiesCount: null,
+        showServices: true
+      });
+      return;
+    }
+
+    if (state.userDashboard && state.userDashboard.user) {
+      applyCandidateHeaderCounts(state.userDashboard.user, state.userDashboard.jobs || []);
+      return;
+    }
+
+    try {
+      var dashboard = await window.FC_API.request("/api/user/dashboard");
+      applyCandidateHeaderCounts(dashboard.user || state.currentUser, dashboard.jobs || []);
+    } catch (_error) {
+      updateHeaderNavigation({
+        jobsCount: null,
+        companiesCount: null,
+        showServices: hasExperiencedProfile(state.currentUser)
+      });
+    }
+  }
+
   function initialsFrom(value) {
     var text = String(value || "").trim();
     if (!text) {
@@ -762,6 +877,207 @@
     );
   }
 
+  function activeMenuUser() {
+    if (state.userDashboard && state.userDashboard.user) {
+      return state.userDashboard.user;
+    }
+    if (state.companyDashboard && state.companyDashboard.user) {
+      return state.companyDashboard.user;
+    }
+    if (state.adminDashboard && state.adminDashboard.user) {
+      return state.adminDashboard.user;
+    }
+    return state.currentUser;
+  }
+
+  function loginPromptMarkup(description) {
+    return (
+      '<div class="page-intro">' +
+      '<span class="section-label">Sign in required</span>' +
+      "<h3>Open your account to continue</h3>" +
+      '<p class="muted">' + window.FC_API.escapeHtml(description) + "</p>" +
+      "</div>" +
+      renderSheetLinks([
+        { href: "login.html", label: "Login", description: "Sign in to your Fresher Connect account." },
+        { href: "register.html", label: "Create account", description: "Register as a fresher or company." }
+      ])
+    );
+  }
+
+  function openCommunicationPrivacySheet() {
+    var user = activeMenuUser();
+
+    if (!user) {
+      openSheet(
+        "Privacy",
+        "Privacy controls",
+        "Sign in to manage privacy and alerts.",
+        loginPromptMarkup("Notifications, account visibility, and privacy options are available after login.")
+      );
+      return;
+    }
+
+    openSheet(
+      "Privacy",
+      "Privacy controls",
+      "Review how Fresher Connect uses your account details inside the hiring flow.",
+      renderDetailItems([
+        {
+          label: "Notifications",
+          value: user.role === "company"
+            ? "Applicant updates and recruiter activity alerts stay enabled."
+            : "Application updates and shortlist alerts stay enabled."
+        },
+        {
+          label: "Privacy",
+          value: user.role === "company"
+            ? "Company details are visible on live jobs and in your hiring workspace."
+            : "Candidate details are shared only where you actively join the hiring flow."
+        },
+        { label: "Contact email", value: user.email || "-" },
+        {
+          label: "Workspace",
+          value: user.role === "company" ? "Company dashboard" : user.role === "admin" ? "Admin dashboard" : "Candidate dashboard"
+        }
+      ]) +
+        renderSheetLinks([
+          { href: dashboardHref(user), label: "Open dashboard", description: "Review your workspace and account activity." },
+          { href: "jobs.html", label: "Browse jobs", description: "Return to the job listing page." }
+        ])
+    );
+  }
+
+  function openAccountSheet() {
+    var user = activeMenuUser();
+
+    if (!user) {
+      openSheet(
+        "Account",
+        "Account summary",
+        "Sign in to see your profile, role, and connected account details.",
+        loginPromptMarkup("Your account summary becomes available after login.")
+      );
+      return;
+    }
+
+    openSheet(
+      "Account",
+      "Account summary",
+      "See the most important details linked to your current Fresher Connect account.",
+      renderDetailItems([
+        { label: "Name", value: user.company_name || user.name || "-" },
+        { label: "Email", value: user.email || "-" },
+        { label: "Role", value: toTitleCase(user.role || "user") },
+        { label: "Location", value: user.location || user.industry_type || "-" },
+        { label: "Current page", value: (state.menuContext && state.menuContext.pageLabel) || "Landing page" }
+      ]) +
+        renderSheetLinks([
+          { href: dashboardHref(user), label: "Open dashboard", description: "Go to your main workspace." },
+          { href: "register.html", label: "Create another account", description: "Open the registration page." }
+        ])
+    );
+  }
+
+  function openJobPreferencesSheet() {
+    var user = activeMenuUser();
+
+    if (!user) {
+      openSheet(
+        "Job Preferences",
+        "Candidate job preferences",
+        "Sign in as a fresher to manage matched jobs and profile-based preferences.",
+        loginPromptMarkup("Job preferences and matched roles become available after candidate login.")
+      );
+      return;
+    }
+
+    if (user.role !== "fresher") {
+      openSheet(
+        "Job Preferences",
+        "Candidate job preferences",
+        "This section is designed for candidate-side job matching and preference review.",
+        renderDetailItems([
+          { label: "Current role", value: toTitleCase(user.role || "user") },
+          { label: "Use case", value: "Candidate preferences drive matched job recommendations." },
+          { label: "Suggested page", value: "Open jobs or your dashboard to continue." }
+        ]) +
+          renderSheetLinks([
+            { href: "jobs.html", label: "Browse jobs", description: "Review fresher-friendly roles." },
+            { href: dashboardHref(user), label: "Open dashboard", description: "Return to your main workspace." }
+          ])
+      );
+      return;
+    }
+
+    openSheet(
+      "Job Preferences",
+      "Candidate job preferences",
+      "These profile signals are used to surface matched roles in your dashboard and listing pages.",
+      renderDetailItems([
+        { label: "Experience", value: user.experience || "Fresher" },
+        { label: "Skills", value: safeJoin(user.skills) },
+        { label: "Location", value: user.location || "-" },
+        { label: "Summary", value: user.summary || "Add a short summary to improve matching." },
+        { label: "Resume skills", value: safeJoin(user.resume_parsed_skills) }
+      ]) +
+        renderSheetLinks([
+          { href: "jobs.html", label: "Open matching jobs", description: "Browse roles using your current profile details." },
+          { href: dashboardHref(user), label: "Open dashboard", description: "Edit your fresher profile and resume." }
+        ])
+    );
+  }
+
+  function openBlockCompaniesSheet() {
+    var user = activeMenuUser();
+
+    if (!user) {
+      openSheet(
+        "Block Companies",
+        "Company blocking controls",
+        "Sign in as a candidate to manage companies you do not want to see.",
+        loginPromptMarkup("Company visibility controls are available after candidate login.")
+      );
+      return;
+    }
+
+    if (user.role !== "fresher") {
+      openSheet(
+        "Block Companies",
+        "Company blocking controls",
+        "Company blocking is available for candidate-side job discovery only.",
+        renderDetailItems([
+          { label: "Current role", value: toTitleCase(user.role || "user") },
+          { label: "Visibility", value: "Candidate filters hide specific employers from matched listings." },
+          { label: "Status", value: "No candidate blocking controls apply to this account." }
+        ]) +
+          renderSheetLinks([
+            { href: dashboardHref(user), label: "Open dashboard", description: "Return to your workspace." }
+          ])
+      );
+      return;
+    }
+
+    openSheet(
+      "Block Companies",
+      "Company blocking controls",
+      "Keep unwanted employers out of your discovery flow and matched job list.",
+      renderDetailItems([
+        {
+          label: "Blocked companies",
+          value: Array.isArray(user.blocked_companies) && user.blocked_companies.length
+            ? user.blocked_companies.join(", ")
+            : "No blocked companies saved yet."
+        },
+        { label: "Effect", value: "Blocked companies should stay out of your preferred discovery flow." },
+        { label: "Recommended next step", value: "Review jobs first, then refine employer visibility from your profile." }
+      ]) +
+        renderSheetLinks([
+          { href: "jobs.html", label: "Browse companies and jobs", description: "Review employers before blocking them." },
+          { href: dashboardHref(user), label: "Open dashboard", description: "Return to your candidate workspace." }
+        ])
+    );
+  }
+
   function openSettingsSheet() {
     var context = state.menuContext || defaultMenuContext();
     openSheet(
@@ -797,6 +1113,26 @@
 
   function handleMenuAction(action) {
     closeMenu();
+
+    if (action === "communication-privacy") {
+      openCommunicationPrivacySheet();
+      return;
+    }
+
+    if (action === "account") {
+      openAccountSheet();
+      return;
+    }
+
+    if (action === "job-preferences") {
+      openJobPreferencesSheet();
+      return;
+    }
+
+    if (action === "block-companies") {
+      openBlockCompaniesSheet();
+      return;
+    }
 
     if (action === "profile") {
       if (state.menuContext && state.menuContext.profileTarget && focusTarget(state.menuContext.profileTarget)) {
@@ -1878,6 +2214,12 @@
   }
 
   async function initLanding() {
+    updateHeaderNavigation({
+      jobsCount: null,
+      companiesCount: null,
+      showServices: true
+    });
+
     var apiBaseLabel = byId("apiBaseLabel");
     if (apiBaseLabel) {
       apiBaseLabel.textContent = window.FC_API.getApiBase();
@@ -1888,9 +2230,9 @@
     setHeaderMenu({
       menuLabel: "Quick access",
       pageLabel: "Landing page",
-      summary: "Profile, settings, logout, and more",
+      summary: "Communication, account, preferences, blocking, and logout",
       title: "Open menu",
-      subtitle: "Profile, settings, and more",
+      subtitle: "Communication, account, and preference shortcuts",
       badgeText: "FC",
       profileHref: "login.html",
       moreLinks: [
@@ -1950,6 +2292,8 @@
             { href: "register.html", label: "Create another account", description: "Open the registration page." }
           ]
         });
+
+        await hydrateCandidateHeaderCounts();
       }
     } catch (_error) {
       byId("landingStatus").textContent =
@@ -2382,6 +2726,7 @@
     var data = await window.FC_API.request("/api/user/dashboard");
     state.userDashboard = data;
     renderUserProfile(data.user);
+    applyCandidateHeaderCounts(data.user, data.jobs || []);
     populateJobFilterControls("job", data.jobs || [], buildJobFilterOptions(data.jobs || []));
     renderUserJobs();
     renderSavedJobs();
@@ -2557,6 +2902,11 @@
         moreDescription: context.moreDescription || "Open related pages from the current flow.",
         moreLinks: context.moreLinks || defaultMenuContext().moreLinks
       });
+      updateHeaderNavigation({
+        jobsCount: null,
+        companiesCount: null,
+        showServices: hasExperiencedProfile(user)
+      });
       return;
     }
 
@@ -2573,6 +2923,11 @@
       moreTitle: context.moreTitle || "More actions",
       moreDescription: context.moreDescription || "Open related pages from the current flow.",
       moreLinks: context.moreLinks || defaultMenuContext().moreLinks
+    });
+    updateHeaderNavigation({
+      jobsCount: null,
+      companiesCount: null,
+      showServices: true
     });
   }
 
@@ -2688,6 +3043,7 @@
         saved_jobs: savedJobs
       };
       await loadJobsPageListing(Object.assign(readJobFilters("jobsPage"), { page: 1, pageSize: 9 }));
+      await hydrateCandidateHeaderCounts();
     } catch (error) {
       setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load job listing."), "error");
       return;
@@ -2968,6 +3324,7 @@
         job: job
       };
       renderJobDetailsPage();
+      await hydrateCandidateHeaderCounts();
     } catch (error) {
       byId("jobDetailHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load job details.")) + '</div>';
     }
@@ -3123,6 +3480,7 @@
         applications: response.applications || []
       };
       renderApplicationStatusPage();
+      await hydrateCandidateHeaderCounts();
     } catch (error) {
       byId("applicationHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load application status.")) + '</div>';
     }
