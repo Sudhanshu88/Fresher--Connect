@@ -1,4 +1,4 @@
-name: CI/CD
+name: CICD
 
 on:
   pull_request:
@@ -138,7 +138,7 @@ jobs:
       - name: Publish frontend image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: . 
           file: frontend/Dockerfile.frontend
           push: true
           tags: |
