@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
     <AppShell title="Admin-only sign in for verification, moderation, and access control." subtitle="Separate admin entry point over the Flask backend">
       <section className="hero">
         <section className="panel stack">
-          <span className="section-label">Admin Login</span>
+          <span className="section-label">Admin Sign In</span>
           <h2>Access the moderation workspace.</h2>
           <p className="muted">
             This route is reserved for platform admins who verify companies, review jobs, and manage permissions.
@@ -74,7 +74,7 @@ export default function AdminLoginPage() {
               />
             </label>
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "Signing in..." : "Login as admin"}
+              {submitting ? "Signing in..." : "Sign in as admin"}
             </button>
           </form>
         </section>

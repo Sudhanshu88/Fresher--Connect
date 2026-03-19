@@ -113,15 +113,15 @@ export default function RegisterPage() {
     <AppShell title="Typed account creation for candidates and companies." subtitle="One register flow, two role-specific payloads">
       <section className="hero">
         <section className="panel stack">
-          <span className="section-label">Register</span>
-          <h2>Create a fresher or company account.</h2>
+          <span className="section-label">Create Account</span>
+          <h2>Create a candidate or company account.</h2>
           <div className="button-row">
             <button
               className={`btn ${form.role === "fresher" ? "primary" : "secondary"}`}
               type="button"
               onClick={() => setForm((current) => ({ ...current, role: "fresher" }))}
             >
-              Fresher
+              Candidate
             </button>
             <button
               className={`btn ${form.role === "company" ? "primary" : "secondary"}`}
@@ -275,7 +275,7 @@ export default function RegisterPage() {
           <h2>Registration now maps directly to typed backend contracts.</h2>
           <div className="detail-list">
             <div className="detail-item">
-              <span>Fresher payload</span>
+              <span>Candidate payload</span>
               <strong>Name, education, grad year, skills, location, summary</strong>
             </div>
             <div className="detail-item">
@@ -284,7 +284,7 @@ export default function RegisterPage() {
             </div>
             <div className="detail-item">
               <span>After success</span>
-              <strong>Freshers sign in immediately, companies wait for admin verification before login</strong>
+              <strong>Candidate accounts can sign in immediately. Employer accounts require admin approval before access.</strong>
             </div>
           </div>
           <div className="message">

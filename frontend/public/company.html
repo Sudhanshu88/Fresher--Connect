@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Company Dashboard | Fresher Connect</title>
-  <meta name="description" content="Manage jobs, candidates, and hiring workflows in the company dashboard.">
+  <title>Recruiter Workspace | Fresher Connect</title>
+  <meta name="description" content="Manage job listings, candidate pipelines, and hiring operations from the recruiter workspace on Fresher Connect.">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#123a72">
   <link rel="stylesheet" href="styles/app.css?v=20260317-phase2">
@@ -21,7 +21,7 @@
           </span>
           <span>
             <span class="brand-title">Fresher Connect</span>
-            <span class="brand-sub">Jobs for modern hiring teams</span>
+            <span class="brand-sub">Enterprise talent marketplace</span>
           </span>
         </a>
 
@@ -42,9 +42,9 @@
 
       <div class="topbar-right">
         <form class="header-search" action="jobs.html" method="get" role="search">
-          <label class="sr-only" for="headerSearch">Search jobs here</label>
-          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search jobs here">
-          <button class="header-search-button" type="submit" aria-label="Search jobs">
+          <label class="sr-only" for="headerSearch">Search roles, skills, or employers</label>
+          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search roles, skills, or employers">
+          <button class="header-search-button" type="submit" aria-label="Search roles">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="6"></circle>
               <path d="m20 20-4.35-4.35"></path>
@@ -71,13 +71,13 @@
 
           <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
             <div class="menu-panel-head">
-              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
-              <strong class="menu-panel-title" id="menuPanelTitle">Profile, settings, logout, and more</strong>
+              <span class="menu-panel-label" id="menuPanelLabel">Workspace menu</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Account, preferences, and platform tools</strong>
             </div>
-            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
-            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
-            <button class="menu-item" type="button" data-menu-action="more">More</button>
-            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+            <button class="menu-item" type="button" data-menu-action="profile">Account overview</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Preferences</button>
+            <button class="menu-item" type="button" data-menu-action="more">Platform tools</button>
+            <button class="menu-item danger" type="button" data-action="logout">Sign out</button>
           </div>
         </div>
       </div>
@@ -88,16 +88,15 @@
     <section class="panel dashboard-hero-panel">
       <div class="dashboard-hero-grid">
         <div class="page-intro">
-          <span class="section-label">Company Dashboard</span>
-          <h1 class="page-title">Post jobs, review fresher profiles, and keep the hiring pipeline organized.</h1>
+          <span class="section-label">Recruiter Workspace</span>
+          <h1 class="page-title">Create listings, review candidate profiles, and keep the hiring pipeline organised.</h1>
           <p class="muted">
-            The company dashboard now connects job creation, posted job details, and application status
-            updates in one place.
+            The recruiter workspace connects listing creation, employer branding, candidate review, and hiring decisions in one place.
           </p>
         </div>
         <div class="hero-mini-grid">
           <div class="mini-stat">
-            <span>Open jobs</span>
+            <span>Open listings</span>
             <strong id="heroOpenJobs">0</strong>
           </div>
           <div class="mini-stat">
@@ -115,9 +114,9 @@
     <div class="dashboard-grid">
       <aside class="sidebar">
         <section class="profile-card card" id="companyProfileSection">
-          <span class="section-label">Company Profile</span>
+          <span class="section-label">Employer Profile</span>
           <h2 id="companyNameHeading">Loading...</h2>
-          <p class="profile-meta" id="companyMeta">Company profile is loading.</p>
+          <p class="profile-meta" id="companyMeta">Employer profile is loading.</p>
 
           <div class="kpi-grid">
             <div class="status-box">
@@ -125,7 +124,7 @@
               <strong id="companyProfileCompletion">0%</strong>
             </div>
             <div class="status-box">
-              <span>Open Jobs</span>
+              <span>Open Listings</span>
               <strong id="postedJobsCount">0</strong>
             </div>
           </div>
@@ -143,12 +142,12 @@
         </section>
 
         <section class="profile-card card">
-          <span class="section-label">Hiring Flow</span>
-          <h3>What this page controls</h3>
+          <span class="section-label">Hiring Workflow</span>
+          <h3>What this workspace controls</h3>
           <div class="detail-list">
-            <div>Create structured job posts with company and role details.</div>
-            <div>Open individual job detail pages from the posted jobs section.</div>
-            <div>Update candidate statuses without losing applicant context.</div>
+            <div>Create structured job listings with employer and role details.</div>
+            <div>Open published role pages directly from your recruiter workspace.</div>
+            <div>Update candidate statuses without losing application context.</div>
           </div>
         </section>
       </aside>
@@ -158,8 +157,8 @@
           <div class="section-head">
             <div class="page-intro">
               <span class="section-label">Hiring Overview</span>
-              <h2 class="page-title page-title-small">Current pipeline snapshot</h2>
-              <p class="muted">Monitor all active stages before posting the next role or updating applicants.</p>
+              <h2 class="page-title page-title-small">Current pipeline performance</h2>
+              <p class="muted">Monitor active stages before creating the next listing or updating candidate outcomes.</p>
             </div>
           </div>
           <div id="statusGrid" class="status-grid"></div>
@@ -171,7 +170,7 @@
           <div class="section-head">
             <div>
               <span class="section-label">Recent Activity</span>
-              <h2>Trace company actions and SLA events</h2>
+              <h2>Review recruiter actions and SLA events</h2>
             </div>
           </div>
           <div id="companyRecentActivity" class="activity-list"></div>
@@ -180,8 +179,8 @@
         <section class="panel" id="companyJobFormSection">
           <div class="section-head">
             <div>
-              <span class="section-label">Job Form</span>
-              <h2>Create a new opening</h2>
+              <span class="section-label">Listing Builder</span>
+              <h2>Create a job listing</h2>
             </div>
           </div>
 
@@ -189,7 +188,7 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">1. Company Information</span>
-                <p class="muted">Basic company details for every job post.</p>
+                <p class="muted">Core employer details that appear on every listing.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field">
@@ -232,7 +231,7 @@
 
                 <div class="field full-span">
                   <label for="companyDescriptionInput">Company Description</label>
-                  <textarea id="companyDescriptionInput" name="company_description" rows="4" placeholder="Tell candidates what your company does, its culture, and the kind of talent you hire." required></textarea>
+                  <textarea id="companyDescriptionInput" name="company_description" rows="4" placeholder="Help candidates understand your business, culture, and hiring priorities." required></textarea>
                 </div>
               </div>
             </section>
@@ -240,7 +239,7 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">2. Job Basic Details</span>
-                <p class="muted">Core information about the opening.</p>
+                <p class="muted">Core information about the role you are hiring for.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field">
@@ -315,13 +314,13 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">4. Experience Requirement</span>
-                <p class="muted">Set the experience band for this role.</p>
+                <p class="muted">Define the experience profile required for this role.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field">
                   <label for="jobExperience">Experience Level</label>
                   <select id="jobExperience" name="experience_level" required>
-                    <option value="fresher">Fresher</option>
+                    <option value="fresher">Entry-level</option>
                     <option value="0-1 year">0-1 year</option>
                     <option value="1-3 years">1-3 years</option>
                   </select>
@@ -350,13 +349,13 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">6. Skills Requirement</span>
-                <p class="muted">Add the must-have skills in tag format.</p>
+                <p class="muted">Add the core skills expected for strong candidate alignment.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field full-span">
                   <label for="requiredSkills">Required Skills</label>
                   <input id="requiredSkills" name="required_skills" type="text" placeholder="Python, Linux, Docker, Kubernetes, AWS, Git / CI-CD" required>
-                  <span class="helper-text">Use comma-separated tags so the platform can store them cleanly.</span>
+                  <span class="helper-text">Use comma-separated skills so the platform can index and match them correctly.</span>
                 </div>
               </div>
             </section>
@@ -364,32 +363,32 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">7. Job Description</span>
-                <p class="muted">Write the full job overview and candidate expectations.</p>
+                <p class="muted">Write a complete role summary and clear candidate expectations.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field full-span">
                   <label for="jobDescription">Detailed Description</label>
-                  <textarea id="jobDescription" name="description" rows="4" placeholder="Describe the role in a candidate-friendly way." required></textarea>
+                  <textarea id="jobDescription" name="description" rows="4" placeholder="Describe the role, business context, and success expectations." required></textarea>
                 </div>
 
                 <div class="field full-span">
                   <label for="roleOverview">Role Overview</label>
-                  <textarea id="roleOverview" name="role_overview" rows="4" placeholder="High-level summary of the role and team." required></textarea>
+                  <textarea id="roleOverview" name="role_overview" rows="4" placeholder="Provide a concise summary of the role, team, and reporting structure." required></textarea>
                 </div>
 
                 <div class="field full-span">
                   <label for="jobResponsibilities">Responsibilities</label>
-                  <textarea id="jobResponsibilities" name="responsibilities" rows="4" placeholder="List what the candidate will do in this role." required></textarea>
+                  <textarea id="jobResponsibilities" name="responsibilities" rows="4" placeholder="List the primary responsibilities and expected outcomes for this role." required></textarea>
                 </div>
 
                 <div class="field">
                   <label for="requiredQualifications">Required Qualifications</label>
-                  <textarea id="requiredQualifications" name="required_qualifications" rows="4" placeholder="Must-have qualifications and eligibility." required></textarea>
+                  <textarea id="requiredQualifications" name="required_qualifications" rows="4" placeholder="List the essential qualifications, eligibility, and technical requirements." required></textarea>
                 </div>
 
                 <div class="field">
                   <label for="preferredQualifications">Preferred Qualifications</label>
-                  <textarea id="preferredQualifications" name="preferred_qualifications" rows="4" placeholder="Nice-to-have qualifications or experience."></textarea>
+                  <textarea id="preferredQualifications" name="preferred_qualifications" rows="4" placeholder="Add preferred qualifications that would strengthen a candidate profile."></textarea>
                 </div>
               </div>
             </section>
@@ -397,7 +396,7 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">8. Salary / Compensation</span>
-                <p class="muted">Add salary, stipend, and benefits details.</p>
+                <p class="muted">Provide compensation, stipend, and benefit details with clarity.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field" id="salaryRangeField">
@@ -412,7 +411,7 @@
 
                 <div class="field full-span">
                   <label for="jobBenefits">Additional Benefits</label>
-                  <textarea id="jobBenefits" name="benefits" rows="3" placeholder="Insurance, learning budget, flexible timings, transport, etc."></textarea>
+                  <textarea id="jobBenefits" name="benefits" rows="3" placeholder="Insurance, learning budget, flexible work options, transport, and more."></textarea>
                 </div>
               </div>
             </section>
@@ -420,15 +419,15 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">9. Application Process</span>
-                <p class="muted">Choose how the candidate should apply.</p>
+                <p class="muted">Choose how candidates should submit their application.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field">
                   <label for="applicationMethod">Application Method</label>
                   <select id="applicationMethod" name="application_method" required>
-                    <option value="platform">Apply via platform</option>
-                    <option value="external_link">External link</option>
-                    <option value="email">Email application</option>
+                    <option value="platform">Submit through platform</option>
+                    <option value="external_link">Redirect to external form</option>
+                    <option value="email">Submit by email</option>
                   </select>
                 </div>
 
@@ -471,7 +470,7 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">10. Hiring Process</span>
-                <p class="muted">Define the selection stages candidates will go through.</p>
+                <p class="muted">Define the hiring stages candidates will move through.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field full-span">
@@ -484,7 +483,7 @@
             <section class="form-section-card full-span">
               <div class="form-section-head">
                 <span class="section-label">11. Job Expiry Date</span>
-                <p class="muted">Select how long the post should stay active.</p>
+                <p class="muted">Choose how long the listing should remain active.</p>
               </div>
               <div class="form-grid two-col section-fields">
                 <div class="field">
@@ -501,7 +500,7 @@
             <div id="jobFormMessage" class="form-message full-span"></div>
 
             <div class="button-row full-span">
-              <button class="btn primary" type="submit">Publish job</button>
+              <button class="btn primary" type="submit">Create job listing</button>
             </div>
           </form>
         </section>
@@ -509,8 +508,8 @@
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Job Details</span>
-              <h2>Your job listings</h2>
+              <span class="section-label">Published Listings</span>
+              <h2>Your active and archived job listings</h2>
             </div>
           </div>
           <div id="companyJobsGrid" class="company-jobs-grid"></div>
@@ -519,14 +518,14 @@
         <section class="panel" id="companyApplicationsSection">
           <div class="section-head">
             <div>
-              <span class="section-label">Application Status</span>
-              <h2>Manage fresher applications</h2>
+              <span class="section-label">Candidate Pipeline</span>
+              <h2>Manage candidate applications</h2>
             </div>
           </div>
           <div id="companyApplicationFilters" class="form-grid filter-grid">
             <div class="field">
-              <label for="companyApplicationSearch">Search applicant or job</label>
-              <input id="companyApplicationSearch" type="text" placeholder="Name, email, job title">
+              <label for="companyApplicationSearch">Search candidate or role</label>
+              <input id="companyApplicationSearch" type="text" placeholder="Candidate name, email, role title">
             </div>
             <div class="field">
               <label for="companyApplicationSkills">Skills</label>
@@ -545,7 +544,7 @@
               </select>
             </div>
           </div>
-          <p class="helper-text" id="companyApplicationFilterSummary">Showing all applicants.</p>
+          <p class="helper-text" id="companyApplicationFilterSummary">Showing all candidate profiles.</p>
           <div class="table-wrap">
             <table>
               <thead>
@@ -568,9 +567,9 @@
   <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
     <div class="stack-between">
       <div class="page-intro">
-        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
-        <h2 id="menuSheetTitle">Menu</h2>
-        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+        <span class="section-label" id="menuSheetLabel">Workspace panel</span>
+        <h2 id="menuSheetTitle">Navigation menu</h2>
+        <p class="muted" id="menuSheetDescription">Account shortcuts and platform tools.</p>
       </div>
       <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
     </div>
@@ -578,3 +577,4 @@
   </section>
 </body>
 </html>
+

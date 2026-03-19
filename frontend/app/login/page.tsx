@@ -34,11 +34,11 @@ export default function LoginPage() {
         typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
       const sessionUser = await login(form);
       setTone("success");
-      setMessage("Login successful. Redirecting to your workspace.");
+      setMessage("Sign-in successful. Redirecting to your workspace.");
       router.push(nextPath || dashboardPath(sessionUser.role));
     } catch (_error) {
       setTone("error");
-      setMessage("Login failed. Check email, password, and backend availability.");
+      setMessage("Sign-in failed. Check your email, password, and backend availability.");
     } finally {
       setSubmitting(false);
     }
@@ -48,7 +48,7 @@ export default function LoginPage() {
     <AppShell title="Role-based sign in for candidates and recruiters." subtitle="Typed auth flow over the existing backend">
       <section className="hero">
         <section className="panel stack">
-          <span className="section-label">Login</span>
+          <span className="section-label">Sign In</span>
           <h2>Continue into the right workspace.</h2>
           <p className="muted">
             Candidate and company sign-in use the shared auth flow here. Admin accounts have a separate login page.
@@ -85,7 +85,7 @@ export default function LoginPage() {
           <span className="section-label">Access map</span>
           <div className="detail-list">
             <div className="detail-item">
-              <span>Fresher</span>
+              <span>Candidate</span>
               <strong>/user dashboard with applications, notifications, and profile state</strong>
             </div>
             <div className="detail-item">

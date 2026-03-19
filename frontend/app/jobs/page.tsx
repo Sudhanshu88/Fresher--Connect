@@ -95,7 +95,7 @@ export default function JobsPage() {
     }
     if (user.role !== "fresher") {
       setTone("error");
-      setMessage("Only fresher accounts can apply to jobs.");
+      setMessage("Only candidate accounts can submit applications.");
       return;
     }
 
@@ -126,7 +126,7 @@ export default function JobsPage() {
       <section className="hero">
         <section className="panel stack">
           <span className="section-label">Search and filters</span>
-          <h2>Browse fresher-friendly roles with backend-powered filtering.</h2>
+          <h2>Browse professional opportunities with backend-powered filtering.</h2>
           <Feedback message={message} tone={tone} />
           <form className="form" onSubmit={handleSearch}>
             <div className="two-col">
@@ -192,7 +192,7 @@ export default function JobsPage() {
             <StatCard
               label="Match support"
               value={user?.role === "fresher" ? "Enabled" : "Guest"}
-              hint={user?.role === "fresher" ? "Candidate match score is returned by backend job APIs" : "Sign in as fresher to see score"}
+              hint={user?.role === "fresher" ? "Candidate match score is returned by backend job APIs" : "Sign in as a candidate to view match support"}
             />
           </div>
         </section>
@@ -246,7 +246,7 @@ export default function JobsPage() {
             </div>
           </div>
           <div className="meta">
-            Candidate match scores appear as percentages on the backend for fresher sessions; current first-card score preview is{" "}
+            Candidate match scores appear as percentages for candidate sessions; the current first-card score preview is{" "}
             {jobs[0]?.match_score ? formatPercent(jobs[0].match_score) : "not available"}.
           </div>
         </section>

@@ -743,7 +743,7 @@ def seed_database(store):
                 "experience_level": "fresher",
                 "degree_required": "Any Graduate",
                 "required_skills": ["Coordination", "Documentation", "Excel"],
-                "description": "Coordinate fresher onboarding workflows and internal hiring operations.",
+                "description": "Coordinate candidate onboarding workflows and internal hiring operations.",
                 "role_overview": "Help the operations team run daily campus hiring workflows.",
                 "responsibilities": "Coordinate candidate schedules and update trackers.",
                 "required_qualifications": "Strong ownership and communication skills.",
@@ -812,7 +812,7 @@ def seed_database(store):
                 "name": "Nisha",
                 "role": "company",
                 "rating": 4,
-                "review": "Company dashboard aur applicant review workflow straightforward hai, especially fresher hiring ke liye.",
+                "review": "The recruiter workspace and applicant review workflow are structured and easy to manage.",
             },
         ]
 

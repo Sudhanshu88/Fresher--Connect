@@ -10,14 +10,14 @@
   var TOKEN_STORAGE_KEY = "fc_auth_token";
   var TOKEN_EXPIRY_KEY = "fc_auth_expires_at";
   var ERROR_MESSAGES = {
-    account_disabled: "This account has been disabled. Contact the platform admin.",
-    admin_access_required: "This page is only for admin accounts.",
-    admin_login_required: "Admin accounts must use the separate admin login page.",
-    company_not_found: "The selected company record could not be found.",
-    company_verification_only: "Admin company review only supports company verification.",
-    company_verification_pending: "Your company account is waiting for admin verification before it can sign in.",
-    company_verification_rejected: "Your company account was rejected during admin review.",
-    invalid_credentials: "Email or password is incorrect.",
+    account_disabled: "This account has been disabled. Please contact a platform administrator.",
+    admin_access_required: "This area is restricted to administrator accounts.",
+    admin_login_required: "Administrator accounts must use the dedicated admin sign-in page.",
+    company_not_found: "The selected employer record could not be found.",
+    company_verification_only: "This action only supports employer verification decisions.",
+    company_verification_pending: "Your company account is pending administrator verification before sign-in can be enabled.",
+    company_verification_rejected: "Your company account did not pass the administrator verification review.",
+    invalid_credentials: "The email address or password you entered is incorrect.",
     verification_status_required: "Select a verification decision before saving."
   };
 

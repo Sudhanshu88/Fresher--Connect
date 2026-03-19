@@ -87,10 +87,10 @@ def notify_candidates_for_new_job(store, job):
             store,
             user_id=candidate["user_id"],
             notification_type="new_job_match",
-            title=f"New matched job: {job.get('title') or job.get('job_title')}",
+            title=f"New recommended opportunity: {job.get('title') or job.get('job_title')}",
             message=(
-                f"{job.get('company_name')} posted {job.get('title') or job.get('job_title')}."
-                f" Your profile matches {match['match_score']}% of the required skills."
+                f"{job.get('company_name')} published {job.get('title') or job.get('job_title')}."
+                f" Your profile currently aligns with {match['match_score']}% of the required skills."
             ),
             metadata={
                 "job_id": job.get("job_id") or job.get("id"),

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Fresher Connect</title>
-  <meta name="description" content="Verify company accounts and moderate platform activity in the Fresher Connect admin dashboard.">
+  <title>Admin Workspace | Fresher Connect</title>
+  <meta name="description" content="Review employer verification, moderate listings, and monitor platform performance from the Fresher Connect admin workspace.">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#123a72">
   <link rel="stylesheet" href="styles/app.css?v=20260317-phase1">
@@ -21,7 +21,7 @@
           </span>
           <span>
             <span class="brand-title">Fresher Connect</span>
-            <span class="brand-sub">Jobs for modern hiring teams</span>
+            <span class="brand-sub">Enterprise talent marketplace</span>
           </span>
         </a>
 
@@ -42,9 +42,9 @@
 
       <div class="topbar-right">
         <form class="header-search" action="jobs.html" method="get" role="search">
-          <label class="sr-only" for="headerSearch">Search jobs here</label>
-          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search jobs here">
-          <button class="header-search-button" type="submit" aria-label="Search jobs">
+          <label class="sr-only" for="headerSearch">Search roles, skills, or employers</label>
+          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search roles, skills, or employers">
+          <button class="header-search-button" type="submit" aria-label="Search roles">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="6"></circle>
               <path d="m20 20-4.35-4.35"></path>
@@ -71,13 +71,13 @@
 
           <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
             <div class="menu-panel-head">
-              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
-              <strong class="menu-panel-title" id="menuPanelTitle">Profile, settings, logout, and more</strong>
+              <span class="menu-panel-label" id="menuPanelLabel">Workspace menu</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Account, preferences, and platform tools</strong>
             </div>
-            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
-            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
-            <button class="menu-item" type="button" data-menu-action="more">More</button>
-            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+            <button class="menu-item" type="button" data-menu-action="profile">Account overview</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Preferences</button>
+            <button class="menu-item" type="button" data-menu-action="more">Platform tools</button>
+            <button class="menu-item danger" type="button" data-action="logout">Sign out</button>
           </div>
         </div>
       </div>
@@ -88,20 +88,20 @@
     <section class="panel dashboard-hero-panel" id="adminAnalyticsSection">
       <div class="dashboard-hero-grid">
         <div class="page-intro">
-          <span class="section-label">Admin Dashboard</span>
-          <h1 class="page-title">Manage platform access, moderate jobs, and watch marketplace health.</h1>
+          <span class="section-label">Admin Workspace</span>
+          <h1 class="page-title">Manage platform access, listing quality, and marketplace trust.</h1>
           <p class="muted">
-            Review company registrations, approve trusted recruiters, and keep job visibility under control from one
-            admin workspace.
+            Review employer registrations, approve trusted access, and manage listing visibility from one
+            controlled administration workspace.
           </p>
         </div>
         <div class="hero-mini-grid">
           <div class="mini-stat">
-            <span>Total users</span>
+            <span>Total accounts</span>
             <strong id="adminHeroUsers">0</strong>
           </div>
           <div class="mini-stat">
-            <span>Active jobs</span>
+            <span>Active listings</span>
             <strong id="adminHeroJobs">0</strong>
           </div>
           <div class="mini-stat">
@@ -117,7 +117,7 @@
       <div class="section-head">
         <div>
           <span class="section-label">Analytics</span>
-          <h2>Platform health snapshot</h2>
+          <h2>Platform performance snapshot</h2>
         </div>
       </div>
       <div id="adminAnalyticsGrid" class="stats-grid"></div>
@@ -128,7 +128,7 @@
       <div class="section-head">
         <div>
           <span class="section-label">Audit Trail</span>
-          <h2>Recent platform activity</h2>
+          <h2>Recent governance activity</h2>
         </div>
       </div>
       <div id="adminAuditList" class="activity-list"></div>
@@ -137,19 +137,19 @@
     <section class="panel" id="adminUsersSection">
       <div class="section-head">
         <div>
-          <span class="section-label">Verify Companies</span>
-          <h2>Approve or reject recruiter accounts</h2>
+          <span class="section-label">Employer Verification</span>
+          <h2>Approve or decline company access</h2>
         </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Company</th>
-              <th>Contact</th>
-              <th>Profile</th>
+              <th>Employer</th>
+              <th>Primary contact</th>
+              <th>Profile status</th>
               <th>Verification</th>
-              <th>Action</th>
+              <th>Decision</th>
             </tr>
           </thead>
           <tbody id="adminUsersBody"></tbody>
@@ -160,19 +160,19 @@
     <section class="panel" id="adminJobsSection">
       <div class="section-head">
         <div>
-          <span class="section-label">Moderate Jobs</span>
-          <h2>Approve, hold, or reject job posts</h2>
+          <span class="section-label">Listing Moderation</span>
+          <h2>Approve, hold, or remove job listings</h2>
         </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Job</th>
-              <th>Company</th>
+              <th>Listing</th>
+              <th>Employer</th>
               <th>Applicants</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Decision</th>
             </tr>
           </thead>
           <tbody id="adminJobsBody"></tbody>
@@ -185,9 +185,9 @@
   <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
     <div class="stack-between">
       <div class="page-intro">
-        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
-        <h2 id="menuSheetTitle">Menu</h2>
-        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+        <span class="section-label" id="menuSheetLabel">Workspace panel</span>
+        <h2 id="menuSheetTitle">Navigation menu</h2>
+        <p class="muted" id="menuSheetDescription">Account shortcuts and platform tools.</p>
       </div>
       <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
     </div>

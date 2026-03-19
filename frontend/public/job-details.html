@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Details | Fresher Connect</title>
-  <meta name="description" content="Open a fresher-friendly job, review role requirements, compensation, company information, and hiring stages before applying.">
+  <title>Role Overview | Fresher Connect</title>
+  <meta name="description" content="Review role requirements, compensation, employer information, and hiring stages before submitting your application on Fresher Connect.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#123a72">
   <link rel="stylesheet" href="styles/app.css">
@@ -21,7 +21,7 @@
           </span>
           <span>
             <span class="brand-title">Fresher Connect</span>
-            <span class="brand-sub">Jobs for modern hiring teams</span>
+            <span class="brand-sub">Enterprise talent marketplace</span>
           </span>
         </a>
 
@@ -42,9 +42,9 @@
 
       <div class="topbar-right">
         <form class="header-search" action="jobs.html" method="get" role="search">
-          <label class="sr-only" for="headerSearch">Search jobs here</label>
-          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search jobs here">
-          <button class="header-search-button" type="submit" aria-label="Search jobs">
+          <label class="sr-only" for="headerSearch">Search roles, skills, or employers</label>
+          <input class="header-search-input" id="headerSearch" name="search" type="search" placeholder="Search roles, skills, or employers">
+          <button class="header-search-button" type="submit" aria-label="Search roles">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="6"></circle>
               <path d="m20 20-4.35-4.35"></path>
@@ -71,13 +71,13 @@
 
           <div class="menu-panel hidden" id="headerMenu" data-menu-panel>
             <div class="menu-panel-head">
-              <span class="menu-panel-label" id="menuPanelLabel">Quick access</span>
-              <strong class="menu-panel-title" id="menuPanelTitle">Profile, settings, logout, and more</strong>
+              <span class="menu-panel-label" id="menuPanelLabel">Workspace menu</span>
+              <strong class="menu-panel-title" id="menuPanelTitle">Account, preferences, and platform tools</strong>
             </div>
-            <button class="menu-item" type="button" data-menu-action="profile">Profile</button>
-            <button class="menu-item" type="button" data-menu-action="settings">Settings</button>
-            <button class="menu-item" type="button" data-menu-action="more">More</button>
-            <button class="menu-item danger" type="button" data-action="logout">Logout</button>
+            <button class="menu-item" type="button" data-menu-action="profile">Account overview</button>
+            <button class="menu-item" type="button" data-menu-action="settings">Preferences</button>
+            <button class="menu-item" type="button" data-menu-action="more">Platform tools</button>
+            <button class="menu-item danger" type="button" data-action="logout">Sign out</button>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@
   <main class="container page-shell">
     <section class="panel detail-hero-panel">
       <div id="jobDetailHero" class="detail-hero-content">
-        <div class="empty-state">Loading job details...</div>
+        <div class="empty-state">Loading role overview...</div>
       </div>
     </section>
 
@@ -96,8 +96,8 @@
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Job Overview</span>
-              <h2>Role summary</h2>
+              <span class="section-label">Role Overview</span>
+              <h2>Position summary</h2>
             </div>
           </div>
           <div id="jobDetailOverview" class="rich-copy"></div>
@@ -107,7 +107,7 @@
           <div class="section-head">
             <div>
               <span class="section-label">Responsibilities</span>
-              <h2>What the role includes</h2>
+              <h2>Scope of responsibilities</h2>
             </div>
           </div>
           <div id="jobDetailResponsibilities" class="rich-copy"></div>
@@ -117,7 +117,7 @@
           <div class="section-head">
             <div>
               <span class="section-label">Qualifications</span>
-              <h2>Required and preferred background</h2>
+              <h2>Required and preferred qualifications</h2>
             </div>
           </div>
           <div class="detail-columns">
@@ -130,7 +130,7 @@
           <div class="section-head">
             <div>
               <span class="section-label">Hiring Process</span>
-              <h2>Pipeline stages</h2>
+              <h2>Selection stages</h2>
             </div>
           </div>
           <div id="jobDetailStages" class="timeline"></div>
@@ -141,8 +141,8 @@
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Company</span>
-              <h2>About the employer</h2>
+              <span class="section-label">Employer Profile</span>
+              <h2>About the organisation</h2>
             </div>
           </div>
           <div id="jobDetailCompany" class="detail-list detail-list-single"></div>
@@ -151,8 +151,8 @@
         <section class="panel">
           <div class="section-head">
             <div>
-              <span class="section-label">Application</span>
-              <h2>How to proceed</h2>
+              <span class="section-label">Application Guidance</span>
+              <h2>Submission requirements</h2>
             </div>
           </div>
           <div id="jobDetailApplication" class="detail-list detail-list-single"></div>
@@ -163,8 +163,8 @@
 
   <footer class="footer">
     <div class="container stack-between">
-      <span>Review the full role before applying or moving to application status.</span>
-      <a class="text-link" href="jobs.html">Back to listing</a>
+      <span>Review the complete role profile before you submit or track an application.</span>
+      <a class="text-link" href="jobs.html">Return to opportunities</a>
     </div>
   </footer>
 
@@ -172,9 +172,9 @@
   <section class="menu-sheet hidden" id="menuSheet" aria-hidden="true">
     <div class="stack-between">
       <div class="page-intro">
-        <span class="section-label" id="menuSheetLabel">Quick Panel</span>
-        <h2 id="menuSheetTitle">Menu</h2>
-        <p class="muted" id="menuSheetDescription">Profile, settings, and more options.</p>
+        <span class="section-label" id="menuSheetLabel">Workspace panel</span>
+        <h2 id="menuSheetTitle">Navigation menu</h2>
+        <p class="muted" id="menuSheetDescription">Account shortcuts and platform tools.</p>
       </div>
       <button class="btn ghost sheet-close" type="button" data-menu-close>Close</button>
     </div>

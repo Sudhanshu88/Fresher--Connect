@@ -131,95 +131,95 @@
   function pageSeoDefaults(pageName) {
     if (pageName === "landing") {
       return {
-        title: "Fresher Connect | Entry-Level Jobs and Hiring Platform for Freshers",
-        description: "Discover fresher-friendly jobs, review detailed hiring workflows, and help companies manage structured entry-level hiring from one platform.",
+        title: "Fresher Connect | Professional Hiring Platform for Candidates and Employers",
+        description: "Connect qualified candidates with trusted employers through structured job discovery, recruiter workflows, and transparent application tracking.",
         robots: "index,follow,max-image-preview:large"
       };
     }
 
     if (pageName === "jobs") {
       return {
-        title: "Fresher Jobs | Fresher Connect",
-        description: "Browse entry-level jobs, internships, and fresher-friendly roles with searchable filters, detailed requirements, compensation, and hiring stages.",
+        title: "Opportunities | Fresher Connect",
+        description: "Browse verified job opportunities with structured filters, compensation visibility, and transparent hiring stages.",
         robots: "index,follow,max-image-preview:large"
       };
     }
 
     if (pageName === "job-details") {
       return {
-        title: "Job Details | Fresher Connect",
-        description: "Open a fresher-friendly job, review role requirements, compensation, company information, and hiring stages before applying.",
+        title: "Role Overview | Fresher Connect",
+        description: "Review role requirements, compensation, employer information, and hiring stages before submitting your application.",
         robots: "index,follow,max-image-preview:large"
       };
     }
 
     if (pageName === "login") {
       return {
-        title: "Login | Fresher Connect",
-        description: "Access your Fresher Connect account to continue job search or company hiring workflows.",
+        title: "Sign In | Fresher Connect",
+        description: "Sign in to access candidate applications, recruiter workflows, and secure platform administration.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "admin-login") {
       return {
-        title: "Admin Login | Fresher Connect",
-        description: "Sign in to the Fresher Connect admin workspace for verification, moderation, and platform controls.",
+        title: "Admin Sign In | Fresher Connect",
+        description: "Sign in to the Fresher Connect administration workspace for company verification, moderation, and platform governance.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "register") {
       return {
-        title: "Register | Fresher Connect",
-        description: "Create a fresher or company account on Fresher Connect.",
+        title: "Create an Account | Fresher Connect",
+        description: "Create a candidate or company account on Fresher Connect, or continue through the secure admin sign-in flow.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "company-login") {
       return {
-        title: "Company Login | Fresher Connect",
-        description: "Sign in to the Fresher Connect company dashboard.",
+        title: "Company Sign In | Fresher Connect",
+        description: "Sign in to the Fresher Connect recruiter workspace.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "company") {
       return {
-        title: "Company Dashboard | Fresher Connect",
-        description: "Manage jobs, candidates, and hiring workflows in the company dashboard.",
+        title: "Recruiter Workspace | Fresher Connect",
+        description: "Manage job listings, candidate pipelines, and hiring operations in the recruiter workspace.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "user") {
       return {
-        title: "Candidate Dashboard | Fresher Connect",
-        description: "Track applications, saved jobs, and candidate profile details.",
+        title: "Candidate Workspace | Fresher Connect",
+        description: "Track applications, saved roles, and candidate profile details.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "admin") {
       return {
-        title: "Admin Dashboard | Fresher Connect",
-        description: "Manage users, jobs, and moderation controls in the admin dashboard.",
+        title: "Admin Workspace | Fresher Connect",
+        description: "Manage employer verification, listings, and moderation controls in the admin workspace.",
         robots: "noindex,nofollow"
       };
     }
 
     if (pageName === "application-status") {
       return {
-        title: "Application Status | Fresher Connect",
-        description: "Track current hiring stage and application progress.",
+        title: "Application Progress | Fresher Connect",
+        description: "Track hiring milestones and application progress.",
         robots: "noindex,nofollow"
       };
     }
 
     return {
       title: document.title,
-      description: "Fresher Connect helps freshers discover jobs and gives companies a cleaner hiring workspace.",
+      description: "Fresher Connect helps candidates discover meaningful opportunities and gives employers a structured hiring workspace.",
       robots: "index,follow,max-image-preview:large"
     };
   }
@@ -309,7 +309,7 @@
         "@type": "WebSite",
         name: "Fresher Connect",
         url: homeUrl,
-        description: "Entry-level hiring platform for freshers and companies."
+        description: "Professional hiring platform for candidates and employers."
       },
       {
         "@context": "https://schema.org",
@@ -331,9 +331,9 @@
     return {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Fresher Jobs | Fresher Connect",
+      name: "Opportunities | Fresher Connect",
       url: buildCanonicalUrl([]),
-      description: "Browse entry-level jobs, internships, and fresher-friendly roles with searchable filters and detailed hiring workflows."
+      description: "Browse verified job opportunities with structured filters and transparent hiring workflows."
     };
   }
 
@@ -349,65 +349,65 @@
 
   var LOGIN_ROLE_CONTENT = {
     fresher: {
-      documentTitle: "Fresher Login | Fresher Connect",
-      pageLabel: "Fresher Login",
-      pageTitle: "Pick up your job search without losing track.",
-      pageDescription: "Candidate accounts open job discovery, saved applications, and clear status tracking in one place.",
-      roleSummary: "Use your fresher account to continue browsing roles, reviewing details, and tracking application progress.",
+      documentTitle: "Candidate Sign In | Fresher Connect",
+      pageLabel: "Candidate Sign In",
+      pageTitle: "Return to your hiring journey with full visibility.",
+      pageDescription: "Access live opportunities, saved roles, and application progress from one professional workspace.",
+      roleSummary: "Use your candidate account to continue exploring roles and monitoring every application milestone.",
       featureA: {
-        kicker: "Candidate Dashboard",
-        title: "Search, apply, track",
-        body: "Open jobs, save time with filters, and keep every application status in one place."
+        kicker: "Candidate Workspace",
+        title: "Search, submit, track",
+        body: "Review verified opportunities, submit applications, and monitor progress from one workspace."
       },
       featureB: {
-        kicker: "Application Status",
-        title: "Stay clear on next steps",
-        body: "Check your current stage, revisit past applications, and continue from the right page faster."
+        kicker: "Application Progress",
+        title: "Stay informed at every stage",
+        body: "See where each application stands and what action, if any, is required next."
       },
-      flowLabel: "Fresher Flow",
+      flowLabel: "Candidate Workflow",
       flowPoints: [
-        "Job listing and job details stay available before login.",
-        "Application status is unlocked after fresher sign-in.",
-        "Session and CSRF protection continue through the backend API."
+        "Opportunity discovery remains available before sign-in.",
+        "Application tracking becomes available after account access is confirmed.",
+        "Authentication and session controls are protected through the platform API."
       ],
       cardLabel: "Candidate Access",
       cardTitle: "Welcome back",
-      cardDescription: "Use the email and password already registered on the platform.",
-      noteTitle: "Fresher workspace",
-      noteBody: "Open jobs, revisit applications, and keep your next hiring step visible after sign in.",
-      submitText: "Login as fresher",
-      registerPrompt: "New here?",
-      registerText: "Create a fresher account",
+      cardDescription: "Sign in with the credentials associated with your Fresher Connect account.",
+      noteTitle: "Candidate workspace",
+      noteBody: "Continue from saved roles, recent applications, and your latest hiring updates.",
+      submitText: "Sign in as candidate",
+      registerPrompt: "New to Fresher Connect?",
+      registerText: "Create a candidate account",
       registerHref: "register.html"
     },
     company: {
-      documentTitle: "Company Login | Fresher Connect",
-      pageLabel: "Company Login",
-      pageTitle: "Return to your hiring workspace and move candidates forward.",
-      pageDescription: "Verified company accounts open job posting, applicant review, and hiring pipeline management in one dashboard.",
-      roleSummary: "Use your verified company account to publish openings, review fresher profiles, and update every hiring stage.",
+      documentTitle: "Company Sign In | Fresher Connect",
+      pageLabel: "Company Sign In",
+      pageTitle: "Return to your recruiter workspace and move hiring decisions forward.",
+      pageDescription: "Verified company accounts unlock job listing creation, applicant review, and hiring pipeline management in one workspace.",
+      roleSummary: "Use your verified company account to publish opportunities, review candidate profiles, and update every hiring stage.",
       featureA: {
-        kicker: "Hiring Workspace",
-        title: "Post and manage openings",
-        body: "Create fresher roles with structured fields, keep details consistent, and stay ready for new applicants."
+        kicker: "Recruiter Workspace",
+        title: "Create and manage listings",
+        body: "Launch structured job listings, keep employer details consistent, and stay ready for new applicants."
       },
       featureB: {
-        kicker: "Applicant Pipeline",
-        title: "Review and update candidates",
-        body: "Shortlist faster, move applicants between stages, and keep the hiring team aligned from one workspace."
+        kicker: "Candidate Pipeline",
+        title: "Review and update talent",
+        body: "Move applicants between stages, collaborate around decisions, and keep the hiring team aligned."
       },
-      flowLabel: "Company Flow",
+      flowLabel: "Recruiter Workflow",
       flowPoints: [
-        "Only admin-verified company accounts can sign in to the recruiter workspace.",
-        "Unauthenticated dashboard access returns to the recruiter login entry point.",
-        "Session and CSRF protection continue through the backend API."
+        "Only admin-verified company accounts can access the recruiter workspace.",
+        "Unauthenticated access returns to the dedicated company sign-in path.",
+        "Authentication and session controls are protected through the platform API."
       ],
       cardLabel: "Company Access",
       cardTitle: "Recruiter sign in",
-      cardDescription: "Use the company email and password already registered on the platform.",
+      cardDescription: "Sign in with the company email and password already registered on the platform.",
       noteTitle: "Hiring workspace",
-      noteBody: "Create roles, review applicants, and keep every pipeline update inside the company dashboard after admin verification.",
-      submitText: "Login to company dashboard",
+      noteBody: "Create listings, review candidates, and manage hiring decisions after admin verification.",
+      submitText: "Sign in to recruiter workspace",
       registerPrompt: "Hiring for the first time?",
       registerText: "Create a company account",
       registerHref: "register.html?role=company"
@@ -432,23 +432,23 @@
   function defaultMenuContext() {
     return {
       user: null,
-      menuLabel: "Quick access",
+      menuLabel: "Workspace menu",
       pageLabel: "Landing page",
-      summary: "Profile, settings, logout, and more",
+      summary: "Account, preferences, and platform tools",
       title: "Open menu",
-      subtitle: "Profile, settings, and more",
+      subtitle: "Account shortcuts and platform tools",
       badgeText: "FC",
       profileTarget: null,
       profileHref: "login.html",
       settingsTitle: "Settings",
       settingsDescription: "See account details, connection info, and useful shortcuts.",
       moreTitle: "More",
-      moreDescription: "Quick links to move through Fresher Connect.",
+      moreDescription: "Quick links across your hiring workspace.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Back to the landing page." },
-        { href: "jobs.html", label: "Jobs", description: "Browse the live job listing." },
-        { href: "login.html", label: "Login", description: "Sign in to your account." },
-        { href: "register.html", label: "Create account", description: "Register as fresher or company." }
+        { href: "jobs.html", label: "Opportunities", description: "Browse active job listings." },
+        { href: "login.html", label: "Sign in", description: "Access your account." },
+        { href: "register.html", label: "Create an account", description: "Register as a candidate or company." }
       ]
     };
   }
@@ -754,7 +754,7 @@
     } else {
       details = [
         { label: "Status", value: "You are not signed in right now." },
-        { label: "Profile", value: "Login first to open profile and account controls." },
+        { label: "Profile", value: "Sign in to access profile and account controls." },
         { label: "API endpoint", value: window.FC_API.getApiBase() }
       ];
     }
@@ -772,8 +772,8 @@
               }
             ]
           : [
-              { href: "login.html", label: "Login", description: "Access your existing account." },
-              { href: "register.html", label: "Create account", description: "Register and start using the platform." }
+              { href: "login.html", label: "Sign in", description: "Access your existing account." },
+              { href: "register.html", label: "Create an account", description: "Register and start using the platform." }
             ]
       )
     );
@@ -846,7 +846,7 @@
       "</div>" +
       '<div class="field">' +
       '<label for="editExperience">Experience</label>' +
-      '<input id="editExperience" name="experience" type="text" value="' + window.FC_API.escapeHtml(user.experience || "") + '" placeholder="Fresher, 0-1 year, internship">' +
+      '<input id="editExperience" name="experience" type="text" value="' + window.FC_API.escapeHtml(user.experience || "") + '" placeholder="Entry-level, 0-1 year, internship">' +
       "</div>" +
       '<div class="field">' +
       '<label for="editLinkedin">LinkedIn</label>' +
@@ -922,8 +922,8 @@
       '<p class="muted">' + window.FC_API.escapeHtml(description) + "</p>" +
       "</div>" +
       renderSheetLinks([
-        { href: "login.html", label: "Login", description: "Sign in to your Fresher Connect account." },
-        { href: "register.html", label: "Create account", description: "Register as a fresher or company." }
+        { href: "login.html", label: "Sign in", description: "Access your Fresher Connect workspace." },
+        { href: "register.html", label: "Create an account", description: "Register as a candidate or company." }
       ])
     );
   }
@@ -944,7 +944,7 @@
     openSheet(
       "Privacy",
       "Privacy controls",
-      "Review how Fresher Connect uses your account details inside the hiring flow.",
+      "Review how your account details are used across the hiring workflow.",
       renderDetailItems([
         {
           label: "Notifications",
@@ -961,7 +961,7 @@
         { label: "Contact email", value: user.email || "-" },
         {
           label: "Workspace",
-          value: user.role === "company" ? "Company dashboard" : user.role === "admin" ? "Admin dashboard" : "Candidate dashboard"
+          value: user.role === "company" ? "Recruiter workspace" : user.role === "admin" ? "Admin workspace" : "Candidate workspace"
         }
       ]) +
         renderSheetLinks([
@@ -987,7 +987,7 @@
     openSheet(
       "Account",
       "Account summary",
-      "See the most important details linked to your current Fresher Connect account.",
+      "Review the key details associated with your current account.",
       renderDetailItems([
         { label: "Name", value: user.company_name || user.name || "-" },
         { label: "Email", value: user.email || "-" },
@@ -1009,7 +1009,7 @@
       openSheet(
         "Job Preferences",
         "Candidate job preferences",
-        "Sign in as a fresher to manage matched jobs and profile-based preferences.",
+        "Sign in as a candidate to manage matched roles and profile-based preferences.",
         loginPromptMarkup("Job preferences and matched roles become available after candidate login.")
       );
       return;
@@ -1026,7 +1026,7 @@
           { label: "Suggested page", value: "Open jobs or your dashboard to continue." }
         ]) +
           renderSheetLinks([
-            { href: "jobs.html", label: "Browse jobs", description: "Review fresher-friendly roles." },
+            { href: "jobs.html", label: "Browse roles", description: "Review available opportunities." },
             { href: dashboardHref(user), label: "Open dashboard", description: "Return to your main workspace." }
           ])
       );
@@ -1038,7 +1038,7 @@
       "Candidate job preferences",
       "These profile signals are used to surface matched roles in your dashboard and listing pages.",
       renderDetailItems([
-        { label: "Experience", value: user.experience || "Fresher" },
+        { label: "Experience", value: user.experience || "Entry-level" },
         { label: "Skills", value: safeJoin(user.skills) },
         { label: "Location", value: user.location || "-" },
         { label: "Summary", value: user.summary || "Add a short summary to improve matching." },
@@ -1046,7 +1046,7 @@
       ]) +
         renderSheetLinks([
           { href: "jobs.html", label: "Open matching jobs", description: "Browse roles using your current profile details." },
-          { href: dashboardHref(user), label: "Open dashboard", description: "Edit your fresher profile and resume." }
+          { href: dashboardHref(user), label: "Open dashboard", description: "Update your candidate profile and resume." }
         ])
     );
   }
@@ -1130,7 +1130,7 @@
     openSheet(
       "Edit Profile",
       "Update your profile",
-      "Save fresher details, skills, summary, and resume information.",
+      "Maintain your profile, skills, summary, and resume details.",
       editProfileFormMarkup(state.userDashboard.user)
     );
   }
@@ -1312,7 +1312,7 @@
     if (role === "guest") {
       return "Guest";
     }
-    return "Fresher";
+    return "Candidate";
   }
 
   function normalizeLandingReview(raw) {
@@ -1328,7 +1328,7 @@
 
     return {
       id: raw.id,
-      name: String(raw.name || "Fresher Connect user").trim() || "Fresher Connect user",
+      name: String(raw.name || "Fresher Connect member").trim() || "Fresher Connect member",
       role: normalizeLandingReviewRole(raw.role),
       rating: rating,
       review: reviewText,
@@ -1355,7 +1355,7 @@
     }
 
     if (!reviews.length) {
-      list.innerHTML = '<div class="review-empty">No reviews yet. Be the first to share your feedback.</div>';
+      list.innerHTML = '<div class="review-empty">No feedback has been shared yet. Be the first to contribute.</div>';
       return;
     }
 
@@ -1435,9 +1435,9 @@
         form.reset();
         byId("reviewRole").value = "fresher";
         byId("reviewRating").value = "5";
-        setMessage(message, "Review added successfully.", "success");
+        setMessage(message, "Feedback submitted successfully.", "success");
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to save review."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to save feedback."), "error");
       }
     });
   }
@@ -1701,13 +1701,13 @@
     var skills = (job.required_skills || []).slice(0, 3);
     var detailLink = jobDetailsHref(job.id);
     var saveAction = allowSave
-      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-save-job-id="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved" : "Save job") + "</button>"
+      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-save-job-id="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved role" : "Save role") + "</button>"
       : "";
     var footerAction = applied
-      ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Open status</a>'
+      ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Track application</a>'
       : showApply
-        ? '<button class="btn primary apply-button" type="button" data-job-id="' + job.id + '">Apply now</button>'
-        : '<a class="btn ghost compact-btn" href="' + detailLink + '">Open details</a>';
+        ? '<button class="btn primary apply-button" type="button" data-job-id="' + job.id + '">Submit application</button>'
+        : '<a class="btn ghost compact-btn" href="' + detailLink + '">Review details</a>';
 
     return (
       '<article class="card job-card">' +
@@ -1747,12 +1747,12 @@
       '<div class="job-card-actions">' + saveAction + footerAction + "</div>" +
       "</div>" +
       '<div class="card-link-row">' +
-      '<a class="text-link" href="' + detailLink + '">View details</a>' +
+      '<a class="text-link" href="' + detailLink + '">Review details</a>' +
       (applied
-        ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Application status</a>'
+        ? '<a class="text-link" href="' + applicationStatusHref(applied.id) + '">Application progress</a>'
         : isSaved
-        ? '<span class="meta-line">Saved for quick comparison</span>'
-        : '<span class="meta-line">Open details before applying</span>') +
+        ? '<span class="meta-line">Saved for comparison</span>'
+        : '<span class="meta-line">Review details before applying</span>') +
       "</div>" +
       "</div>" +
       "</article>"
@@ -1859,7 +1859,7 @@
     var schema = {
       "@context": "https://schema.org",
       "@type": "JobPosting",
-      title: job.title || "Fresher role",
+      title: job.title || "Entry-level role",
       description: jobPostingDescription(job),
       identifier: {
         "@type": "PropertyValue",
@@ -2171,7 +2171,7 @@
       ? '<a class="text-link" href="' + applicationStatusHref(metadata.application_id) + '">Open application status</a>'
       : metadata.job_id
         ? '<a class="text-link" href="' + jobDetailsHref(metadata.job_id) + '">Open linked job</a>'
-        : '<span class="meta-line">No linked job</span>';
+        : '<span class="meta-line">No linked opportunity</span>';
     var interviewMeta = metadata.interview_at
       ? '<span class="meta-line">Interview: ' + window.FC_API.escapeHtml(formatDateTime(metadata.interview_at)) + "</span>"
       : "";
@@ -2180,9 +2180,9 @@
       '<article class="notification-card' + (notification.is_read ? " is-read" : "") + '">' +
       '<div class="notification-top">' +
       '<span class="meta-line">' + window.FC_API.escapeHtml(window.FC_API.formatDate(notification.created_at)) + "</span>" +
-      (matchMarkup || '<span class="tag">Job alert</span>') +
+      (matchMarkup || '<span class="tag">Opportunity alert</span>') +
       "</div>" +
-      '<h3>' + window.FC_API.escapeHtml(notification.title || "Notification") + "</h3>" +
+      '<h3>' + window.FC_API.escapeHtml(notification.title || "Platform update") + "</h3>" +
       '<p class="job-description">' + window.FC_API.escapeHtml(notification.message || "") + "</p>" +
       (matchedSkills.length
         ? '<div class="tag-list">' +
@@ -2198,7 +2198,7 @@
       interviewMeta +
       '<span class="meta-line">' + window.FC_API.escapeHtml(notificationStatusLabel(notification.email_status)) + "</span>" +
       (!notification.is_read
-        ? '<button class="btn ghost compact-btn" type="button" data-notification-read="' + notification.id + '">Mark read</button>'
+        ? '<button class="btn ghost compact-btn" type="button" data-notification-read="' + notification.id + '">Mark as read</button>'
         : '<span class="meta-line">Read</span>') +
       "</div>" +
       "</article>"
@@ -2319,18 +2319,18 @@
     await initLandingReviews();
 
     setHeaderMenu({
-      menuLabel: "Quick access",
+      menuLabel: "Workspace menu",
       pageLabel: "Landing page",
-      summary: "Communication, account, preferences, blocking, and logout",
-      title: "Open menu",
+      summary: "Navigation, account access, preferences, and session controls",
+      title: "Open navigation",
       subtitle: "Communication, account, and preference shortcuts",
       badgeText: "FC",
       profileHref: "login.html",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Explore the landing page." },
         { href: "jobs.html", label: "Jobs", description: "Browse the job listing." },
-        { href: "login.html", label: "Login", description: "Sign in to your account." },
-        { href: "register.html", label: "Create account", description: "Register as a fresher or company." }
+        { href: "login.html", label: "Sign in", description: "Sign in to your account." },
+        { href: "register.html", label: "Create an account", description: "Register as a candidate or company." }
       ]
     });
 
@@ -2363,7 +2363,7 @@
           pageLabel: "Landing page",
           summary: session.user.email,
           title: session.user.name || session.user.email,
-          subtitle: session.user.role === "company" ? "Company account menu" : "Fresher account menu",
+          subtitle: session.user.role === "company" ? "Company account menu" : "Candidate account menu",
           badgeText: session.user.role === "company"
             ? (session.user.company_name || session.user.name)
             : session.user.name,
@@ -2457,12 +2457,12 @@
         return;
       }
     } catch (_error) {
-      setMessage(message, "Backend API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
+      setMessage(message, "The platform API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
-      setMessage(message, "Signing in...");
+      setMessage(message, "Signing you in...");
 
       try {
         var payload = readForm(form);
@@ -2473,7 +2473,7 @@
         var freshSession = await window.FC_API.refreshSession();
         window.FC_API.redirectByRole(freshSession.user);
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Login failed."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Sign-in could not be completed."), "error");
       }
     });
   }
@@ -2489,12 +2489,12 @@
         return;
       }
     } catch (_error) {
-      setMessage(message, "Backend API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
+      setMessage(message, "The platform API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
-      setMessage(message, "Signing in...");
+      setMessage(message, "Signing you in...");
 
       try {
         var payload = readForm(form);
@@ -2507,9 +2507,9 @@
           window.location.href = "admin.html";
           return;
         }
-        setMessage(message, "Admin session could not be established.", "error");
+        setMessage(message, "Admin access could not be established.", "error");
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Admin login failed."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Admin sign-in could not be completed."), "error");
       }
     });
   }
@@ -2547,23 +2547,23 @@
     registerPassword.required = true;
 
     if (safeRole === "admin") {
-      setText("registerLoginPrompt", "Admin access only");
+      setText("registerLoginPrompt", "Administrator access only");
     } else {
-      setText("registerLoginPrompt", safeRole === "company" ? "Already registered as a company?" : "Already registered as a candidate?");
+      setText("registerLoginPrompt", safeRole === "company" ? "Already have a company account?" : "Already have a candidate account?");
     }
     if (loginLink) {
       if (safeRole === "admin") {
         loginLink.href = "admin-login.html";
-        loginLink.textContent = "Login as admin";
+        loginLink.textContent = "Sign in as admin";
       } else {
         loginLink.href = safeRole === "company" ? "company-login.html" : "login.html";
-        loginLink.textContent = safeRole === "company" ? "Login as company" : "Login as candidate";
+        loginLink.textContent = safeRole === "company" ? "Sign in as company" : "Sign in as candidate";
       }
     }
 
     if (submitButton) {
       if (safeRole === "admin") {
-        submitButton.textContent = "Login as admin";
+        submitButton.textContent = "Sign in as admin";
       } else if (safeRole === "company") {
         submitButton.textContent = "Create company account";
       } else {
@@ -2609,7 +2609,7 @@
         return;
       }
     } catch (_error) {
-      setMessage(message, "Backend API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
+      setMessage(message, "The platform API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
     }
 
     form.addEventListener("submit", async function (event) {
@@ -2622,7 +2622,7 @@
           payload.name = payload.company_name || "";
         }
         if (payload.role === "admin") {
-          setMessage(message, "Signing in...");
+          setMessage(message, "Signing you in...");
           await window.FC_API.request("/api/auth/admin/login", {
             method: "POST",
             body: {
@@ -2635,14 +2635,14 @@
           return;
         }
 
-        setMessage(message, "Creating account...");
+        setMessage(message, "Creating your account...");
         var response = await window.FC_API.request("/api/auth/register", {
           method: "POST",
           body: payload
         });
         if (response && response.access_token) {
           if (payload.role === "fresher" && registerResumeFile && registerResumeFile.files && registerResumeFile.files[0]) {
-            setMessage(message, "Uploading resume...");
+            setMessage(message, "Uploading your resume...");
             var uploadBody = new FormData();
             uploadBody.append("resume", registerResumeFile.files[0]);
             try {
@@ -2665,11 +2665,11 @@
         replaceQueryParam("role", payload.role === "company" ? "company" : "");
         setMessage(
           message,
-          response.message || "Company account created. Wait for admin verification before login.",
+          response.message || "Company account created successfully. Please wait for administrator verification before signing in.",
           "success"
         );
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Registration failed."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Account creation could not be completed."), "error");
       }
     });
   }
@@ -2726,7 +2726,7 @@
     renderUserJobSpotlight(jobs, applicationMap);
 
     if (!jobs.length) {
-      jobsGrid.innerHTML = '<div class="empty-state">No jobs match the current search and category filter.</div>';
+      jobsGrid.innerHTML = '<div class="empty-state">No opportunities match your current search and filter criteria.</div>';
       return;
     }
 
@@ -2755,7 +2755,7 @@
     heading.textContent = savedJobs.length ? (savedJobs.length + " saved roles ready for review") : "Saved roles for later review";
 
     if (!savedJobs.length) {
-      target.innerHTML = '<div class="empty-state">Save jobs from the listing to build your shortlist before applying.</div>';
+      target.innerHTML = '<div class="empty-state">Save opportunities from the directory to build your shortlist before applying.</div>';
       return;
     }
 
@@ -2778,7 +2778,7 @@
     renderUserApplicationSummary(applications);
 
     if (!applications.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No applications yet. Apply to a job to start tracking.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No applications submitted yet. Apply to a role to begin tracking progress.</div></td></tr>';
       return;
     }
 
@@ -2796,7 +2796,7 @@
           "<td><div class=\"table-title\">" + window.FC_API.escapeHtml(application.job.company_name) + "</div></td>" +
           "<td>" + window.FC_API.formatDate(application.applied_at) + "</td>" +
           "<td>" + renderStatusPill(application.status) + deadlineLine + interviewLine + "</td>" +
-          '<td><a class="text-link" href="' + applicationStatusHref(application.id) + '">Open status</a></td>' +
+          '<td><a class="text-link" href="' + applicationStatusHref(application.id) + '">View progress</a></td>' +
           "</tr>"
         );
       })
@@ -2815,7 +2815,7 @@
     badge.textContent = unreadCount ? unreadCount + " unread" : "All read";
 
     if (!notifications.length) {
-      list.innerHTML = '<div class="empty-state">No job alerts yet. New matched openings will appear here after companies post relevant roles.</div>';
+      list.innerHTML = '<div class="empty-state">No opportunity alerts yet. New matched roles will appear here after employers publish relevant listings.</div>';
       return;
     }
 
@@ -2859,7 +2859,7 @@
     var application = applicationMap[job.id];
     heading.textContent = job.title;
     link.href = jobDetailsHref(job.id);
-    link.textContent = "Open job details";
+    link.textContent = "Review role details";
     card.className = "detail-highlight-card";
     card.innerHTML =
       '<div class="detail-highlight-top">' +
@@ -2877,49 +2877,49 @@
       '<span class="tag">' + window.FC_API.escapeHtml(formatCompensation(job)) + "</span>" +
       "</div>" +
       '<div class="card-link-row">' +
-      '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a>' +
+      '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Review role details</a>' +
       (application
-        ? '<a class="text-link" href="' + applicationStatusHref(application.id) + '">View application status</a>'
-        : '<span class="meta-line">Apply from the job card below</span>') +
+        ? '<a class="text-link" href="' + applicationStatusHref(application.id) + '">View application progress</a>'
+        : '<span class="meta-line">Submit from the role card below</span>') +
       "</div>";
   }
 
   function renderUserProfile(user) {
     state.currentUser = user;
     byId("userName").textContent = user.name;
-    byId("userMeta").textContent = (user.location || "Location not added") + " | " + user.email;
+    byId("userMeta").textContent = (user.location || "Location not yet added") + " | " + user.email;
     byId("profileCompletion").textContent = user.profile_completion + "%";
-    byId("userSummaryBox").textContent = user.summary || "Add a short profile summary so companies can quickly understand your background.";
+    byId("userSummaryBox").textContent = user.summary || "Add a concise professional summary so employers can quickly understand your background.";
 
     setHeaderMenu({
       user: user,
       menuLabel: "Active account",
-      pageLabel: "Fresher dashboard",
+      pageLabel: "Candidate workspace",
       summary: user.email,
       title: user.name,
-      subtitle: "Profile, settings, and more",
+      subtitle: "Account shortcuts and platform tools",
       badgeText: user.name,
       profileTarget: "userProfileSection",
       profileHref: "user.html",
-      settingsTitle: "Profile settings",
-      settingsDescription: "Review your account and connection details.",
+      settingsTitle: "Profile preferences",
+      settingsDescription: "Review your account details and connected platform settings.",
       moreTitle: "More actions",
-      moreDescription: "Jump to jobs, tracking, and home from one place.",
+      moreDescription: "Move between opportunities, tracking, and saved roles from one place.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Go back to the landing page." },
-        { href: "jobs.html", label: "Job listing", description: "Open the dedicated job listing page." },
-        { href: "#userJobsSection", target: "userJobsSection", label: "Browse jobs", description: "Jump to the jobs section." },
+        { href: "jobs.html", label: "Opportunity directory", description: "Open the dedicated opportunity directory." },
+        { href: "#userJobsSection", target: "userJobsSection", label: "Browse roles", description: "Jump to the live opportunity section." },
         {
           href: "#userApplicationsSection",
           target: "userApplicationsSection",
-          label: "Application tracker",
-          description: "See all submitted applications."
+          label: "Application progress",
+          description: "Review all submitted applications."
         },
         {
           href: "#userSavedJobsSection",
           target: "userSavedJobsSection",
-          label: "Saved jobs",
-          description: "Open roles you bookmarked for later."
+          label: "Saved roles",
+          description: "Open opportunities you saved for later review."
         }
       ]
     });
@@ -2931,8 +2931,8 @@
       { label: "Experience", value: user.experience || "-" },
       { label: "Skills", value: safeJoin(user.skills) },
       { label: "Resume", value: user.resume_filename || (user.resume_url || user.resume_path ? "Uploaded" : "-") },
-      { label: "Resume parsing", value: resumeParserLabel(user.resume_parser_status) },
-      { label: "AI skills", value: safeJoin(user.resume_parsed_skills) },
+      { label: "Resume analysis", value: resumeParserLabel(user.resume_parser_status) },
+      { label: "Parsed skills", value: safeJoin(user.resume_parsed_skills) },
       { label: "LinkedIn", value: user.linkedin || "-" },
       { label: "Portfolio", value: user.portfolio || "-" }
     ]);
@@ -2959,7 +2959,7 @@
     try {
       await loadUserDashboard();
     } catch (error) {
-      setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to load dashboard."), "error");
+      setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to load the candidate workspace."), "error");
       return;
     }
 
@@ -2994,7 +2994,7 @@
 
       if (applyButton) {
         applyButton.disabled = true;
-        setMessage(byId("userFeedback"), "Submitting application...");
+        setMessage(byId("userFeedback"), "Submitting your application...");
 
         try {
           var response = await window.FC_API.request("/api/applications", {
@@ -3008,13 +3008,13 @@
           setMessage(byId("userFeedback"), "Application submitted successfully.", "success");
         } catch (error) {
           applyButton.disabled = false;
-          setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+          setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Application submission could not be completed."), "error");
         }
         return;
       }
 
       saveButton.disabled = true;
-      setMessage(byId("userFeedback"), saveButton.dataset.saveMode === "remove" ? "Removing saved job..." : "Saving job...");
+      setMessage(byId("userFeedback"), saveButton.dataset.saveMode === "remove" ? "Removing saved role..." : "Saving role...");
       try {
         if (saveButton.dataset.saveMode === "remove") {
           await window.FC_API.request("/api/saved-jobs/" + Number(saveButton.dataset.saveJobId), {
@@ -3023,21 +3023,21 @@
           state.userDashboard.saved_jobs = (state.userDashboard.saved_jobs || []).filter(function (job) {
             return job.id !== Number(saveButton.dataset.saveJobId);
           });
-          setMessage(byId("userFeedback"), "Saved job removed.", "success");
+          setMessage(byId("userFeedback"), "Saved role removed.", "success");
         } else {
           await window.FC_API.request("/api/saved-jobs", {
             method: "POST",
             body: { job_id: Number(saveButton.dataset.saveJobId) }
           });
           await loadUserDashboard();
-          setMessage(byId("userFeedback"), "Job saved successfully.", "success");
+          setMessage(byId("userFeedback"), "Role saved successfully.", "success");
           return;
         }
         renderUserJobs();
         renderSavedJobs();
       } catch (error) {
         saveButton.disabled = false;
-        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
+        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update saved roles."), "error");
       }
     }
 
@@ -3060,7 +3060,7 @@
         setMessage(byId("userFeedback"), "Notification marked as read.", "success");
       } catch (error) {
         button.disabled = false;
-        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update notification."), "error");
+        setMessage(byId("userFeedback"), window.FC_API.getErrorMessage(error, "Unable to update the notification."), "error");
       }
     });
 
@@ -3095,7 +3095,7 @@
         closeSheet();
         setMessage(byId("userFeedback"), "Profile updated successfully.", "success");
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to update profile."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to update the profile."), "error");
       }
     });
   }
@@ -3109,7 +3109,7 @@
         pageLabel: context.pageLabel || "Workspace",
         summary: user.email,
         title: user.role === "company" ? (user.company_name || user.name) : user.name,
-        subtitle: context.subtitle || "Profile, settings, and more",
+        subtitle: context.subtitle || "Account shortcuts and platform tools",
         badgeText: user.role === "company" ? (user.company_name || user.name) : user.name,
         profileHref: dashboardHref(user),
         settingsTitle: context.settingsTitle || "Account settings",
@@ -3127,11 +3127,11 @@
     }
 
     setHeaderMenu({
-      menuLabel: "Quick access",
+      menuLabel: "Workspace menu",
       pageLabel: context.pageLabel || "Workspace",
       summary: context.summary || "Open the next page in the hiring flow",
       title: context.title || "Open menu",
-      subtitle: context.subtitle || "Profile, settings, and more",
+      subtitle: context.subtitle || "Account shortcuts and platform tools",
       badgeText: "FC",
       profileHref: "login.html",
       settingsTitle: context.settingsTitle || "Connection settings",
@@ -3162,13 +3162,13 @@
     var start = jobs.length ? ((page - 1) * pageSize) + 1 : 0;
     var end = jobs.length ? start + jobs.length - 1 : 0;
 
-    heading.textContent = String(total !== null ? total : jobs.length) + " jobs match your filters";
+    heading.textContent = String(total !== null ? total : jobs.length) + " opportunities match your filters";
     byId("jobsPageCount").textContent = String(total !== null ? total : jobs.length);
     byId("jobsPageCategories").textContent = String((((state.jobsPage.filter_options || {}).categories) || []).length);
     if (byId("jobsPagePaginationSummary")) {
       byId("jobsPagePaginationSummary").textContent = jobs.length
         ? "Showing " + start + "-" + end + " of " + String(total !== null ? total : jobs.length) + " roles."
-        : "Showing 0 roles.";
+        : "Showing 0 opportunities.";
     }
     if (byId("jobsPagePrev")) {
       byId("jobsPagePrev").disabled = !pagination.has_prev;
@@ -3178,7 +3178,7 @@
     }
 
     if (!jobs.length) {
-      grid.innerHTML = '<div class="empty-state">No jobs match the current listing filters.</div>';
+      grid.innerHTML = '<div class="empty-state">No opportunities match the current directory filters.</div>';
       return;
     }
 
@@ -3228,15 +3228,15 @@
     }
 
     setStandaloneMenuContext(session && session.user, {
-      pageLabel: "Job listing",
-      summary: "Browse roles and open detailed job pages",
+      pageLabel: "Opportunity directory",
+      summary: "Browse roles and review detailed role pages",
       settingsTitle: "Listing settings",
       settingsDescription: "Review the active API endpoint and account access from the listing page.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Go back to the landing page." },
-        { href: "jobs.html", label: "Job listing", description: "Stay on the job listing page." },
-        { href: "login.html", label: "Login", description: "Sign in to apply and track status." },
-        { href: "register.html", label: "Create account", description: "Register as fresher or company." }
+        { href: "jobs.html", label: "Opportunity directory", description: "Stay on the opportunity directory page." },
+        { href: "login.html", label: "Sign in", description: "Sign in to submit applications and track progress." },
+        { href: "register.html", label: "Create an account", description: "Register as a candidate or company." }
       ]
     });
 
@@ -3261,7 +3261,7 @@
       await loadJobsPageListing(Object.assign(readJobFilters("jobsPage"), { page: 1, pageSize: 9 }));
       await hydrateCandidateHeaderCounts();
     } catch (error) {
-      setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load job listing."), "error");
+      setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to load the opportunity directory."), "error");
       return;
     }
 
@@ -3271,7 +3271,7 @@
         await loadJobsPageListing(Object.assign(readJobFilters("jobsPage"), { page: 1, pageSize: 9 }));
         setMessage(byId("jobsPageMessage"), "", "");
       } catch (error) {
-        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update listing filters."), "error");
+        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update directory filters."), "error");
       }
     }, 250);
 
@@ -3338,7 +3338,7 @@
           setMessage(byId("jobsPageMessage"), "Application submitted successfully.", "success");
         } catch (error) {
           applyButton.disabled = false;
-          setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+          setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Application submission could not be completed."), "error");
         }
         return;
       }
@@ -3353,7 +3353,7 @@
           state.jobsPage.saved_jobs = (state.jobsPage.saved_jobs || []).filter(function (job) {
             return job.id !== Number(saveButton.dataset.saveJobId);
           });
-          setMessage(byId("jobsPageMessage"), "Saved job removed.", "success");
+          setMessage(byId("jobsPageMessage"), "Saved role removed.", "success");
         } else {
           await window.FC_API.request("/api/saved-jobs", {
             method: "POST",
@@ -3361,12 +3361,12 @@
           });
           var refreshedSaved = await window.FC_API.request("/api/saved-jobs");
           state.jobsPage.saved_jobs = refreshedSaved.saved_jobs || [];
-          setMessage(byId("jobsPageMessage"), "Job saved successfully.", "success");
+          setMessage(byId("jobsPageMessage"), "Role saved successfully.", "success");
         }
         renderJobsPage();
       } catch (error) {
         saveButton.disabled = false;
-        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
+        setMessage(byId("jobsPageMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved roles."), "error");
       }
     });
   }
@@ -3386,25 +3386,25 @@
 
     if (!job) {
       applySeo({
-        title: "Job Details | Fresher Connect",
-        description: "Open a fresher-friendly job, review role requirements, compensation, company information, and hiring stages before applying.",
+        title: "Role Overview | Fresher Connect",
+        description: "Review role requirements, compensation, employer information, and hiring stages before submitting your application.",
         robots: "noindex,follow",
         canonicalUrl: buildCanonicalUrl([])
       });
-      hero.innerHTML = '<div class="empty-state">No job selected. Open the listing page and choose a role.</div>';
-      overview.innerHTML = '<div class="empty-state">Job content is not available.</div>';
+      hero.innerHTML = '<div class="empty-state">No role has been selected. Open the opportunity directory and choose a listing.</div>';
+      overview.innerHTML = '<div class="empty-state">Role information is not available.</div>';
       responsibilities.innerHTML = '<div class="empty-state">Responsibilities are not available.</div>';
-      required.innerHTML = '<div class="empty-state">No qualification details available.</div>';
-      preferred.innerHTML = '<div class="empty-state">No qualification details available.</div>';
-      stages.innerHTML = '<div class="empty-state">No hiring stages available.</div>';
-      company.innerHTML = '<div class="empty-state">Company details are not available.</div>';
-      application.innerHTML = '<div class="empty-state">Application actions are not available.</div>';
+      required.innerHTML = '<div class="empty-state">Qualification details are not available.</div>';
+      preferred.innerHTML = '<div class="empty-state">Qualification details are not available.</div>';
+      stages.innerHTML = '<div class="empty-state">Hiring stages are not available.</div>';
+      company.innerHTML = '<div class="empty-state">Employer details are not available.</div>';
+      application.innerHTML = '<div class="empty-state">Application guidance is not available.</div>';
       return;
     }
 
     applySeo({
       title: job.title + " at " + job.company_name + " | Fresher Connect",
-      description: (job.description || "Explore this fresher-friendly job opening on Fresher Connect.").slice(0, 155),
+      description: (job.description || "Explore this opportunity on Fresher Connect.").slice(0, 155),
       robots: "index,follow,max-image-preview:large",
       canonicalUrl: buildCanonicalUrl(["job"]),
       ogType: "article",
@@ -3417,36 +3417,36 @@
     });
     var isSaved = Boolean(computeSavedJobMap(detailState.saved_jobs || [])[job.id]);
     var saveAction = currentUser && currentUser.role === "fresher"
-      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-detail-save="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved" : "Save job") + "</button>"
+      ? '<button class="btn ghost compact-btn save-job-button' + (isSaved ? " active-save" : "") + '" type="button" data-detail-save="' + job.id + '" data-save-mode="' + (isSaved ? "remove" : "save") + '">' + (isSaved ? "Saved role" : "Save role") + "</button>"
       : "";
     var heroActions;
     if (currentApplication) {
       heroActions =
         renderStatusPill(currentApplication.status) +
         saveAction +
-        '<a class="btn ghost compact-btn" href="' + applicationStatusHref(currentApplication.id) + '">Open application status</a>';
+        '<a class="btn ghost compact-btn" href="' + applicationStatusHref(currentApplication.id) + '">View application progress</a>';
     } else if (currentUser && currentUser.role === "fresher") {
       heroActions =
-        '<button class="btn primary" type="button" data-detail-apply="' + job.id + '">Apply now</button>' +
+        '<button class="btn primary" type="button" data-detail-apply="' + job.id + '">Submit application</button>' +
         saveAction +
-        '<a class="btn ghost compact-btn" href="jobs.html">Back to listing</a>';
+        '<a class="btn ghost compact-btn" href="jobs.html">Return to directory</a>';
     } else if (currentUser && currentUser.role === "company") {
       heroActions =
-        '<a class="btn primary" href="' + dashboardHref(currentUser) + '">Open company dashboard</a>' +
-        '<a class="btn ghost compact-btn" href="jobs.html">View listing</a>';
+        '<a class="btn primary" href="' + dashboardHref(currentUser) + '">Open recruiter workspace</a>' +
+        '<a class="btn ghost compact-btn" href="jobs.html">View directory</a>';
     } else if (currentUser && currentUser.role === "admin") {
       heroActions =
-        '<a class="btn primary" href="admin.html">Open admin dashboard</a>' +
-        '<a class="btn ghost compact-btn" href="jobs.html">View listing</a>';
+        '<a class="btn primary" href="admin.html">Open admin workspace</a>' +
+        '<a class="btn ghost compact-btn" href="jobs.html">View directory</a>';
     } else {
       heroActions =
-        '<a class="btn primary" href="login.html">Login to apply</a>' +
-        '<a class="btn ghost compact-btn" href="register.html">Create account</a>';
+        '<a class="btn primary" href="login.html">Sign in to apply</a>' +
+        '<a class="btn ghost compact-btn" href="register.html">Create an account</a>';
     }
 
     hero.innerHTML =
       '<div class="detail-hero-copy">' +
-      '<span class="section-label">Job Details</span>' +
+      '<span class="section-label">Role Overview</span>' +
       '<h1 class="page-title page-title-small">' + window.FC_API.escapeHtml(job.title) + "</h1>" +
       '<p class="meta-line">' +
       window.FC_API.escapeHtml(job.company_name) +
@@ -3462,7 +3462,7 @@
       '<div class="job-facts-grid">' +
       (function () {
         factRows = [
-          { label: "Experience", value: job.experience_level || "Fresher" },
+          { label: "Experience", value: job.experience_level || "Entry-level" },
           { label: "Degree", value: job.degree_required || "Any Graduate" },
           { label: "Compensation", value: formatCompensation(job) },
           { label: "Expires", value: formatExpiry(job.expires_at) }
@@ -3474,13 +3474,13 @@
       }()) +
       "</div>";
 
-    overview.innerHTML = detailParagraphMarkup("Role overview", job.role_overview || job.description, "Role overview not added.");
+    overview.innerHTML = detailParagraphMarkup("Role overview", job.role_overview || job.description, "A role overview has not been added yet.");
     responsibilities.innerHTML = detailParagraphMarkup("Responsibilities", job.responsibilities, "Responsibilities have not been added yet.");
     required.innerHTML = detailParagraphMarkup("Required qualifications", job.required_qualifications || job.requirements, "Required qualifications have not been added.");
     preferred.innerHTML = detailParagraphMarkup("Preferred qualifications", job.preferred_qualifications, "Preferred qualifications have not been added.");
     stages.innerHTML = timelineMarkup(job.hiring_stages || [], currentApplication ? Math.min(stageIndex(currentApplication.status), Math.max((job.hiring_stages || []).length - 1, 0)) : -1);
     company.innerHTML = detailRowsMarkup([
-      { label: "Company", value: job.company_name || "-" },
+      { label: "Employer", value: job.company_name || "-" },
       { label: "Industry", value: job.industry_type || "-" },
       { label: "Website", value: job.company_website || "-" },
       { label: "Size", value: job.company_size || "-" },
@@ -3507,13 +3507,13 @@
 
     setStandaloneMenuContext(session && session.user, {
       pageLabel: "Job details",
-      summary: "Review role details and application actions",
+      summary: "Review role details and application requirements",
       settingsTitle: "Job page settings",
-      settingsDescription: "Review your active account and API connection from the job details page.",
+      settingsDescription: "Review your active account and API connection from the role overview page.",
       moreLinks: [
-        { href: "jobs.html", label: "Job listing", description: "Go back to the full job listing." },
+        { href: "jobs.html", label: "Opportunity directory", description: "Go back to the full opportunity directory." },
         { href: "index.html", label: "Home", description: "Return to the landing page." },
-        { href: session && session.user ? dashboardHref(session.user) : "login.html", label: session && session.user ? "Dashboard" : "Login", description: session && session.user ? "Open your dashboard." : "Sign in to continue." }
+        { href: session && session.user ? dashboardHref(session.user) : "login.html", label: session && session.user ? "Dashboard" : "Sign in", description: session && session.user ? "Open your dashboard." : "Sign in to continue." }
       ]
     });
 
@@ -3542,7 +3542,7 @@
       renderJobDetailsPage();
       await hydrateCandidateHeaderCounts();
     } catch (error) {
-      byId("jobDetailHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load job details.")) + '</div>';
+      byId("jobDetailHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load the role overview.")) + '</div>';
     }
 
     byId("jobDetailHero").addEventListener("click", async function (event) {
@@ -3564,7 +3564,7 @@
           renderJobDetailsPage();
         } catch (error) {
           applyButton.disabled = false;
-          setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Application failed."), "error");
+          setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Application submission could not be completed."), "error");
         }
         return;
       }
@@ -3579,7 +3579,7 @@
           state.jobDetails.saved_jobs = (state.jobDetails.saved_jobs || []).filter(function (jobItem) {
             return jobItem.id !== Number(saveButton.dataset.detailSave);
           });
-          setMessage(byId("jobDetailMessage"), "Saved job removed.", "success");
+          setMessage(byId("jobDetailMessage"), "Saved role removed.", "success");
         } else {
           await window.FC_API.request("/api/saved-jobs", {
             method: "POST",
@@ -3587,12 +3587,12 @@
           });
           var refreshedSaved = await window.FC_API.request("/api/saved-jobs");
           state.jobDetails.saved_jobs = refreshedSaved.saved_jobs || [];
-          setMessage(byId("jobDetailMessage"), "Job saved successfully.", "success");
+          setMessage(byId("jobDetailMessage"), "Role saved successfully.", "success");
         }
         renderJobDetailsPage();
       } catch (error) {
         saveButton.disabled = false;
-        setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved jobs."), "error");
+        setMessage(byId("jobDetailMessage"), window.FC_API.getErrorMessage(error, "Unable to update saved roles."), "error");
       }
     });
   }
@@ -3610,24 +3610,24 @@
     var applicationList = byId("applicationList");
 
     if (!selected) {
-      hero.innerHTML = '<div class="empty-state">No application is available yet. Apply to a role first.</div>';
-      timeline.innerHTML = '<div class="empty-state">Status timeline will appear here after you apply.</div>';
-      summary.innerHTML = '<div class="empty-state">No application summary available.</div>';
-      jobDetails.innerHTML = '<div class="empty-state">No job details available.</div>';
-      applicationList.innerHTML = '<div class="empty-state">No application links available.</div>';
+      hero.innerHTML = '<div class="empty-state">No application is available yet. Submit an application to a role first.</div>';
+      timeline.innerHTML = '<div class="empty-state">Your application timeline will appear here after submission.</div>';
+      summary.innerHTML = '<div class="empty-state">Application summary details are not available.</div>';
+      jobDetails.innerHTML = '<div class="empty-state">Role details are not available.</div>';
+      applicationList.innerHTML = '<div class="empty-state">No application links are available.</div>';
       return;
     }
 
     hero.innerHTML =
       '<div class="detail-hero-copy">' +
-      '<span class="section-label">Application Status</span>' +
+      '<span class="section-label">Application Progress</span>' +
       '<h1 class="page-title page-title-small">' + window.FC_API.escapeHtml(selected.job.title) + "</h1>" +
       '<p class="meta-line">' + window.FC_API.escapeHtml(selected.job.company_name) + " | " + window.FC_API.escapeHtml(selected.job.location || "Location flexible") + "</p>" +
       (selected.interview_at ? '<p class="meta-line">Interview scheduled for ' + window.FC_API.escapeHtml(formatDateTime(selected.interview_at)) + "</p>" : "") +
       '<div class="button-row">' +
       renderStatusPill(selected.status) +
-      '<a class="btn ghost compact-btn" href="' + jobDetailsHref(selected.job.id) + '">Open job details</a>' +
-      '<a class="btn ghost compact-btn" href="user.html">Back to dashboard</a>' +
+      '<a class="btn ghost compact-btn" href="' + jobDetailsHref(selected.job.id) + '">Review role details</a>' +
+      '<a class="btn ghost compact-btn" href="user.html">Return to dashboard</a>' +
       "</div>" +
       "</div>" +
       '<div class="job-facts-grid">' +
@@ -3648,7 +3648,7 @@
       stageIndex(selected.status)
     );
     summary.innerHTML = detailRowsMarkup([
-      { label: "Company", value: selected.job.company_name || "-" },
+      { label: "Employer", value: selected.job.company_name || "-" },
       { label: "Location", value: selected.job.location || "-" },
       { label: "Department", value: selected.job.department || "-" },
       { label: "Employment type", value: toTitleCase(selected.job.job_type || "full-time") },
@@ -3682,10 +3682,10 @@
       pageLabel: "Application status",
       summary: user.email,
       settingsTitle: "Status page settings",
-      settingsDescription: "Review your profile and the active API connection from the status page.",
+      settingsDescription: "Review your profile and the active API connection from the application progress page.",
       moreLinks: [
         { href: "user.html", label: "Dashboard", description: "Go back to your candidate dashboard." },
-        { href: "jobs.html", label: "Job listing", description: "Browse more jobs." },
+        { href: "jobs.html", label: "Opportunity directory", description: "Browse more opportunities." },
         { href: "index.html", label: "Home", description: "Return to the landing page." }
       ]
     });
@@ -3698,7 +3698,7 @@
       renderApplicationStatusPage();
       await hydrateCandidateHeaderCounts();
     } catch (error) {
-      byId("applicationHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load application status.")) + '</div>';
+      byId("applicationHero").innerHTML = '<div class="empty-state">' + window.FC_API.escapeHtml(window.FC_API.getErrorMessage(error, "Unable to load application progress.")) + '</div>';
     }
   }
 
@@ -3717,12 +3717,12 @@
 
     analyticsGrid.innerHTML = [
       { label: "Candidates", value: analytics.candidates || 0 },
-      { label: "Companies", value: analytics.companies || 0 },
-      { label: "Verified companies", value: analytics.verified_companies || 0 },
+      { label: "Employers", value: analytics.companies || 0 },
+      { label: "Verified employers", value: analytics.verified_companies || 0 },
       { label: "Verification queue", value: analytics.pending_companies || 0 },
       { label: "Admins", value: analytics.admins || 0 },
       { label: "Moderation queue", value: analytics.moderated_jobs || 0 },
-      { label: "Saved jobs", value: analytics.saved_jobs || 0 },
+      { label: "Saved roles", value: analytics.saved_jobs || 0 },
       { label: "Total applications", value: analytics.applications || 0 }
     ]
       .map(function (item) {
@@ -3815,7 +3815,7 @@
     return (
       '<form class="inline-form admin-user-form" data-user-id="' + (user.user_id || user.id) + '">' +
       '<select name="verification_status">' + companyVerificationOptions(user.verification_status || "pending") + "</select>" +
-      '<button class="btn primary" type="submit">Verify</button>' +
+      '<button class="btn primary" type="submit">Save decision</button>' +
       "</form>"
     );
   }
@@ -3847,7 +3847,7 @@
         return String(left.company_name || left.name || "").localeCompare(String(right.company_name || right.name || ""));
       });
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No company accounts are waiting for review.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No employer accounts are waiting for review.</div></td></tr>';
       return;
     }
 
@@ -3865,7 +3865,7 @@
           "</td>" +
           "<td>" +
           '<div class="meta-line">Created ' + window.FC_API.escapeHtml(window.FC_API.formatDate(user.created_at)) + "</div>" +
-          '<div class="meta-line">Completion ' + window.FC_API.escapeHtml(String(user.profile_completion || 0)) + "%</div>" +
+          '<div class="meta-line">Profile completion ' + window.FC_API.escapeHtml(String(user.profile_completion || 0)) + "%</div>" +
           '<div class="meta-line">Website ' + window.FC_API.escapeHtml(user.company_website || "-") + "</div>" +
           "</td>" +
           "<td>" +
@@ -3883,7 +3883,7 @@
     var tbody = byId("adminJobsBody");
     var jobs = state.adminDashboard.jobs || [];
     if (!jobs.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No jobs are available.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No listings are available.</div></td></tr>';
       return;
     }
 
@@ -3894,7 +3894,7 @@
           "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(job.title || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(job.location || "-") + "</div>" +
-          '<div class="meta-line"><a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a></div>' +
+          '<div class="meta-line"><a class="text-link" href="' + jobDetailsHref(job.id) + '">Review role details</a></div>' +
           "</td>" +
           "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(job.company_name || "-") + "</div>" +
@@ -3903,7 +3903,7 @@
           "<td>" + window.FC_API.escapeHtml(String(job.application_count || 0)) + "</td>" +
           "<td>" +
           pillMarkup(toTitleCase(job.moderation_status || "approved"), "tag") +
-          '<div class="meta-line">' + window.FC_API.escapeHtml(job.publicly_visible ? "Visible to candidates" : "Not visible to candidates") + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(job.publicly_visible ? "Visible to candidates" : "Hidden from candidates") + "</div>" +
           "</td>" +
           "<td>" +
           '<form class="inline-form admin-job-form" data-job-id="' + job.id + '">' +
@@ -3949,7 +3949,7 @@
     });
 
     renderAdminAnalytics(data.analytics || {});
-    renderActivityList("adminAuditList", data.recent_activity || [], "No audit activity recorded yet.");
+    renderActivityList("adminAuditList", data.recent_activity || [], "No governance activity has been recorded yet.");
     renderAdminUsers();
     renderAdminJobs();
   }
@@ -3984,9 +3984,9 @@
           }
         });
         await loadAdminDashboard();
-        setMessage(byId("adminMessage"), "Company verification updated.", "success");
+        setMessage(byId("adminMessage"), "Employer verification updated successfully.", "success");
       } catch (error) {
-        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update company verification."), "error");
+        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update employer verification."), "error");
       } finally {
         button.disabled = false;
       }
@@ -4010,9 +4010,9 @@
           }
         });
         await loadAdminDashboard();
-        setMessage(byId("adminMessage"), "Job moderation updated.", "success");
+        setMessage(byId("adminMessage"), "Listing moderation updated successfully.", "success");
       } catch (error) {
-        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update moderation state."), "error");
+        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update the moderation decision."), "error");
       } finally {
         button.disabled = false;
       }
@@ -4042,7 +4042,7 @@
     }
 
     if (!jobs.length) {
-      target.innerHTML = '<div class="empty-state">No jobs posted yet. Use the form above to add the first opening.</div>';
+      target.innerHTML = '<div class="empty-state">No listings have been published yet. Use the form above to create the first role.</div>';
       return;
     }
 
@@ -4078,20 +4078,20 @@
           "</div>" +
           "</div>" +
           '<div class="detail-list compact-detail-list">' +
-          '<div><strong>Experience</strong><span>' + window.FC_API.escapeHtml(job.experience_level || "fresher") + "</span></div>" +
+          '<div><strong>Experience</strong><span>' + window.FC_API.escapeHtml(job.experience_level || "entry-level") + "</span></div>" +
           '<div><strong>Degree</strong><span>' + window.FC_API.escapeHtml(job.degree_required || "Any Graduate") + "</span></div>" +
           '<div><strong>Compensation</strong><span>' + window.FC_API.escapeHtml(formatCompensation(job)) + "</span></div>" +
           '<div><strong>Expires</strong><span>' + window.FC_API.escapeHtml(formatExpiry(job.expires_at)) + "</span></div>" +
           "</div>" +
           '<div class="stack-between card-actions">' +
           '<span class="meta-line">' +
-          window.FC_API.escapeHtml((job.hiring_stages || []).join(" -> ") || "Hiring stages not added") +
+          window.FC_API.escapeHtml((job.hiring_stages || []).join(" -> ") || "Hiring stages not provided") +
           "</span>" +
           '<div class="tag-list">' +
           '<span class="status-pill applied">' +
           window.FC_API.escapeHtml(String(job.application_count || 0)) +
           " applicants</span>" +
-          '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Open job details</a>' +
+          '<a class="text-link" href="' + jobDetailsHref(job.id) + '">Review role details</a>' +
           "</div>" +
           "</div>" +
           "</article>"
@@ -4156,7 +4156,7 @@
 
     if (experienceField) {
       experienceField.innerHTML =
-        '<option value="">All experience</option>' +
+        '<option value="">All experience levels</option>' +
         experienceOptions
           .map(function (item) {
             return '<option value="' + window.FC_API.escapeHtml(item) + '"' + (item === currentExperience ? " selected" : "") + ">" +
@@ -4238,18 +4238,18 @@
     if (!applications.length) {
       tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No candidates have applied yet.</div></td></tr>';
       if (byId("companyApplicationFilterSummary")) {
-        byId("companyApplicationFilterSummary").textContent = "No applicants yet.";
+        byId("companyApplicationFilterSummary").textContent = "No candidate applications yet.";
       }
       return;
     }
 
     var filteredApplications = filterCompanyApplications(applications);
     if (byId("companyApplicationFilterSummary")) {
-      byId("companyApplicationFilterSummary").textContent = "Showing " + filteredApplications.length + " of " + applications.length + " applicants.";
+      byId("companyApplicationFilterSummary").textContent = "Showing " + filteredApplications.length + " of " + applications.length + " candidate applications.";
     }
 
     if (!filteredApplications.length) {
-      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No applicants match the current filters.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No candidate applications match the current filters.</div></td></tr>';
       return;
     }
 
@@ -4263,7 +4263,7 @@
           '<div class="table-title">' + window.FC_API.escapeHtml(candidate.name || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.email || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(candidate.location || "-") + "</div>" +
-          '<div class="meta-line">Experience: ' + window.FC_API.escapeHtml(candidate.experience || "fresher") + "</div>" +
+          '<div class="meta-line">Experience: ' + window.FC_API.escapeHtml(candidate.experience || "entry-level") + "</div>" +
           candidateResourceLinks(candidate) +
           "</td>" +
           "<td>" +
@@ -4294,7 +4294,7 @@
           '<button class="btn primary" type="submit">Update</button>' +
           '<button class="btn ghost compact-btn" type="button" data-status-shortcut="shortlisted" data-application-id="' + application.id + '">Shortlist</button>' +
           '<button class="btn ghost compact-btn" type="button" data-status-shortcut="interview" data-application-id="' + application.id + '">Interview</button>' +
-          '<button class="btn ghost compact-btn" type="button" data-status-shortcut="rejected" data-application-id="' + application.id + '">Reject</button>' +
+          '<button class="btn ghost compact-btn" type="button" data-status-shortcut="rejected" data-application-id="' + application.id + '">Decline</button>' +
           "</form>" +
           "</div>" +
           "</td>" +
@@ -4311,38 +4311,38 @@
   function renderCompanyProfile(user) {
     state.currentUser = user;
     byId("companyNameHeading").textContent = user.company_name || user.name;
-    byId("companyMeta").textContent = (user.industry_type || "Company account") + " | " + user.email;
+    byId("companyMeta").textContent = (user.industry_type || "Employer account") + " | " + user.email;
     byId("companyProfileCompletion").textContent = user.profile_completion + "%";
     syncCompanyLogoPreview(user.company_logo || "");
 
     setHeaderMenu({
       user: user,
       menuLabel: "Active account",
-      pageLabel: "Company dashboard",
+      pageLabel: "Recruiter workspace",
       summary: user.email,
       title: user.company_name || user.name,
-      subtitle: "Profile, settings, and more",
+      subtitle: "Account shortcuts and platform tools",
       badgeText: user.company_name || user.name,
       profileTarget: "companyProfileSection",
       profileHref: "company.html",
-      settingsTitle: "Company settings",
+      settingsTitle: "Recruiter settings",
       settingsDescription: "Review your company account and connected platform details.",
       moreTitle: "More actions",
       moreDescription: "Jump to job creation, pipeline, and landing page.",
       moreLinks: [
         { href: "index.html", label: "Home", description: "Go back to the landing page." },
-        { href: "jobs.html", label: "Job listing", description: "See the candidate-facing job listing page." },
+        { href: "jobs.html", label: "Opportunity directory", description: "See the candidate-facing opportunity directory." },
         {
           href: "#companyJobFormSection",
           target: "companyJobFormSection",
-          label: "Post a job",
-          description: "Jump straight to the job form."
+          label: "Create listing",
+          description: "Jump straight to the listing builder."
         },
         {
           href: "#companyApplicationsSection",
           target: "companyApplicationsSection",
-          label: "Applicant pipeline",
-          description: "Review and update candidates."
+          label: "Candidate pipeline",
+          description: "Review and update candidate applications."
         }
       ]
     });
@@ -4379,7 +4379,7 @@
     renderCompanyProfile(data.user);
     renderStatusGrid(data.status_counts || {});
     renderCompanyAnalytics(data.analytics || {});
-    renderActivityList("companyRecentActivity", data.recent_activity || [], "No company activity recorded yet.");
+    renderActivityList("companyRecentActivity", data.recent_activity || [], "No recruiter activity has been recorded yet.");
     renderCompanyJobs();
     renderCompanyApplications();
   }
@@ -4393,7 +4393,7 @@
     try {
       await loadCompanyDashboard();
     } catch (error) {
-      setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Unable to load dashboard."), "error");
+      setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Unable to load the recruiter workspace."), "error");
       return;
     }
 
@@ -4401,7 +4401,7 @@
       event.preventDefault();
       var form = event.currentTarget;
       var message = byId("jobFormMessage");
-      setMessage(message, "Publishing job...");
+      setMessage(message, "Creating your job listing...");
 
       try {
         var payload = readForm(form);
@@ -4413,7 +4413,7 @@
         resetCompanyJobForm(state.companyDashboard.user);
         await loadCompanyDashboard();
         var notificationSummary = createResponse.notification_summary || {};
-        var successMessage = "Job published successfully.";
+        var successMessage = "Job listing created successfully.";
         if ((notificationSummary.notifications_created || 0) > 0) {
           successMessage += " " + notificationSummary.notifications_created + " matched candidates notified";
           if ((notificationSummary.emails_sent || 0) > 0) {
@@ -4424,7 +4424,7 @@
         }
         setMessage(message, successMessage, "success");
       } catch (error) {
-        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to publish job."), "error");
+        setMessage(message, window.FC_API.getErrorMessage(error, "Unable to create the job listing."), "error");
       }
     });
 
@@ -4435,13 +4435,13 @@
         var fileInput = form.elements.logo;
         var message = byId("companyLogoMessage");
         if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-          setMessage(message, "Choose a logo file first.", "error");
+          setMessage(message, "Select a logo file before continuing.", "error");
           return;
         }
 
         var uploadBody = new FormData();
         uploadBody.append("logo", fileInput.files[0]);
-        setMessage(message, "Uploading logo...");
+        setMessage(message, "Uploading company logo...");
         try {
           var response = await window.FC_API.request("/api/company/logo", {
             method: "POST",
@@ -4450,9 +4450,9 @@
           setFieldValue("companyLogoInput", response.logo_url || "");
           syncCompanyLogoPreview(response.logo_url || "");
           await loadCompanyDashboard();
-          setMessage(message, "Company logo updated.", "success");
+          setMessage(message, "Company logo updated successfully.", "success");
         } catch (error) {
-          setMessage(message, window.FC_API.getErrorMessage(error, "Unable to upload company logo."), "error");
+          setMessage(message, window.FC_API.getErrorMessage(error, "Unable to upload the company logo."), "error");
         }
       });
     }
@@ -4486,9 +4486,9 @@
           body: body
         });
         await loadCompanyDashboard();
-        setMessage(byId("jobFormMessage"), "Application status updated.", "success");
+        setMessage(byId("jobFormMessage"), "Application status updated successfully.", "success");
       } catch (error) {
-        setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Status update failed."), "error");
+        setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Application status update could not be completed."), "error");
       } finally {
         button.disabled = false;
       }
@@ -4522,7 +4522,7 @@
           body: shortcutBody
         });
         await loadCompanyDashboard();
-        setMessage(byId("jobFormMessage"), "Candidate status updated.", "success");
+        setMessage(byId("jobFormMessage"), "Candidate status updated successfully.", "success");
       } catch (error) {
         setMessage(byId("jobFormMessage"), window.FC_API.getErrorMessage(error, "Unable to update candidate status."), "error");
       } finally {

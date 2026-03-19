@@ -77,10 +77,10 @@ def notify_application_submitted(store, application, candidate, job):
     if not candidate:
         return None
 
-    title = "Application submitted"
+    title = "Application received"
     message = (
-        f"You applied to {job.get('title') or 'the role'} at {job.get('company_name') or 'the company'}."
-        f" Expect an update within {APPLICATION_SLA_DAYS} days."
+        f"Your application for {job.get('title') or 'the role'} at {job.get('company_name') or 'the company'} has been received."
+        f" You can expect an update within {APPLICATION_SLA_DAYS} days."
     )
     return create_notification(
         store,
@@ -106,7 +106,7 @@ def notify_candidate_status_change(store, application, candidate, job, previous_
     interview_at = parse_optional_datetime(application.get("interview_at"))
     title = f"Application update: {new_status.replace('_', ' ').title()}"
     message = (
-        f"{job.get('company_name') or 'A company'} updated your application for "
+        f"{job.get('company_name') or 'An employer'} updated your application for "
         f"{job.get('title') or 'the role'} from {str(previous_status or 'applied').title()} to {new_status.title()}."
     )
     if new_status == "interview" and interview_at:
@@ -175,10 +175,10 @@ def process_application_sla(store, now=None):
                 store,
                 user_id=candidate.get("user_id") or candidate.get("id"),
                 notification_type="application_timeout",
-                title="Application auto-closed after 7 days",
+                title="Application closed after response window",
                 message=(
-                    f"{job.get('company_name') or 'The company'} did not update your application for "
-                    f"{job.get('title') or 'the role'} within {APPLICATION_SLA_DAYS} days, so it was marked as rejected."
+                    f"{job.get('company_name') or 'The employer'} did not update your application for "
+                    f"{job.get('title') or 'the role'} within {APPLICATION_SLA_DAYS} days, so it was automatically closed."
                 ),
                 metadata={
                     "application_id": application_id,
@@ -194,10 +194,10 @@ def process_application_sla(store, now=None):
                 store,
                 user_id=company.get("owner_user_id") or company.get("id"),
                 notification_type="application_timeout_company",
-                title="Application auto-rejected by SLA",
+                title="Application closed by SLA policy",
                 message=(
-                    f"Candidate application for {job.get('title') or 'the role'} was auto-rejected after "
-                    f"{APPLICATION_SLA_DAYS} days without action."
+                    f"The candidate application for {job.get('title') or 'the role'} was automatically closed after "
+                    f"{APPLICATION_SLA_DAYS} days without recruiter action."
                 ),
                 metadata={
                     "application_id": application_id,

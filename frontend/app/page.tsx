@@ -100,7 +100,7 @@ export default function HomePage() {
 
   return (
     <AppShell
-      title="Sharper job discovery for freshers. Cleaner hiring operations for companies."
+      title="Structured opportunity discovery for candidates. Efficient hiring operations for employers."
       subtitle="Hiring journeys designed for both sides"
     >
       <section className="hero">
@@ -130,11 +130,11 @@ export default function HomePage() {
           <div className="detail-list">
             <div className="detail-item">
               <span>Candidate flow</span>
-              <strong>Landing - Jobs - Login/Register - Dashboard - Application detail</strong>
+              <strong>Landing - Opportunities - Sign in/Registration - Workspace - Application detail</strong>
             </div>
             <div className="detail-item">
               <span>Recruiter flow</span>
-              <strong>Company dashboard - Logo upload - Job publishing - Pipeline updates</strong>
+              <strong>Recruiter workspace - Employer branding - Job publishing - Pipeline updates</strong>
             </div>
             <div className="detail-item">
               <span>Admin flow</span>
@@ -204,7 +204,7 @@ export default function HomePage() {
                   value={form.role}
                   onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}
                 >
-                  <option value="fresher">Fresher</option>
+                  <option value="fresher">Candidate</option>
                   <option value="company">Company</option>
                   <option value="guest">Guest</option>
                 </select>

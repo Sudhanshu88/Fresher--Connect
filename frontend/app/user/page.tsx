@@ -35,7 +35,7 @@ const defaultProfileForm = {
 
 export default function UserPage() {
   return (
-    <AppShell title="Candidate dashboard built as a typed React workspace." subtitle="Applications, notifications, and profile state in one route">
+    <AppShell title="Candidate workspace implemented as a typed React experience." subtitle="Applications, notifications, and profile state in one route">
       <RoleGate roles={["fresher"]}>{() => <CandidateWorkspace />}</RoleGate>
     </AppShell>
   );
@@ -210,7 +210,7 @@ function CandidateWorkspace() {
       <section className="stats-grid">
         <StatCard label="Profile" value={`${dashboard.user.profile_completion || 0}%`} hint="Completion score from backend profile fields" />
         <StatCard label="Applications" value={dashboard.applications.length} hint="All platform applications" />
-        <StatCard label="Saved jobs" value={dashboard.saved_jobs.length} hint="Saved via backend saved-jobs APIs" />
+        <StatCard label="Saved roles" value={dashboard.saved_jobs.length} hint="Saved through backend role-bookmark APIs" />
         <StatCard label="Notifications" value={dashboard.notification_unread_count} hint="Unread in-app updates" />
       </section>
 
@@ -450,7 +450,7 @@ function CandidateWorkspace() {
           </div>
           {dashboard.saved_jobs.length ? (
             <div className="stack">
-              <span className="section-label">Saved jobs</span>
+              <span className="section-label">Saved roles</span>
               <div className="tag-list">
                 {dashboard.saved_jobs.slice(0, 6).map((job) => (
                   <Link className="tag" href={jobPath(job.id)} key={job.id}>

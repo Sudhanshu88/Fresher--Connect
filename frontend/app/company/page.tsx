@@ -73,7 +73,7 @@ function CompanyWorkspace() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Company dashboard could not be loaded.");
+          setMessage("Recruiter workspace could not be loaded.");
         }
       } finally {
         if (active) {
@@ -202,7 +202,7 @@ function CompanyWorkspace() {
   }
 
   if (!dashboard) {
-    return <Feedback message={message || "Company dashboard unavailable."} tone="error" />;
+    return <Feedback message={message || "Recruiter workspace unavailable."} tone="error" />;
   }
 
   return (
@@ -408,7 +408,7 @@ function CompanyWorkspace() {
         <div className="row">
           <div className="stack">
             <span className="section-label">Applicants</span>
-            <h2>Pipeline actions from the company dashboard</h2>
+            <h2>Pipeline actions from the recruiter workspace</h2>
           </div>
         </div>
         {!dashboard.applications.length ? <div className="empty">No applicants yet.</div> : null}

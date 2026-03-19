@@ -66,7 +66,7 @@ export default function JobDetailPage() {
     }
     if (user.role !== "fresher") {
       setTone("error");
-      setMessage("Only fresher accounts can apply to this job.");
+      setMessage("Only candidate accounts can submit an application for this role.");
       return;
     }
 

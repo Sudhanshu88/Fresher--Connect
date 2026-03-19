@@ -541,6 +541,7 @@ p {
 .page-intro {
   display: grid;
   gap: 8px;
+  text-align: left;
 }
 
 .card,
@@ -915,6 +916,7 @@ p {
 .workflow-step,
 .auth-feature-card {
   padding: 20px;
+  text-align: left;
 }
 
 .preview-kicker {
@@ -999,6 +1001,7 @@ p {
 .auth-card-copy {
   display: grid;
   gap: 10px;
+  text-align: left;
 }
 
 .auth-copy-block {
@@ -1066,6 +1069,7 @@ p {
 .form-section-head {
   display: grid;
   gap: 8px;
+  text-align: left;
 }
 
 .form-section-head p {
@@ -1255,6 +1259,7 @@ select:focus-visible {
 .detail-hero-copy {
   display: grid;
   gap: 14px;
+  text-align: left;
 }
 
 .hero-mini-grid,
