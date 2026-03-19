@@ -15,8 +15,6 @@ import { usePlatformStore } from "@/lib/stores/platform-store";
 type UserDraftMap = Record<
   number,
   {
-    role: string;
-    is_active: boolean;
     verification_status: string;
   }
 >;
@@ -31,7 +29,7 @@ type JobDraftMap = Record<
 
 export default function AdminPage() {
   return (
-    <AppShell title="Admin workspace for moderation, analytics, and audit visibility." subtitle="Typed control layer over users, jobs, and platform policy">
+    <AppShell title="Admin workspace for company verification, moderation, and audit visibility." subtitle="Typed control layer over company review and platform policy">
       <RoleGate roles={["admin"]}>{() => <AdminWorkspace />}</RoleGate>
     </AppShell>
   );
@@ -83,14 +81,15 @@ function AdminWorkspace() {
 
     const nextUserDrafts: UserDraftMap = {};
     dashboard.users.forEach((user) => {
+      if ((user.db_role || user.role) !== "company") {
+        return;
+      }
       const userId = user.user_id || user.id;
       if (!userId) {
         return;
       }
       nextUserDrafts[userId] = {
-        role: user.db_role || (user.role === "fresher" ? "candidate" : user.role),
-        is_active: Boolean(user.is_active),
-        verification_status: user.verification_status || "verified"
+        verification_status: user.verification_status || "pending"
       };
     });
 
@@ -117,14 +116,14 @@ function AdminWorkspace() {
     try {
       await apiRequest(`/api/admin/users/${userId}`, {
         method: "PATCH",
-        body: draft
+        body: { verification_status: draft.verification_status }
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("User settings updated.");
+      setMessage("Company verification updated.");
     } catch (_error) {
       setTone("error");
-      setMessage("User update failed.");
+      setMessage("Company verification update failed.");
     } finally {
       setSavingUserId(null);
     }
@@ -171,6 +170,7 @@ function AdminWorkspace() {
     const value = dashboard.analytics[key];
     return typeof value === "number" ? value : 0;
   };
+  const companies = dashboard.users.filter((user) => (user.db_role || user.role) === "company");
 
   return (
     <div className="stack">
@@ -197,87 +197,56 @@ function AdminWorkspace() {
       <section className="panel stack">
         <div className="row">
           <div className="stack">
-            <span className="section-label">User access</span>
-            <h2>Route-level permissions with admin overrides</h2>
+            <span className="section-label">Company verification</span>
+            <h2>Approve or reject recruiter accounts</h2>
           </div>
         </div>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Active</th>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Profile</th>
                 <th>Verification</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {dashboard.users.map((user) => {
+              {companies.map((user) => {
                 const userId = user.user_id || user.id || 0;
                 const draft = userDrafts[userId];
                 return (
                   <tr key={userId}>
                     <td>
+                      <strong>{user.company_name || user.name}</strong>
+                      <div className="meta">{user.location || "-"}</div>
+                    </td>
+                    <td>
                       <strong>{user.name}</strong>
                       <div className="meta">{user.email}</div>
                     </td>
                     <td>
+                      <div className="meta">Created {formatDateTime(user.created_at)}</div>
+                      <div className="meta">Completion {user.profile_completion || 0}%</div>
+                      <div className="meta">{user.company_website || "-"}</div>
+                    </td>
+                    <td>
                       <select
-                        value={draft?.role || "candidate"}
+                        value={draft?.verification_status || "pending"}
                         onChange={(event) =>
                           setUserDrafts((current) => ({
                             ...current,
                             [userId]: {
-                              ...(current[userId] || { is_active: true, verification_status: "verified" }),
-                              role: event.target.value
+                              verification_status: event.target.value
                             }
                           }))
                         }
                       >
-                        <option value="candidate">Candidate</option>
-                        <option value="company">Company</option>
-                        <option value="admin">Admin</option>
+                        <option value="verified">Verified</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
                       </select>
-                    </td>
-                    <td>
-                      <select
-                        value={draft?.is_active ? "true" : "false"}
-                        onChange={(event) =>
-                          setUserDrafts((current) => ({
-                            ...current,
-                            [userId]: {
-                              ...(current[userId] || { role: "candidate", verification_status: "verified" }),
-                              is_active: event.target.value === "true"
-                            }
-                          }))
-                        }
-                      >
-                        <option value="true">Active</option>
-                        <option value="false">Disabled</option>
-                      </select>
-                    </td>
-                    <td>
-                      {draft?.role === "company" || user.db_role === "company" ? (
-                        <select
-                          value={draft?.verification_status || "verified"}
-                          onChange={(event) =>
-                            setUserDrafts((current) => ({
-                              ...current,
-                              [userId]: {
-                                ...(current[userId] || { role: "company", is_active: true }),
-                                verification_status: event.target.value
-                              }
-                            }))
-                          }
-                        >
-                          <option value="verified">Verified</option>
-                          <option value="pending">Pending</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      ) : (
-                        <span className="meta">Not company</span>
-                      )}
                     </td>
                     <td>
                       <button

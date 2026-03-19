@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Fresher Connect</title>
+  <meta name="description" content="Sign in to the Fresher Connect admin workspace for verification, moderation, and platform controls.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#123a72">
+  <link rel="stylesheet" href="styles/app.css">
+  <script defer src="services/api.js"></script>
+  <script defer src="services/app.js"></script>
+</head>
+<body data-page="admin-login">
+  <main class="auth-shell">
+    <section class="auth-copy">
+      <a class="brand" href="index.html">
+        <span class="brand-mark image-mark">
+          <img class="brand-logo" src="components/fc-logo.svg" alt="Fresher Connect logo">
+        </span>
+        <span>
+          <span class="brand-title">Fresher Connect</span>
+          <span class="brand-sub">Admin-only access</span>
+        </span>
+      </a>
+
+      <div class="page-intro auth-copy-block">
+        <span class="section-label">Admin Login</span>
+        <h1 class="page-title">Review companies, verify job posting access, and manage platform controls.</h1>
+        <p class="muted">
+          This workspace is reserved for platform admins who approve company access, moderate job posts,
+          and manage account permissions.
+        </p>
+      </div>
+
+      <div class="auth-feature-grid">
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Company Verification</span>
+          <h3>Approve trusted recruiters</h3>
+          <p>Keep new company accounts in review until an admin verifies them.</p>
+        </article>
+        <article class="auth-feature-card">
+          <span class="preview-kicker">Platform Moderation</span>
+          <h3>Control jobs and permissions</h3>
+          <p>Disable risky accounts, hide unsafe jobs, and keep the marketplace moderated.</p>
+        </article>
+      </div>
+
+      <div class="card auth-note-card">
+        <span class="section-label">Admin Flow</span>
+        <ul class="hero-points compact">
+          <li>Only admin accounts can sign in from this page.</li>
+          <li>Pending or rejected companies cannot access the company dashboard.</li>
+          <li>Admin changes apply directly to company verification and job visibility.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="auth-card auth-card-strong">
+      <div class="auth-card-copy">
+        <span class="section-label">Admin Access</span>
+        <h2>Restricted sign in</h2>
+        <p class="muted">Use an admin email and password created for platform operations.</p>
+      </div>
+
+      <div class="auth-role-note">
+        <strong>Separate admin entry point</strong>
+        <span>Candidate and company logins stay on their own pages. Admin sign-in is isolated here.</span>
+      </div>
+
+      <form id="adminLoginForm" class="form-grid">
+        <div class="field">
+          <label for="adminLoginEmail">Email</label>
+          <input id="adminLoginEmail" name="email" type="email" placeholder="admin@company.com" required>
+        </div>
+
+        <div class="field">
+          <label for="adminLoginPassword">Password</label>
+          <input id="adminLoginPassword" name="password" type="password" placeholder="Enter admin password" required>
+        </div>
+
+        <div id="adminLoginMessage" class="form-message"></div>
+
+        <button class="btn primary" type="submit">Login as admin</button>
+      </form>
+
+      <div class="auth-inline-meta">
+        <span>Not an admin?</span>
+        <a class="text-link" href="login.html">Go to user login</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

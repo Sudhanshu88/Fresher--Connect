@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register | Fresher Connect</title>
-  <meta name="description" content="Create a fresher or company account on Fresher Connect.">
+  <meta name="description" content="Create a candidate or company account on Fresher Connect, or open the separate admin access flow.">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#123a72">
   <link rel="stylesheet" href="styles/app.css">
@@ -28,21 +28,26 @@
         <span class="section-label">Create Account</span>
         <h1 class="page-title">Choose your role once and unlock the full page flow built for it.</h1>
         <p class="muted">
-          Freshers get listing, details, and application status tracking. Companies get hiring control,
-          job publishing, and candidate pipeline updates.
+          Candidates get listing, details, and application status tracking. Companies get hiring control,
+          job publishing, and candidate pipeline updates. Admin access stays on a separate secure entry point.
         </p>
       </div>
 
       <div class="preview-grid auth-preview-grid">
         <article class="preview-card">
-          <span class="preview-kicker">Fresher</span>
+          <span class="preview-kicker">Candidate</span>
           <h3>Candidate-first journey</h3>
           <p>Profile summary, filtered jobs, job details, and one place to track application progress.</p>
         </article>
         <article class="preview-card">
           <span class="preview-kicker">Company</span>
           <h3>Recruiter-first journey</h3>
-          <p>Company profile, structured job posting, applicant review, and clear status management.</p>
+          <p>Company profile, structured job posting, applicant review, and admin verification before company access.</p>
+        </article>
+        <article class="preview-card">
+          <span class="preview-kicker">Admin</span>
+          <h3>Verification-first control</h3>
+          <p>Review company registrations, verify recruiters, and manage platform access from the admin workspace.</p>
         </article>
       </div>
     </section>
@@ -50,14 +55,39 @@
     <section class="auth-card auth-card-strong">
       <span class="section-label">Register</span>
       <div class="role-switch" role="tablist" aria-label="Account type">
-        <button type="button" class="active" data-role-button="fresher">Fresher</button>
-        <button type="button" data-role-button="company">Company</button>
+        <button type="button" class="active" data-role-button="fresher">
+          <svg class="role-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z"></path>
+            <path d="M5 20a7 7 0 0 1 14 0"></path>
+          </svg>
+          <span>Candidate</span>
+        </button>
+        <button type="button" data-role-button="company">
+          <svg class="role-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 21h18"></path>
+            <path d="M5 21V7l7-4 7 4v14"></path>
+            <path d="M9 9h.01"></path>
+            <path d="M9 13h.01"></path>
+            <path d="M9 17h.01"></path>
+            <path d="M15 9h.01"></path>
+            <path d="M15 13h.01"></path>
+            <path d="M15 17h.01"></path>
+          </svg>
+          <span>Company</span>
+        </button>
+        <button type="button" data-role-button="admin">
+          <svg class="role-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3l7 3v6c0 4.4-2.9 7.8-7 9-4.1-1.2-7-4.6-7-9V6l7-3z"></path>
+            <path d="M9.5 12.5 11 14l3.5-3.5"></path>
+          </svg>
+          <span>Admin</span>
+        </button>
       </div>
 
       <form id="registerForm" class="form-grid">
         <input id="accountRole" name="role" type="hidden" value="fresher">
 
-        <div class="field">
+        <div class="field" id="registerNameField">
           <label for="registerName">Full name</label>
           <input id="registerName" name="name" type="text" placeholder="Your name" required>
         </div>
@@ -70,14 +100,18 @@
         <div class="field">
           <label for="registerPassword">Password</label>
           <input id="registerPassword" name="password" type="password" placeholder="Minimum 8 characters" required>
+          <label class="password-toggle" for="registerPasswordToggle">
+            <input id="registerPasswordToggle" type="checkbox">
+            <span>Show password</span>
+          </label>
         </div>
 
-        <div class="field">
+        <div class="field" id="registerPhoneField">
           <label for="registerPhone">Phone</label>
           <input id="registerPhone" name="phone" type="text" placeholder="+91 98xxxxxx">
         </div>
 
-        <div class="field full-span">
+        <div class="field full-span" id="registerLocationField">
           <label for="registerLocation">Location</label>
           <input id="registerLocation" name="location" type="text" placeholder="Noida, Bengaluru, Remote">
         </div>
@@ -119,8 +153,13 @@
           </div>
 
           <div class="field full-span">
-            <label for="registerResume">Resume path</label>
-            <input id="registerResume" name="resume_path" type="text" placeholder="Optional local or cloud resume link">
+            <label for="registerResumeFile">Resume upload</label>
+            <input id="registerResumeFile" name="resume_file" class="hidden-file-input" type="file" accept=".pdf,.doc,.docx">
+            <label id="registerResumeDropzone" class="file-dropzone" for="registerResumeFile">
+              <strong>Drag and drop your resume here</strong>
+              <span class="file-dropzone-note">or click to browse PDF, DOC, or DOCX</span>
+              <span id="registerResumeFileName" class="file-dropzone-meta">No file selected</span>
+            </label>
           </div>
         </div>
 
@@ -143,12 +182,12 @@
 
         <div id="registerMessage" class="form-message full-span"></div>
 
-        <button class="btn primary" type="submit">Create account</button>
+        <button class="btn primary" id="registerSubmitButton" type="submit">Create candidate account</button>
       </form>
 
       <div class="auth-inline-meta">
         <span id="registerLoginPrompt">Already registered?</span>
-        <a class="text-link" id="registerLoginLink" href="login.html">Login as fresher</a>
+        <a class="text-link" id="registerLoginLink" href="login.html">Login as candidate</a>
       </div>
     </section>
   </main>

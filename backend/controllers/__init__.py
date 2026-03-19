@@ -1,4 +1,4 @@
-from .auth_controller import login_account, logout_account, register_account
+from .auth_controller import login_account, login_admin_account, logout_account, register_account
 from .company_controller import (
     company_applications,
     company_dashboard,
@@ -23,6 +23,7 @@ __all__ = [
     "list_jobs",
     "list_reviews",
     "login_account",
+    "login_admin_account",
     "logout_account",
     "my_applications",
     "register_account",

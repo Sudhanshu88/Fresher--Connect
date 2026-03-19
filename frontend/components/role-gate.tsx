@@ -29,7 +29,7 @@ export function RoleGate({
       return;
     }
     if (!user) {
-      router.replace("/login");
+      router.replace(roles.includes("admin") ? "/admin/login" : "/login");
       return;
     }
     if (!roles.includes(user.role)) {

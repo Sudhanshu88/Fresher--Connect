@@ -14,7 +14,10 @@ import type { SessionUser } from "@/lib/types";
 type RegisterResponse = {
   ok: boolean;
   user: SessionUser;
-  access_token: string;
+  access_token?: string;
+  message?: string;
+  requires_approval?: boolean;
+  approval_status?: string;
 };
 
 const defaultForm = {
@@ -85,11 +88,19 @@ export default function RegisterPage() {
         method: "POST",
         body: payload
       });
-      writeAccessToken(response.access_token);
-      setUser(response.user);
-      setTone("success");
-      setMessage("Account created. Redirecting to your workspace.");
-      router.push(dashboardPath(response.user.role));
+      if (response.access_token) {
+        writeAccessToken(response.access_token);
+        setUser(response.user);
+        setTone("success");
+        setMessage("Account created. Redirecting to your workspace.");
+        router.push(dashboardPath(response.user.role));
+      } else {
+        writeAccessToken("");
+        setUser(null);
+        setTone("success");
+        setMessage(response.message || "Company account created. Wait for admin verification before login.");
+        setForm((current) => ({ ...defaultForm, role: current.role }));
+      }
     } catch (_error) {
       setTone("error");
       setMessage("Registration failed. Check the required fields and backend connection.");
@@ -269,11 +280,11 @@ export default function RegisterPage() {
             </div>
             <div className="detail-item">
               <span>Company payload</span>
-              <strong>Contact name, company name, website, location, description, industry, size</strong>
+              <strong>Contact name, company name, website, location, description, industry, size, then admin approval</strong>
             </div>
             <div className="detail-item">
               <span>After success</span>
-              <strong>Token stored in session state and routed into the matching dashboard</strong>
+              <strong>Freshers sign in immediately, companies wait for admin verification before login</strong>
             </div>
           </div>
           <div className="message">

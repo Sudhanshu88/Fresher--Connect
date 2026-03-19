@@ -9,10 +9,10 @@ import { Feedback } from "@/components/feedback";
 import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const user = usePlatformStore((state) => state.user);
-  const login = usePlatformStore((state) => state.login);
+  const loginAdmin = usePlatformStore((state) => state.loginAdmin);
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [tone, setTone] = useState<"default" | "error" | "success">("default");
@@ -30,28 +30,26 @@ export default function LoginPage() {
     setMessage("");
 
     try {
-      const nextPath =
-        typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
-      const sessionUser = await login(form);
+      await loginAdmin(form);
       setTone("success");
-      setMessage("Login successful. Redirecting to your workspace.");
-      router.push(nextPath || dashboardPath(sessionUser.role));
+      setMessage("Admin login successful. Redirecting to the admin workspace.");
+      router.push("/admin");
     } catch (_error) {
       setTone("error");
-      setMessage("Login failed. Check email, password, and backend availability.");
+      setMessage("Admin login failed. Use an admin account and confirm the backend is running.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <AppShell title="Role-based sign in for candidates and recruiters." subtitle="Typed auth flow over the existing backend">
+    <AppShell title="Admin-only sign in for verification, moderation, and access control." subtitle="Separate admin entry point over the Flask backend">
       <section className="hero">
         <section className="panel stack">
-          <span className="section-label">Login</span>
-          <h2>Continue into the right workspace.</h2>
+          <span className="section-label">Admin Login</span>
+          <h2>Access the moderation workspace.</h2>
           <p className="muted">
-            Candidate and company sign-in use the shared auth flow here. Admin accounts have a separate login page.
+            This route is reserved for platform admins who verify companies, review jobs, and manage permissions.
           </p>
           <Feedback message={message} tone={tone} />
           <form className="form" onSubmit={handleSubmit}>
@@ -61,7 +59,7 @@ export default function LoginPage() {
                 type="email"
                 value={form.email}
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                placeholder="name@example.com"
+                placeholder="admin@example.com"
                 required
               />
             </label>
@@ -71,40 +69,36 @@ export default function LoginPage() {
                 type="password"
                 value={form.password}
                 onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                placeholder="Enter password"
+                placeholder="Enter admin password"
                 required
               />
             </label>
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "Signing in..." : "Sign in"}
+              {submitting ? "Signing in..." : "Login as admin"}
             </button>
           </form>
         </section>
 
         <section className="hero-card stack">
-          <span className="section-label">Access map</span>
+          <span className="section-label">Admin scope</span>
           <div className="detail-list">
             <div className="detail-item">
-              <span>Fresher</span>
-              <strong>/user dashboard with applications, notifications, and profile state</strong>
+              <span>Company verification</span>
+              <strong>Approve or reject recruiter accounts before company access is enabled</strong>
             </div>
             <div className="detail-item">
-              <span>Company</span>
-              <strong>/company dashboard with analytics, jobs, and pipeline controls</strong>
+              <span>Job moderation</span>
+              <strong>Hide, approve, or reject job posts from the admin dashboard</strong>
             </div>
             <div className="detail-item">
-              <span>Admin</span>
-              <strong>/admin/login for verification, moderation, and audit controls</strong>
+              <span>User control</span>
+              <strong>Disable risky accounts and review audit activity from one page</strong>
             </div>
           </div>
           <div className="message">
-            No account yet?{" "}
-            <Link href="/register" className="inline-link">
-              Create one in the new TypeScript flow
-            </Link>
-            . Admins should{" "}
-            <Link href="/admin/login" className="inline-link">
-              use the separate admin login
+            Not an admin?{" "}
+            <Link href="/login" className="inline-link">
+              Use the standard login
             </Link>
             .
           </div>

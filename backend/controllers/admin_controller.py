@@ -107,49 +107,49 @@ def update_admin_user(admin, user_id):
     target = store.users.find_one({"id": int(user_id)}, {"_id": 0})
     if not target:
         return json_error("user_not_found", 404)
-    if target.get("role") == "admin" and target.get("id") == admin.get("id"):
-        return json_error("cannot_disable_self", 400)
-
-    updated = dict(target)
-    change_details = {}
-    if "is_active" in payload:
-        updated["is_active"] = bool(payload.get("is_active"))
-        if bool(target.get("is_active", True)) != updated["is_active"]:
-            change_details["is_active"] = updated["is_active"]
-    if payload.get("role") in {"candidate", "company", "admin"}:
-        updated["role"] = str(payload.get("role")).strip().lower()
-        if str(target.get("role") or "").strip().lower() != updated["role"]:
-            change_details["role"] = updated["role"]
-    updated["updated_at"] = utcnow()
-    store.users.replace_one({"id": int(user_id)}, updated)
+    if str(target.get("role") or "").strip().lower() != "company":
+        return json_error("company_verification_only", 400)
 
     company = store.companies.find_one({"owner_user_id": int(user_id)}, {"_id": 0})
-    if company and "verification_status" in payload:
-        verification_status = normalize_company_verification_status(payload.get("verification_status"), default=company.get("verification_status") or "verified")
-        change_details["verification_status"] = verification_status
-        store.companies.update_one(
+    if not company:
+        return json_error("company_not_found", 404)
+    if "verification_status" not in payload:
+        return json_error("verification_status_required", 400)
+
+    verification_status = normalize_company_verification_status(
+        payload.get("verification_status"),
+        default=company.get("verification_status") or "verified",
+    )
+    change_details = {"verification_status": verification_status}
+    company_updated_at = utcnow()
+    store.companies.update_one(
+        {"company_id": company.get("company_id") or company.get("id")},
+        {
+            "$set": {
+                "verification_status": verification_status,
+                "verification_updated_at": company_updated_at,
+            }
+        },
+    )
+    if verification_status != "verified":
+        store.jobs.update_many(
             {"company_id": company.get("company_id") or company.get("id")},
-            {
-                "$set": {
-                    "verification_status": verification_status,
-                    "verification_updated_at": utcnow(),
-                }
-            },
+            {"$set": {"is_active": False, "updated_at": company_updated_at}},
         )
 
-    if change_details:
-        create_audit_event(
-            store,
-            action="admin_user_updated",
-            actor=admin,
-            company_id=(company or {}).get("company_id"),
-            target_type="user",
-            target_id=int(user_id),
-            summary=f"Updated access settings for {updated.get('email') or updated.get('name') or 'user'}.",
-            details=change_details,
-        )
+    create_audit_event(
+        store,
+        action="admin_user_updated",
+        actor=admin,
+        company_id=company.get("company_id"),
+        target_type="user",
+        target_id=int(user_id),
+        summary=f"Updated company verification for {target.get('email') or target.get('name') or 'company'}.",
+        details=change_details,
+    )
 
-    return jsonify({"ok": True, "user": _serialize_managed_user(store, updated)})
+    updated_user = store.users.find_one({"id": int(user_id)}, {"_id": 0}) or target
+    return jsonify({"ok": True, "user": _serialize_managed_user(store, updated_user)})
 
 
 def admin_jobs(admin):

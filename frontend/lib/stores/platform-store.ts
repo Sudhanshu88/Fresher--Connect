@@ -13,6 +13,7 @@ type PlatformStore = {
   bootstrapped: boolean;
   hydrateSession: () => Promise<void>;
   login: (payload: { email: string; password: string }) => Promise<SessionUser>;
+  loginAdmin: (payload: { email: string; password: string }) => Promise<SessionUser>;
   logout: () => Promise<void>;
   loadUserDashboard: () => Promise<UserDashboard>;
   loadCompanyDashboard: () => Promise<CompanyDashboard>;
@@ -45,6 +46,15 @@ export const usePlatformStore = create<PlatformStore>((set, get) => ({
   },
   async login(payload) {
     const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/login", {
+      method: "POST",
+      body: payload
+    });
+    writeAccessToken(response.access_token);
+    set({ user: response.user, bootstrapped: true });
+    return response.user as SessionUser;
+  },
+  async loginAdmin(payload) {
+    const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/admin/login", {
       method: "POST",
       body: payload
     });

@@ -13,6 +13,8 @@ def build_company_document(
     industry_type,
     company_size,
     created_at,
+    verification_status="verified",
+    verification_updated_at=None,
 ):
     return {
         "id": company_id,
@@ -27,8 +29,8 @@ def build_company_document(
         "company_logo": company_logo,
         "industry_type": industry_type,
         "company_size": company_size,
-        "verification_status": "verified",
-        "verification_updated_at": created_at,
+        "verification_status": verification_status,
+        "verification_updated_at": verification_updated_at or created_at,
         "created_at": created_at,
         "updated_at": created_at,
     }

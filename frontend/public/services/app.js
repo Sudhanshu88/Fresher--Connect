@@ -32,6 +32,11 @@
       return;
     }
 
+    if (page === "admin-login") {
+      initAdminLogin();
+      return;
+    }
+
     if (page === "register") {
       initRegister();
       return;
@@ -98,8 +103,19 @@
     return user.role === "company" ? "company.html" : "user.html";
   }
 
+  function adminLoginHref() {
+    return "admin-login.html";
+  }
+
   function normalizeAuthRole(role) {
     return role === "company" ? "company" : "fresher";
+  }
+
+  function normalizeRegisterRole(role) {
+    if (role === "company" || role === "admin") {
+      return role;
+    }
+    return "fresher";
   }
 
   function replaceQueryParam(name, value) {
@@ -141,6 +157,14 @@
       return {
         title: "Login | Fresher Connect",
         description: "Access your Fresher Connect account to continue job search or company hiring workflows.",
+        robots: "noindex,nofollow"
+      };
+    }
+
+    if (pageName === "admin-login") {
+      return {
+        title: "Admin Login | Fresher Connect",
+        description: "Sign in to the Fresher Connect admin workspace for verification, moderation, and platform controls.",
         robots: "noindex,nofollow"
       };
     }
@@ -360,8 +384,8 @@
       documentTitle: "Company Login | Fresher Connect",
       pageLabel: "Company Login",
       pageTitle: "Return to your hiring workspace and move candidates forward.",
-      pageDescription: "Company accounts open job posting, applicant review, and hiring pipeline management in one dashboard.",
-      roleSummary: "Use your company account to publish openings, review fresher profiles, and update every hiring stage.",
+      pageDescription: "Verified company accounts open job posting, applicant review, and hiring pipeline management in one dashboard.",
+      roleSummary: "Use your verified company account to publish openings, review fresher profiles, and update every hiring stage.",
       featureA: {
         kicker: "Hiring Workspace",
         title: "Post and manage openings",
@@ -374,7 +398,7 @@
       },
       flowLabel: "Company Flow",
       flowPoints: [
-        "Company sign-in opens job posting, applicant review, and status updates.",
+        "Only admin-verified company accounts can sign in to the recruiter workspace.",
         "Unauthenticated dashboard access returns to the recruiter login entry point.",
         "Session and CSRF protection continue through the backend API."
       ],
@@ -382,7 +406,7 @@
       cardTitle: "Recruiter sign in",
       cardDescription: "Use the company email and password already registered on the platform.",
       noteTitle: "Hiring workspace",
-      noteBody: "Create roles, review applicants, and keep every pipeline update inside the company dashboard.",
+      noteBody: "Create roles, review applicants, and keep every pipeline update inside the company dashboard after admin verification.",
       submitText: "Login to company dashboard",
       registerPrompt: "Hiring for the first time?",
       registerText: "Create a company account",
@@ -1202,6 +1226,73 @@
       payload[key] = typeof value === "string" ? value.trim() : value;
     });
     return payload;
+  }
+
+  function formatFileSize(bytes) {
+    var size = Number(bytes || 0);
+    if (!Number.isFinite(size) || size <= 0) {
+      return "";
+    }
+    if (size < 1024 * 1024) {
+      return (size / 1024).toFixed(1).replace(/\.0$/, "") + " KB";
+    }
+    return (size / (1024 * 1024)).toFixed(1).replace(/\.0$/, "") + " MB";
+  }
+
+  function syncRegisterResumeFileState(fileInput, fileNameLabel) {
+    if (!fileNameLabel) {
+      return;
+    }
+    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    if (!file) {
+      fileNameLabel.textContent = "No file selected";
+      fileNameLabel.classList.remove("has-file");
+      return;
+    }
+    fileNameLabel.textContent = file.name + (file.size ? " (" + formatFileSize(file.size) + ")" : "");
+    fileNameLabel.classList.add("has-file");
+  }
+
+  function bindRegisterResumeDropzone(fileInput, dropzone, fileNameLabel) {
+    if (!fileInput || !dropzone || !fileNameLabel) {
+      return;
+    }
+
+    function applyFiles(fileList) {
+      var firstFile = fileList && fileList[0] ? fileList[0] : null;
+      if (!firstFile) {
+        fileInput.value = "";
+        syncRegisterResumeFileState(fileInput, fileNameLabel);
+        return;
+      }
+      var transfer = new DataTransfer();
+      transfer.items.add(firstFile);
+      fileInput.files = transfer.files;
+      syncRegisterResumeFileState(fileInput, fileNameLabel);
+    }
+
+    fileInput.addEventListener("change", function () {
+      syncRegisterResumeFileState(fileInput, fileNameLabel);
+    });
+
+    ["dragenter", "dragover"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave", "dragend", "drop"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        if (eventName === "drop" && event.dataTransfer && event.dataTransfer.files) {
+          applyFiles(event.dataTransfer.files);
+        }
+        dropzone.classList.remove("is-dragover");
+      });
+    });
+
+    syncRegisterResumeFileState(fileInput, fileNameLabel);
   }
 
   function normalizeLandingReviewRole(role) {
@@ -2194,7 +2285,7 @@
   }
 
   async function requireRole(role) {
-    var loginHref = role === "company" ? "company-login.html" : "login.html";
+    var loginHref = role === "admin" ? adminLoginHref() : role === "company" ? "company-login.html" : "login.html";
     try {
       var session = await window.FC_API.refreshSession();
       if (!session.user) {
@@ -2387,48 +2478,9 @@
     });
   }
 
-  function toggleRegisterRole(role) {
-    var safeRole = normalizeAuthRole(role);
-    var fresherFields = byId("fresherFields");
-    var companyFields = byId("companyFields");
-    var roleInput = byId("accountRole");
-    var companyName = byId("companyName");
-    var education = byId("registerEducation");
-    var gradYear = byId("registerGradYear");
-    var loginLink = byId("registerLoginLink");
-
-    roleInput.value = safeRole;
-    document.body.dataset.registerRole = safeRole;
-    fresherFields.classList.toggle("hidden", safeRole !== "fresher");
-    companyFields.classList.toggle("hidden", safeRole !== "company");
-
-    education.required = safeRole === "fresher";
-    gradYear.required = safeRole === "fresher";
-    companyName.required = safeRole === "company";
-
-    setText("registerLoginPrompt", safeRole === "company" ? "Already registered as a company?" : "Already registered?");
-    if (loginLink) {
-      loginLink.href = safeRole === "company" ? "company-login.html" : "login.html";
-      loginLink.textContent = safeRole === "company" ? "Login as company" : "Login as fresher";
-    }
-
-    document.querySelectorAll("[data-role-button]").forEach(function (button) {
-      button.classList.toggle("active", button.dataset.roleButton === safeRole);
-    });
-  }
-
-  async function initRegister() {
-    var form = byId("registerForm");
-    var message = byId("registerMessage");
-    var initialRole = normalizeAuthRole(getQueryParam("role"));
-
-    document.querySelectorAll("[data-role-button]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        toggleRegisterRole(button.dataset.roleButton);
-        replaceQueryParam("role", button.dataset.roleButton === "company" ? "company" : "");
-      });
-    });
-    toggleRegisterRole(initialRole);
+  async function initAdminLogin() {
+    var form = byId("adminLoginForm");
+    var message = byId("adminLoginMessage");
 
     try {
       var session = await window.FC_API.getSession();
@@ -2442,16 +2494,180 @@
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
-      setMessage(message, "Creating account...");
+      setMessage(message, "Signing in...");
 
       try {
         var payload = readForm(form);
-        await window.FC_API.request("/api/auth/register", {
+        await window.FC_API.request("/api/auth/admin/login", {
           method: "POST",
           body: payload
         });
         var freshSession = await window.FC_API.refreshSession();
-        window.FC_API.redirectByRole(freshSession.user);
+        if (freshSession.user && freshSession.user.role === "admin") {
+          window.location.href = "admin.html";
+          return;
+        }
+        setMessage(message, "Admin session could not be established.", "error");
+      } catch (error) {
+        setMessage(message, window.FC_API.getErrorMessage(error, "Admin login failed."), "error");
+      }
+    });
+  }
+
+  function toggleRegisterRole(role) {
+    var safeRole = normalizeRegisterRole(role);
+    var fresherFields = byId("fresherFields");
+    var companyFields = byId("companyFields");
+    var registerNameField = byId("registerNameField");
+    var registerPhoneField = byId("registerPhoneField");
+    var registerLocationField = byId("registerLocationField");
+    var roleInput = byId("accountRole");
+    var companyName = byId("companyName");
+    var education = byId("registerEducation");
+    var gradYear = byId("registerGradYear");
+    var registerName = byId("registerName");
+    var registerEmail = byId("registerEmail");
+    var registerPassword = byId("registerPassword");
+    var loginLink = byId("registerLoginLink");
+    var submitButton = byId("registerSubmitButton");
+
+    roleInput.value = safeRole;
+    document.body.dataset.registerRole = safeRole;
+    fresherFields.classList.toggle("hidden", safeRole !== "fresher");
+    companyFields.classList.toggle("hidden", safeRole !== "company");
+    registerNameField.classList.toggle("hidden", safeRole !== "fresher");
+    registerPhoneField.classList.toggle("hidden", safeRole === "admin");
+    registerLocationField.classList.toggle("hidden", safeRole === "admin");
+
+    education.required = safeRole === "fresher";
+    gradYear.required = safeRole === "fresher";
+    companyName.required = safeRole === "company";
+    registerName.required = safeRole === "fresher";
+    registerEmail.required = true;
+    registerPassword.required = true;
+
+    if (safeRole === "admin") {
+      setText("registerLoginPrompt", "Admin access only");
+    } else {
+      setText("registerLoginPrompt", safeRole === "company" ? "Already registered as a company?" : "Already registered as a candidate?");
+    }
+    if (loginLink) {
+      if (safeRole === "admin") {
+        loginLink.href = "admin-login.html";
+        loginLink.textContent = "Login as admin";
+      } else {
+        loginLink.href = safeRole === "company" ? "company-login.html" : "login.html";
+        loginLink.textContent = safeRole === "company" ? "Login as company" : "Login as candidate";
+      }
+    }
+
+    if (submitButton) {
+      if (safeRole === "admin") {
+        submitButton.textContent = "Login as admin";
+      } else if (safeRole === "company") {
+        submitButton.textContent = "Create company account";
+      } else {
+        submitButton.textContent = "Create candidate account";
+      }
+    }
+
+    document.querySelectorAll("[data-role-button]").forEach(function (button) {
+      button.classList.toggle("active", button.dataset.roleButton === safeRole);
+    });
+  }
+
+  async function initRegister() {
+    var form = byId("registerForm");
+    var message = byId("registerMessage");
+    var initialRole = normalizeRegisterRole(getQueryParam("role"));
+    var registerPassword = byId("registerPassword");
+    var registerPasswordToggle = byId("registerPasswordToggle");
+    var registerResumeFile = byId("registerResumeFile");
+    var registerResumeDropzone = byId("registerResumeDropzone");
+    var registerResumeFileName = byId("registerResumeFileName");
+
+    document.querySelectorAll("[data-role-button]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        toggleRegisterRole(button.dataset.roleButton);
+        replaceQueryParam("role", button.dataset.roleButton === "fresher" ? "" : button.dataset.roleButton);
+      });
+    });
+    toggleRegisterRole(initialRole);
+
+    if (registerPassword && registerPasswordToggle) {
+      registerPasswordToggle.addEventListener("change", function () {
+        registerPassword.type = registerPasswordToggle.checked ? "text" : "password";
+      });
+    }
+
+    bindRegisterResumeDropzone(registerResumeFile, registerResumeDropzone, registerResumeFileName);
+
+    try {
+      var session = await window.FC_API.getSession();
+      if (session.user) {
+        window.FC_API.redirectByRole(session.user);
+        return;
+      }
+    } catch (_error) {
+      setMessage(message, "Backend API is not reachable on " + window.FC_API.getApiBase() + ".", "error");
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      try {
+        var payload = readForm(form);
+        delete payload.resume_file;
+        if (payload.role === "company") {
+          payload.name = payload.company_name || "";
+        }
+        if (payload.role === "admin") {
+          setMessage(message, "Signing in...");
+          await window.FC_API.request("/api/auth/admin/login", {
+            method: "POST",
+            body: {
+              email: payload.email,
+              password: payload.password
+            }
+          });
+          var adminSession = await window.FC_API.refreshSession();
+          window.FC_API.redirectByRole(adminSession.user);
+          return;
+        }
+
+        setMessage(message, "Creating account...");
+        var response = await window.FC_API.request("/api/auth/register", {
+          method: "POST",
+          body: payload
+        });
+        if (response && response.access_token) {
+          if (payload.role === "fresher" && registerResumeFile && registerResumeFile.files && registerResumeFile.files[0]) {
+            setMessage(message, "Uploading resume...");
+            var uploadBody = new FormData();
+            uploadBody.append("resume", registerResumeFile.files[0]);
+            try {
+              await window.FC_API.request("/api/user/resume", {
+                method: "POST",
+                body: uploadBody
+              });
+            } catch (_resumeError) {
+              // Account is already created at this point, so continue into the dashboard.
+            }
+          }
+          var freshSession = await window.FC_API.refreshSession();
+          window.FC_API.redirectByRole(freshSession.user);
+          return;
+        }
+
+        form.reset();
+        syncRegisterResumeFileState(registerResumeFile, registerResumeFileName);
+        toggleRegisterRole(payload.role === "company" ? "company" : "fresher");
+        replaceQueryParam("role", payload.role === "company" ? "company" : "");
+        setMessage(
+          message,
+          response.message || "Company account created. Wait for admin verification before login.",
+          "success"
+        );
       } catch (error) {
         setMessage(message, window.FC_API.getErrorMessage(error, "Registration failed."), "error");
       }
@@ -3598,14 +3814,8 @@
   function adminUserActionMarkup(user) {
     return (
       '<form class="inline-form admin-user-form" data-user-id="' + (user.user_id || user.id) + '">' +
-      '<select name="is_active">' +
-      '<option value="true"' + (user.is_active ? " selected" : "") + ">Active</option>" +
-      '<option value="false"' + (!user.is_active ? " selected" : "") + ">Disabled</option>" +
-      "</select>" +
-      ((user.db_role || user.role) === "company"
-        ? '<select name="verification_status">' + companyVerificationOptions(user.verification_status || "verified") + "</select>"
-        : "") +
-      '<button class="btn primary" type="submit">Save</button>' +
+      '<select name="verification_status">' + companyVerificationOptions(user.verification_status || "pending") + "</select>" +
+      '<button class="btn primary" type="submit">Verify</button>' +
       "</form>"
     );
   }
@@ -3624,9 +3834,20 @@
 
   function renderAdminUsers() {
     var tbody = byId("adminUsersBody");
-    var users = state.adminDashboard.users || [];
+    var users = (state.adminDashboard.users || [])
+      .filter(function (user) {
+        return (user.db_role || user.role) === "company";
+      })
+      .sort(function (left, right) {
+        var leftPending = (left.verification_status || "verified") === "pending" ? 0 : 1;
+        var rightPending = (right.verification_status || "verified") === "pending" ? 0 : 1;
+        if (leftPending !== rightPending) {
+          return leftPending - rightPending;
+        }
+        return String(left.company_name || left.name || "").localeCompare(String(right.company_name || right.name || ""));
+      });
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No users are available.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No company accounts are waiting for review.</div></td></tr>';
       return;
     }
 
@@ -3635,18 +3856,22 @@
         return (
           "<tr>" +
           "<td>" +
+          '<div class="table-title">' + window.FC_API.escapeHtml(user.company_name || user.name || "-") + "</div>" +
+          '<div class="meta-line">' + window.FC_API.escapeHtml(user.location || "-") + "</div>" +
+          "</td>" +
+          "<td>" +
           '<div class="table-title">' + window.FC_API.escapeHtml(user.name || "-") + "</div>" +
           '<div class="meta-line">' + window.FC_API.escapeHtml(user.email || "-") + "</div>" +
           "</td>" +
-          "<td>" + pillMarkup(toTitleCase(user.db_role || user.role), "tag") + "</td>" +
           "<td>" +
           '<div class="meta-line">Created ' + window.FC_API.escapeHtml(window.FC_API.formatDate(user.created_at)) + "</div>" +
           '<div class="meta-line">Completion ' + window.FC_API.escapeHtml(String(user.profile_completion || 0)) + "%</div>" +
-          (((user.db_role || user.role) === "company")
-            ? '<div class="meta-line">Verification ' + window.FC_API.escapeHtml(toTitleCase(user.verification_status || "verified")) + "</div>"
-            : "") +
+          '<div class="meta-line">Website ' + window.FC_API.escapeHtml(user.company_website || "-") + "</div>" +
           "</td>" +
-          "<td>" + pillMarkup(user.is_active ? "Active" : "Disabled", user.is_active ? "status-pill offered" : "status-pill rejected") + "</td>" +
+          "<td>" +
+          pillMarkup(toTitleCase(user.verification_status || "pending"), "tag") +
+          '<div class="meta-line">Updated ' + window.FC_API.escapeHtml(window.FC_API.formatDate(user.verification_updated_at)) + "</div>" +
+          "</td>" +
           "<td>" + adminUserActionMarkup(user) + "</td>" +
           "</tr>"
         );
@@ -3752,18 +3977,16 @@
       var button = form.querySelector("button");
       button.disabled = true;
       try {
-        var body = { is_active: form.elements.is_active.value === "true" };
-        if (form.elements.verification_status) {
-          body.verification_status = form.elements.verification_status.value;
-        }
         await window.FC_API.request("/api/admin/users/" + form.dataset.userId, {
           method: "PATCH",
-          body: body
+          body: {
+            verification_status: form.elements.verification_status.value
+          }
         });
         await loadAdminDashboard();
-        setMessage(byId("adminMessage"), "User updated successfully.", "success");
+        setMessage(byId("adminMessage"), "Company verification updated.", "success");
       } catch (error) {
-        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update user."), "error");
+        setMessage(byId("adminMessage"), window.FC_API.getErrorMessage(error, "Unable to update company verification."), "error");
       } finally {
         button.disabled = false;
       }

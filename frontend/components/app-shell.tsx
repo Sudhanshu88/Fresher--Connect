@@ -13,7 +13,7 @@ const links = [
   { href: "/register", label: "Register" },
   { href: "/user", label: "Candidate" },
   { href: "/company", label: "Company" },
-  { href: "/admin", label: "Admin" }
+  { href: "/admin/login", label: "Admin" }
 ];
 
 export function AppShell({

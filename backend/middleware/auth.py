@@ -6,6 +6,7 @@ from flask import g, request, session
 
 from backend.services.auth_service import decode_access_token
 from backend.services.platform_service import get_store, json_error
+from backend.services.workflow_service import normalize_company_verification_status
 
 
 def extract_bearer_token(auth_header):
@@ -56,6 +57,15 @@ def current_account(store=None):
     return user
 
 
+def company_access_error(user):
+    if not user or user.get("role") != "company":
+        return None
+    verification_status = normalize_company_verification_status(user.get("verification_status"), default="pending")
+    if verification_status == "verified":
+        return None
+    return "company_verification_rejected" if verification_status == "rejected" else "company_verification_pending"
+
+
 def login_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -64,6 +74,9 @@ def login_required(fn):
             return json_error("authentication_required", 401)
         if user.get("is_active") is False:
             return json_error("account_disabled", 403)
+        error_code = company_access_error(user)
+        if error_code:
+            return json_error(error_code, 403)
         return fn(user, *args, **kwargs)
 
     return wrapper
@@ -80,6 +93,10 @@ def role_required(role):
                 return json_error("account_disabled", 403)
             if user.get("role") == "admin":
                 return fn(user, *args, **kwargs)
+            if role == "company":
+                error_code = company_access_error(user)
+                if error_code:
+                    return json_error(error_code, 403)
             if user.get("role") != role:
                 return json_error("forbidden", 403)
             return fn(user, *args, **kwargs)
