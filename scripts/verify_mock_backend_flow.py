@@ -50,7 +50,66 @@ def main():
         },
     )
     assert company_register.status_code == 201, company_register.get_data(as_text=True)
-    company_token = company_register.get_json()["access_token"]
+    company_register_payload = company_register.get_json()
+    assert company_register_payload["requires_approval"] is True, company_register_payload
+    assert company_register_payload["approval_status"] == "pending", company_register_payload
+    assert "access_token" not in company_register_payload, company_register_payload
+
+    company_login_pending = client.post(
+        "/auth/login",
+        json={"email": "company@example.com", "password": "password123"},
+    )
+    assert company_login_pending.status_code == 403, company_login_pending.get_data(as_text=True)
+    assert company_login_pending.get_json()["error"] == "company_verification_pending", company_login_pending.get_json()
+
+    with app.app_context():
+        store = app.extensions["mongo_store"]
+        company_user_id = store.users.find_one({"email": "company@example.com"}, {"_id": 0, "id": 1})["id"]
+        store.users.insert_one(
+            build_user_document(
+                user_id=store.next_sequence("users"),
+                name="Platform Admin",
+                email="admin@example.com",
+                password_hash=hash_password("Admin@12345"),
+                role="admin",
+                created_at=utcnow(),
+            )
+        )
+
+    admin_login_blocked = client.post(
+        "/auth/login",
+        json={"email": "admin@example.com", "password": "Admin@12345"},
+    )
+    assert admin_login_blocked.status_code == 403, admin_login_blocked.get_data(as_text=True)
+    assert admin_login_blocked.get_json()["error"] == "admin_login_required", admin_login_blocked.get_json()
+
+    admin_login = client.post(
+        "/auth/admin/login",
+        json={"email": "admin@example.com", "password": "Admin@12345"},
+    )
+    assert admin_login.status_code == 200, admin_login.get_data(as_text=True)
+    admin_token = admin_login.get_json()["access_token"]
+
+    admin_dashboard_before_verification = client.get("/api/admin/dashboard", headers=auth_headers(admin_token))
+    assert admin_dashboard_before_verification.status_code == 200, admin_dashboard_before_verification.get_data(as_text=True)
+    initial_analytics = admin_dashboard_before_verification.get_json()["analytics"]
+    assert initial_analytics["verified_companies"] == 0, initial_analytics
+    assert initial_analytics["pending_companies"] == 1, initial_analytics
+
+    verify_company = client.patch(
+        f"/api/admin/users/{company_user_id}",
+        json={"verification_status": "verified"},
+        headers=auth_headers(admin_token),
+    )
+    assert verify_company.status_code == 200, verify_company.get_data(as_text=True)
+    assert verify_company.get_json()["user"]["verification_status"] == "verified", verify_company.get_json()
+
+    company_login = client.post(
+        "/auth/login",
+        json={"email": "company@example.com", "password": "password123"},
+    )
+    assert company_login.status_code == 200, company_login.get_data(as_text=True)
+    company_token = company_login.get_json()["access_token"]
 
     job_create = client.post(
         "/jobs",
@@ -389,35 +448,25 @@ def main():
     logout_late_user_again = client.post("/auth/logout", headers=auth_headers(late_user_token))
     assert logout_late_user_again.status_code == 200, logout_late_user_again.get_data(as_text=True)
 
-    with app.app_context():
-        store = app.extensions["mongo_store"]
-        store.users.insert_one(
-            build_user_document(
-                user_id=store.next_sequence("users"),
-                name="Platform Admin",
-                email="admin@example.com",
-                password_hash=hash_password("Admin@12345"),
-                role="admin",
-                created_at=utcnow(),
-            )
-        )
-
-    admin_login = client.post(
-        "/auth/login",
-        json={"email": "admin@example.com", "password": "Admin@12345"},
-    )
-    assert admin_login.status_code == 200, admin_login.get_data(as_text=True)
-    admin_token = admin_login.get_json()["access_token"]
-
     admin_dashboard = client.get("/api/admin/dashboard", headers=auth_headers(admin_token))
     assert admin_dashboard.status_code == 200, admin_dashboard.get_data(as_text=True)
     assert admin_dashboard.get_json()["analytics"]["saved_jobs"] == 1
     assert admin_dashboard.get_json()["analytics"]["verified_companies"] == 1, admin_dashboard.get_json()
     assert admin_dashboard.get_json()["recent_activity"], admin_dashboard.get_json()
 
+    candidate_verification_attempt = client.patch(
+        f"/api/admin/users/{user_register.get_json()['user']['id']}",
+        json={"verification_status": "verified"},
+        headers=auth_headers(admin_token),
+    )
+    assert candidate_verification_attempt.status_code == 400, candidate_verification_attempt.get_data(as_text=True)
+    assert (
+        candidate_verification_attempt.get_json()["error"] == "company_verification_only"
+    ), candidate_verification_attempt.get_json()
+
     pending_company = client.patch(
-        f"/api/admin/users/{company_register.get_json()['user']['id']}",
-        json={"is_active": True, "verification_status": "pending"},
+        f"/api/admin/users/{company_user_id}",
+        json={"verification_status": "pending"},
         headers=auth_headers(admin_token),
     )
     assert pending_company.status_code == 200, pending_company.get_data(as_text=True)
@@ -427,6 +476,7 @@ def main():
     assert admin_dashboard_after_pending.status_code == 200, admin_dashboard_after_pending.get_data(as_text=True)
     analytics_after_pending = admin_dashboard_after_pending.get_json()["analytics"]
     assert analytics_after_pending["pending_companies"] == 1, analytics_after_pending
+    assert analytics_after_pending["verified_companies"] == 0, analytics_after_pending
 
     moderate_job = client.patch(
         f"/api/admin/jobs/{job_id}",
@@ -439,22 +489,16 @@ def main():
     assert moderated_jobs.status_code == 200, moderated_jobs.get_data(as_text=True)
     assert not any(job["id"] == job_id for job in moderated_jobs.get_json()["jobs"])
 
-    disable_user = client.patch(
-        f"/api/admin/users/{user_register.get_json()['user']['id']}",
-        json={"is_active": False},
-        headers=auth_headers(admin_token),
-    )
-    assert disable_user.status_code == 200, disable_user.get_data(as_text=True)
-
-    disabled_dashboard = client.get("/api/user/dashboard", headers=auth_headers(user_login_token))
-    assert disabled_dashboard.status_code == 403, disabled_dashboard.get_data(as_text=True)
+    blocked_company_dashboard = client.get("/api/company/dashboard", headers=auth_headers(company_login_token))
+    assert blocked_company_dashboard.status_code == 403, blocked_company_dashboard.get_data(as_text=True)
+    assert blocked_company_dashboard.get_json()["error"] == "company_verification_pending", blocked_company_dashboard.get_json()
 
     company_login_pending = client.post(
         "/auth/login",
         json={"email": "company@example.com", "password": "password123"},
     )
-    assert company_login_pending.status_code == 200, company_login_pending.get_data(as_text=True)
-    company_pending_token = company_login_pending.get_json()["access_token"]
+    assert company_login_pending.status_code == 403, company_login_pending.get_data(as_text=True)
+    assert company_login_pending.get_json()["error"] == "company_verification_pending", company_login_pending.get_json()
 
     pending_job_create = client.post(
         "/jobs",
@@ -490,16 +534,10 @@ def main():
             "hiring_stages": "Resume Screening, HR Interview",
             "expiry_days": "30",
         },
-        headers=auth_headers(company_pending_token),
+        headers=auth_headers(company_login_token),
     )
-    assert pending_job_create.status_code == 200, pending_job_create.get_data(as_text=True)
-    pending_job_payload = pending_job_create.get_json()
-    assert pending_job_payload["job"]["moderation_status"] == "pending", pending_job_payload
-    assert pending_job_payload["job"]["is_active"] is False, pending_job_payload
-    assert pending_job_payload["notification_summary"]["notifications_created"] == 0, pending_job_payload
-
-    logout_pending_company = client.post("/auth/logout", headers=auth_headers(company_pending_token))
-    assert logout_pending_company.status_code == 200, logout_pending_company.get_data(as_text=True)
+    assert pending_job_create.status_code == 403, pending_job_create.get_data(as_text=True)
+    assert pending_job_create.get_json()["error"] == "company_verification_pending", pending_job_create.get_json()
 
     health = client.get("/healthz")
     assert health.status_code == 200, health.get_data(as_text=True)
