@@ -408,15 +408,19 @@ p {
 
 .menu-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   width: 100%;
   min-height: 46px;
-  padding: 0 14px;
+  padding: 12px 14px;
   border: none;
   border-radius: 14px;
   background: transparent;
   color: var(--ink);
   font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
   cursor: pointer;
 }
 
