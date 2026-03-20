@@ -17,7 +17,8 @@ def index():
             "ok": True,
             "service": "fresher-connect-backend",
             "database": "mongodb",
-            "frontend_hint": "Open http://127.0.0.1:3000/?api=http://127.0.0.1:5000",
+            "frontend_hint": "Open http://127.0.0.1:3000",
+            "frontend_api_base": "http://127.0.0.1:5000",
         }
     )
 

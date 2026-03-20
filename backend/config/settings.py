@@ -2,12 +2,18 @@ from __future__ import annotations
 
 import os
 from datetime import timedelta
+from pathlib import Path
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 
-load_dotenv()
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = BACKEND_DIR.parent
+
+# Prefer backend-local env configuration and fall back to the legacy root file.
+load_dotenv(BACKEND_DIR / ".env", override=False)
+load_dotenv(PROJECT_ROOT / ".env", override=False)
 
 
 def parse_bool(value, default=False):

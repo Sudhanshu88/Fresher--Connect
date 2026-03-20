@@ -1,9 +1,1 @@
-boto3==1.39.11
-bcrypt==4.2.1
-Flask==3.0.3
-gunicorn==23.0.0
-mongomock==4.3.0
-PyJWT==2.10.1
-pymongo==4.16.0
-python-dotenv==1.0.1
-Werkzeug==3.0.3
+-r backend/requirements.txt

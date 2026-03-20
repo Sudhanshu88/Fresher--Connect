@@ -10,3 +10,7 @@ web/node_modules/
 .next/
 web/.next/
 npm-debug.log*
+backend/.env
+backend/.venv/
+frontend/.env
+frontend/.env.local

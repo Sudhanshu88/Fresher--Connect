@@ -13,10 +13,10 @@ WORKDIR /app
 
 RUN python -m venv "$VIRTUAL_ENV"
 
-COPY requirements.txt ./requirements.txt
+COPY backend/requirements.txt ./backend/requirements.txt
 
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install -r backend/requirements.txt
 
 
 FROM python:3.11-slim AS backend
@@ -33,8 +33,6 @@ WORKDIR /app
 
 COPY --from=backend-builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
 COPY backend ./backend
-COPY app.py ./app.py
-COPY requirements.txt ./requirements.txt
 
 RUN addgroup --system app \
     && adduser --system --ingroup app --home /app app \
@@ -48,7 +46,7 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/healthz').read()"
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--access-logfile", "-", "--error-logfile", "-", "backend.wsgi:app"]
 
 
 FROM node:20-alpine AS frontend-builder

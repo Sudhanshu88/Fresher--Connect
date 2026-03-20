@@ -2,6 +2,8 @@
 
 Fresher Connect is a fresher hiring platform with a Flask + MongoDB backend and a Next.js frontend runtime in `frontend/`. The live UI is served from `frontend/public/`, which holds the single static asset source used by the app.
 
+Frontend and backend are now organized to be launched as separate servers with independent setup.
+
 ## Repository Structure
 
 ```text
@@ -14,6 +16,8 @@ Fresher--Connect
 |   |-- routes
 |   |-- services
 |   |-- app.py
+|   |-- server.py
+|   |-- requirements.txt
 |   `-- Dockerfile.backend
 |-- frontend
 |   |-- app
@@ -21,6 +25,7 @@ Fresher--Connect
 |   |-- lib
 |   |-- public
 |   |-- package.json
+|   |-- .env.example
 |   `-- Dockerfile.frontend
 |-- database
 |   |-- init.js
@@ -46,26 +51,52 @@ Fresher--Connect
 
 ## Local Setup
 
+### Backend Server
+
 ```bash
+cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-python app.py
+copy .env.example .env
+python server.py
+```
+
+Open:
+
+- Backend: `http://127.0.0.1:5000`
+
+Shortcut:
+
+```powershell
+powershell -File scripts/start-backend.ps1
+```
+
+### Frontend Server
+
+```bash
 cd frontend
 npm install
+copy .env.example .env.local
 npm run dev
 ```
 
 Open:
 
-- Frontend: `http://127.0.0.1:3000/?api=http://127.0.0.1:5000`
-- Backend: `http://127.0.0.1:5000`
+- Frontend: `http://127.0.0.1:3000`
+- Backend API target: `http://127.0.0.1:5000`
+
+Shortcut:
+
+```powershell
+powershell -File scripts/start-frontend.ps1
+```
 
 The `frontend/` app redirects route entries such as `/`, `/jobs`, `/login`, and `/company` to the `.html` pages inside `frontend/public/`, so the visual output remains the same as the earlier UI while keeping only one asset source.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` if needed.
+Backend config lives in `backend/.env`.
 
 ```env
 SESSION_COOKIE_SECURE=false
@@ -86,8 +117,16 @@ AUTH_RATE_LIMIT_MAX=20
 AUTH_RATE_LIMIT_WINDOW_SECONDS=300
 ```
 
+Frontend config lives in `frontend/.env.local`.
+
+```env
+NEXT_PUBLIC_API_BASE=http://127.0.0.1:5000
+```
+
 Notes:
 
+- The backend loads `backend/.env` first and falls back to the root `.env` only for backward compatibility
+- Legacy static pages under `frontend/public/` can override the backend target with `?api=http://host:port` on first load
 - If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`
 - Set `MONGODB_USE_MOCK=true` to run the backend against an in-memory mocked MongoDB
 - Set `DISABLE_SEED_DATA=true` to skip sample companies and jobs
@@ -131,6 +170,7 @@ Frontend build:
 ```bash
 cd frontend
 npm install
+copy .env.example .env.local
 npm run build
 ```
 
