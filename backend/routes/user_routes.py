@@ -11,6 +11,7 @@ from backend.controllers.user_controller import (
     save_job,
     unsave_job,
     update_user_profile,
+    upload_profile_photo,
     upload_resume,
     user_dashboard,
 )
@@ -21,6 +22,7 @@ user_bp = Blueprint("user", __name__)
 
 user_bp.get("/api/user/dashboard")(role_required("fresher")(user_dashboard))
 user_bp.patch("/api/user/profile")(role_required("fresher")(update_user_profile))
+user_bp.post("/api/user/photo")(role_required("fresher")(upload_profile_photo))
 user_bp.post("/api/user/resume")(role_required("fresher")(upload_resume))
 user_bp.post("/api/applications")(role_required("fresher")(create_application))
 user_bp.get("/api/applications/me")(role_required("fresher")(my_applications))

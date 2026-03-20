@@ -17,6 +17,8 @@ export interface SessionUser {
   profile_completion?: number;
   verification_status?: string;
   verification_updated_at?: string;
+  profile_photo?: string;
+  profile_photo_filename?: string;
   experience?: string;
   education?: string;
   grad_year?: number;
@@ -52,6 +54,12 @@ export interface NotificationItem {
   email_status?: string;
   created_at?: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface NotificationsResponse {
+  ok: boolean;
+  notifications: NotificationItem[];
+  unread_count: number;
 }
 
 export interface Job {
@@ -98,6 +106,7 @@ export interface Job {
   city?: string;
   remote_option?: boolean;
   internship_stipend?: string;
+  saved_at?: string;
 }
 
 export interface Application {
@@ -126,6 +135,36 @@ export interface Pagination {
   total_pages: number;
   has_prev: boolean;
   has_next: boolean;
+}
+
+export interface JobsDirectoryFilters {
+  search: string;
+  category: string;
+  location: string;
+  skills: string;
+  page: number;
+  page_size?: number;
+}
+
+export interface JobsDirectoryResponse {
+  ok: boolean;
+  jobs: Job[];
+  categories: string[];
+  filters: {
+    categories: string[];
+    locations: string[];
+    companies: string[];
+    experience_levels: string[];
+    skills: string[];
+    salary_min: number | null;
+    salary_max: number | null;
+  };
+  pagination: Pagination;
+}
+
+export interface SavedJobsResponse {
+  ok: boolean;
+  saved_jobs: Job[];
 }
 
 export interface CompanyAnalytics {

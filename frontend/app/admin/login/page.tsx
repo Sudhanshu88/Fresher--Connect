@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { AppShell } from "@/components/app-shell";
+import { AuthShell } from "@/components/auth-shell";
 import { Feedback } from "@/components/feedback";
 import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
     try {
       await loginAdmin(form);
       setTone("success");
-      setMessage("Admin login successful. Redirecting to the admin workspace.");
+      setMessage("Admin login successful. Redirecting to the governance workspace.");
       router.push("/admin");
     } catch (_error) {
       setTone("error");
@@ -43,16 +43,56 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <AppShell title="Admin-only sign in for verification, moderation, and access control." subtitle="Separate admin entry point over the Flask backend">
-      <section className="hero">
-        <section className="panel stack">
-          <span className="section-label">Admin Sign In</span>
-          <h2>Access the moderation workspace.</h2>
-          <p className="muted">
-            This route is reserved for platform admins who verify companies, review jobs, and manage permissions.
-          </p>
+    <AuthShell
+      brandSubtitle="Protected governance access"
+      left={
+        <>
+          <div className="page-intro auth-copy-block">
+            <span className="section-label">Admin Sign In</span>
+            <h1 className="page-title">Access the moderation and governance workspace.</h1>
+            <p className="muted">
+              This route is reserved for platform admins who verify companies, review jobs, and manage access controls.
+            </p>
+          </div>
+
+          <div className="auth-feature-grid">
+            <article className="auth-feature-card">
+              <span className="preview-kicker">Company Verification</span>
+              <h3>Control recruiter access</h3>
+              <p>Approve or reject employer accounts before workspace access is enabled.</p>
+            </article>
+            <article className="auth-feature-card">
+              <span className="preview-kicker">Job Moderation</span>
+              <h3>Review listing quality</h3>
+              <p>Hide, approve, or reject listings before they become visible to candidates.</p>
+            </article>
+          </div>
+
+          <section className="card auth-note-card">
+            <span className="section-label">Admin Scope</span>
+            <div className="detail-list">
+              <div className="detail-item">
+                <span>Audit visibility</span>
+                <strong>Review recent platform activity and keep moderation decisions accountable.</strong>
+              </div>
+              <div className="detail-item">
+                <span>Access controls</span>
+                <strong>Admin routes stay isolated from candidate and recruiter authentication flows.</strong>
+              </div>
+            </div>
+          </section>
+        </>
+      }
+      right={
+        <>
+          <div className="auth-card-copy">
+            <span className="section-label">Admin Access</span>
+            <h2>Welcome back</h2>
+            <p className="muted">Sign in with an administrator account to continue platform governance.</p>
+          </div>
+
           <Feedback message={message} tone={tone} />
-          <form className="form" onSubmit={handleSubmit}>
+          <form className="form-grid" onSubmit={handleSubmit}>
             <label className="field">
               <span>Email</span>
               <input
@@ -77,33 +117,15 @@ export default function AdminLoginPage() {
               {submitting ? "Signing in..." : "Sign in as admin"}
             </button>
           </form>
-        </section>
 
-        <section className="hero-card stack">
-          <span className="section-label">Admin scope</span>
-          <div className="detail-list">
-            <div className="detail-item">
-              <span>Company verification</span>
-              <strong>Approve or reject recruiter accounts before company access is enabled</strong>
-            </div>
-            <div className="detail-item">
-              <span>Job moderation</span>
-              <strong>Hide, approve, or reject job posts from the admin dashboard</strong>
-            </div>
-            <div className="detail-item">
-              <span>User control</span>
-              <strong>Disable risky accounts and review audit activity from one page</strong>
-            </div>
-          </div>
-          <div className="message">
-            Not an admin?{" "}
-            <Link href="/login" className="inline-link">
+          <div className="auth-inline-meta">
+            <span>Not an admin?</span>
+            <Link href="/login" className="text-link">
               Use the standard login
             </Link>
-            .
           </div>
-        </section>
-      </section>
-    </AppShell>
+        </>
+      }
+    />
   );
 }

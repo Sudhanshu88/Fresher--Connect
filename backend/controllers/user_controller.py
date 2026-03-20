@@ -302,6 +302,50 @@ def upload_resume(user):
     )
 
 
+def upload_profile_photo(user):
+    from flask import current_app
+
+    store = get_store()
+    candidate_id = user.get("user_id") or user.get("id")
+    file = request.files.get("photo")
+    if not file or not file.filename:
+        return json_error("profile_photo_file_required", 400)
+
+    filename = secure_filename(file.filename)
+    if not filename:
+        return json_error("invalid_file_name", 400)
+
+    extension = os.path.splitext(filename)[1].lower()
+    if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+        return json_error("invalid_profile_photo_type", 400)
+
+    stored_name = f"{candidate_id}-{token_hex(8)}{extension}"
+    temp_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "_tmp")
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_path = os.path.join(temp_dir, stored_name)
+    file.save(temp_path)
+
+    stored_key = storage_key("candidate-photos", stored_name, config=current_app.config)
+    try:
+        storage_result = store_file(temp_path, stored_key, content_type=file.mimetype, config=current_app.config)
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    photo_url = build_upload_url(storage_result["storage_key"], request.url_root)
+    profile = store.candidate_profiles.find_one({"user_id": candidate_id}, {"_id": 0}) or {
+        "user_id": candidate_id,
+        "created_at": utcnow(),
+    }
+    profile["profile_photo"] = photo_url
+    profile["profile_photo_storage_backend"] = storage_result["storage_backend"]
+    profile["profile_photo_storage_key"] = storage_result["storage_key"]
+    profile["profile_photo_filename"] = filename
+    profile["updated_at"] = utcnow()
+    store.candidate_profiles.replace_one({"user_id": candidate_id}, profile, upsert=True)
+    return jsonify({"ok": True, "photo_url": photo_url, "user": serialize_user(store.get_account("fresher", candidate_id))})
+
+
 def my_notifications(user):
     store = get_store()
     candidate_id = user.get("user_id") or user.get("id")

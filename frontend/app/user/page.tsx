@@ -8,7 +8,6 @@ import { Feedback } from "@/components/feedback";
 import { JobCard } from "@/components/job-card";
 import { LoadingBlock } from "@/components/loading-block";
 import { RoleGate } from "@/components/role-gate";
-import { StatCard } from "@/components/stat-card";
 import { StatusPill } from "@/components/status-pill";
 import { apiRequest } from "@/lib/api";
 import { formatDate, formatDateTime, toCommaList } from "@/lib/format";
@@ -35,7 +34,7 @@ const defaultProfileForm = {
 
 export default function UserPage() {
   return (
-    <AppShell title="Candidate workspace implemented as a typed React experience." subtitle="Applications, notifications, and profile state in one route">
+    <AppShell>
       <RoleGate roles={["fresher"]}>{() => <CandidateWorkspace />}</RoleGate>
     </AppShell>
   );
@@ -207,11 +206,28 @@ function CandidateWorkspace() {
     <div className="stack">
       <Feedback message={message} tone={tone} />
 
-      <section className="stats-grid">
-        <StatCard label="Profile" value={`${dashboard.user.profile_completion || 0}%`} hint="Completion score from backend profile fields" />
-        <StatCard label="Applications" value={dashboard.applications.length} hint="All platform applications" />
-        <StatCard label="Saved roles" value={dashboard.saved_jobs.length} hint="Saved through backend role-bookmark APIs" />
-        <StatCard label="Notifications" value={dashboard.notification_unread_count} hint="Unread in-app updates" />
+      <section className="panel dashboard-hero-panel">
+        <div className="dashboard-hero-grid">
+          <div className="page-intro">
+            <span className="section-label">Candidate Workspace</span>
+            <h1 className="page-title">Track applications, profile strength, and hiring updates from one candidate workspace.</h1>
+            <p className="muted">Everything from resume uploads to decision timelines stays in one place.</p>
+          </div>
+          <div className="hero-mini-grid">
+            <div className="mini-stat">
+              <span>Profile</span>
+              <strong>{dashboard.user.profile_completion || 0}%</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Applications</span>
+              <strong>{dashboard.applications.length}</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Notifications</span>
+              <strong>{dashboard.notification_unread_count}</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="detail-grid">

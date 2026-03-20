@@ -41,7 +41,7 @@ type ApplicationDraftMap = Record<
 
 export default function CompanyPage() {
   return (
-    <AppShell title="Company workspace with typed analytics, job posting, and pipeline control." subtitle="Recruiter operations on top of the existing Flask APIs">
+    <AppShell>
       <RoleGate roles={["company"]}>{() => <CompanyWorkspace />}</RoleGate>
     </AppShell>
   );
@@ -209,11 +209,28 @@ function CompanyWorkspace() {
     <div className="stack">
       <Feedback message={message} tone={tone} />
 
-      <section className="stats-grid">
-        <StatCard label="Profile" value={`${dashboard.user.profile_completion || 0}%`} hint={dashboard.user.verification_status || "verified"} />
-        <StatCard label="Open jobs" value={dashboard.analytics.open_jobs} hint={`${dashboard.analytics.total_jobs} total jobs`} />
-        <StatCard label="Applicants" value={dashboard.analytics.total_applicants} hint={`${dashboard.overdue_applications || 0} overdue applications`} />
-        <StatCard label="Decision rate" value={formatPercent(dashboard.analytics.decision_rate)} hint={`${dashboard.analytics.sla_breaches} SLA breaches`} />
+      <section className="panel dashboard-hero-panel">
+        <div className="dashboard-hero-grid">
+          <div className="page-intro">
+            <span className="section-label">Recruiter Workspace</span>
+            <h1 className="page-title">Manage listings, pipeline decisions, and recruiter operations from one employer workspace.</h1>
+            <p className="muted">Hiring analytics, job publishing, and applicant actions stay connected.</p>
+          </div>
+          <div className="hero-mini-grid">
+            <div className="mini-stat">
+              <span>Open jobs</span>
+              <strong>{dashboard.analytics.open_jobs}</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Applicants</span>
+              <strong>{dashboard.analytics.total_applicants}</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Decision rate</span>
+              <strong>{formatPercent(dashboard.analytics.decision_rate)}</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="detail-grid">
@@ -283,7 +300,7 @@ function CompanyWorkspace() {
         <div className="row">
           <div className="stack">
             <span className="section-label">Create job</span>
-            <h2>Publish a new role from the React dashboard</h2>
+            <h2>Publish a new role from the employer workspace</h2>
           </div>
         </div>
         <form className="form" onSubmit={handleCreateJob}>

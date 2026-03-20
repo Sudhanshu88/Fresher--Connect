@@ -90,7 +90,7 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <AppShell title="Job detail" subtitle="Typed route backed by /api/jobs/:id">
+      <AppShell>
         <LoadingBlock label="Loading job details..." />
       </AppShell>
     );
@@ -98,14 +98,14 @@ export default function JobDetailPage() {
 
   if (!job) {
     return (
-      <AppShell title="Job detail" subtitle="Typed route backed by /api/jobs/:id">
+      <AppShell>
         <Feedback message={message || "Job not found."} tone="error" />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title={job.title} subtitle={`${job.company_name} - detailed job view`}>
+    <AppShell>
       <section className="hero">
         <section className="panel stack">
           <div className="row">

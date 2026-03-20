@@ -19,7 +19,7 @@ const workflowStatuses = ["applied", "reviewing", "shortlisted", "interview", "o
 
 export default function ApplicationDetailPage() {
   return (
-    <AppShell title="Application timeline" subtitle="Detailed status tracking in the React workspace">
+    <AppShell>
       <RoleGate roles={["fresher", "company"]}>{(user) => <ApplicationWorkspace user={user} />}</RoleGate>
     </AppShell>
   );

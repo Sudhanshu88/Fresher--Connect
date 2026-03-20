@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Fresher Connect",
-  description: "Enterprise hiring workspace for candidates, recruiters, and administrators"
+  description: "Professional hiring platform for candidates, employers, and platform administrators"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

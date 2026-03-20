@@ -5,8 +5,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { Feedback } from "@/components/feedback";
-import { StatCard } from "@/components/stat-card";
-import { apiRequest, resolveApiBase } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { usePlatformStore } from "@/lib/stores/platform-store";
 import type { Review } from "@/lib/types";
@@ -59,7 +58,7 @@ export default function HomePage() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Reviews could not be loaded from the backend.");
+          setMessage("Platform feedback could not be loaded right now.");
         }
       } finally {
         if (active) {
@@ -91,104 +90,155 @@ export default function HomePage() {
       setReviews((current) => [response.review, ...current].slice(0, 6));
       setForm((current) => ({ ...defaultReviewForm, name: current.name, role: current.role }));
       setTone("success");
-      setMessage("Review stored in the backend database.");
+      setMessage("Feedback shared successfully.");
     } catch (_error) {
       setTone("error");
-      setMessage("Review submit failed. Check backend connection and try again.");
+      setMessage("Feedback submit failed. Check the backend connection and try again.");
     }
   }
 
   return (
-    <AppShell
-      title="Structured opportunity discovery for candidates. Efficient hiring operations for employers."
-      subtitle="Hiring journeys designed for both sides"
-    >
-      <section className="hero">
-        <div className="stack">
-          <span className="section-label">Entry-Level Hiring Platform</span>
-          <p className="muted">
-            This frontend is now structured as a scalable React application using Next.js App Router,
-            TypeScript contracts, and Zustand state. The current Flask + MongoDB backend remains the data layer.
+    <AppShell contentClassName="landing-shell">
+      <section className="hero hero-expanded">
+        <div className="hero-copy">
+          <span className="section-label">Professional Hiring Platform</span>
+          <h1>Connect ambitious candidates with trusted employers through one professional hiring experience.</h1>
+          <p>
+            Fresher Connect unifies opportunity discovery, verified employer access, application tracking,
+            and recruiter operations into a single platform designed for credibility, clarity, and scale.
           </p>
+
           <div className="button-row">
-            <Link href="/jobs" className="btn primary">
-              Explore jobs
+            <Link className="btn primary" href="/jobs">
+              Explore opportunities
             </Link>
-            <Link href="/register" className="btn secondary">
-              Create account
+            <Link className="btn ghost" href="/register">
+              Create an account
             </Link>
           </div>
-          <div className="card-grid">
-            <StatCard label="Frontend stack" value="Next.js" hint="App Router, route-level composition, server-ready structure" />
-            <StatCard label="Type safety" value="TypeScript" hint="Typed auth, jobs, applications, dashboards, and analytics" />
-            <StatCard label="Shared state" value="Zustand" hint="Session, dashboards, and role-specific workspace state" />
+
+          <p className="helper-text">
+            Built for credible hiring, transparent decisions, and role-based workflows.
+          </p>
+
+          <div className="trust-row">
+            <span className="trust-pill">Verified employer onboarding</span>
+            <span className="trust-pill">Candidate application tracking</span>
+            <span className="trust-pill">Admin-led governance and moderation</span>
           </div>
         </div>
-        <section className="hero-card stack">
-          <span className="section-label">Migration Scope</span>
-          <h2>Core product routes are now organized as React pages.</h2>
-          <div className="detail-list">
-            <div className="detail-item">
-              <span>Candidate flow</span>
-              <strong>Landing - Opportunities - Sign in/Registration - Workspace - Application detail</strong>
+
+        <section className="hero-card">
+          <span className="section-label">Platform Highlights</span>
+          <h2>Every key workflow lives inside one connected hiring ecosystem.</h2>
+          <p className="muted">
+            From discovery to decision, every touchpoint stays aligned so candidates, recruiters, and admins move faster with less ambiguity.
+          </p>
+          <div className="metric-grid">
+            <div className="metric">
+              <strong>8</strong>
+              <span>Core experience surfaces</span>
             </div>
-            <div className="detail-item">
-              <span>Recruiter flow</span>
-              <strong>Recruiter workspace - Employer branding - Job publishing - Pipeline updates</strong>
+            <div className="metric">
+              <strong>3</strong>
+              <span>Role-based workspaces</span>
             </div>
-            <div className="detail-item">
-              <span>Admin flow</span>
-              <strong>Analytics, audit activity, verification controls, and moderation</strong>
-            </div>
-            <div className="detail-item">
-              <span>API base</span>
-              <strong>{resolveApiBase()}</strong>
+            <div className="metric">
+              <strong>{reviews.length || 6}</strong>
+              <span>Recent community feedback entries</span>
             </div>
           </div>
         </section>
       </section>
 
-      <section className="card-grid">
-        <div className="panel stack">
-          <span className="section-label">Pages</span>
-          <h3>Route groups aligned to product roles</h3>
-          <div className="tag-list">
-            <span className="tag">/jobs</span>
-            <span className="tag">/jobs/[id]</span>
-            <span className="tag">/login</span>
-            <span className="tag">/register</span>
-            <span className="tag">/user</span>
-            <span className="tag">/company</span>
-            <span className="tag">/admin</span>
+      <section className="section">
+        <div className="section-head">
+          <div className="page-intro">
+            <span className="section-label">Platform Overview</span>
+            <h2>Every workspace is aligned for trust, speed, and decision-making.</h2>
+            <p className="muted">
+              Clear hierarchy and consistent language help both candidates and employers move through the platform with confidence.
+            </p>
           </div>
         </div>
-        <div className="panel stack">
-          <span className="section-label">State</span>
-          <h3>Centralized session and dashboard data</h3>
-          <p className="muted">
-            Session hydration, candidate dashboard, company analytics, and admin workspace all flow through a typed Zustand store.
-          </p>
-        </div>
-        <div className="panel stack">
-          <span className="section-label">Migration Path</span>
-          <h3>Static frontend can be retired incrementally</h3>
-          <p className="muted">
-            Existing backend APIs, auth tokens, and storage endpoints are reused so the migration can move page-by-page instead of a hard rewrite.
-          </p>
+
+        <div className="preview-grid">
+          <article className="preview-card">
+            <span className="preview-kicker">Landing</span>
+            <h3>Clear market positioning</h3>
+            <p>Candidates and employers immediately understand the platform value, workflow, and next action.</p>
+          </article>
+          <article className="preview-card">
+            <span className="preview-kicker">Access</span>
+            <h3>Role-based account entry</h3>
+            <p>Separate sign-in and onboarding flows keep candidate, recruiter, and admin access clear.</p>
+          </article>
+          <article className="preview-card">
+            <span className="preview-kicker">Opportunities</span>
+            <h3>Structured opportunity discovery</h3>
+            <p>Search, filter, and compare role requirements before taking action on any listing.</p>
+          </article>
+          <article className="preview-card">
+            <span className="preview-kicker">Application Progress</span>
+            <h3>Transparent hiring updates</h3>
+            <p>Candidates can see the active stage, timeline, and decision context from a dedicated status view.</p>
+          </article>
         </div>
       </section>
 
-      <section className="two-col">
-        <section className="panel stack">
-          <div className="row">
-            <div className="stack">
-              <span className="section-label">Reviews</span>
-              <h2>Store feedback in the backend, not local browser storage.</h2>
-            </div>
+      <section className="section">
+        <div className="section-head">
+          <div className="page-intro">
+            <span className="section-label">Workflow Overview</span>
+            <h2>One professional journey for candidates. One structured workflow for recruiters.</h2>
           </div>
-          <Feedback message={message} tone={tone} />
-          <form className="form" onSubmit={handleSubmit}>
-            <div className="two-col">
+        </div>
+
+        <div className="workflow-grid">
+          <article className="workflow-step">
+            <span className="workflow-number">01</span>
+            <h3>Explore opportunities</h3>
+            <p>Candidates search verified opportunities and move into detailed role views with clear qualification criteria.</p>
+          </article>
+          <article className="workflow-step">
+            <span className="workflow-number">02</span>
+            <h3>Review role expectations</h3>
+            <p>Each listing surfaces employer context, responsibilities, compensation, and the expected hiring path.</p>
+          </article>
+          <article className="workflow-step">
+            <span className="workflow-number">03</span>
+            <h3>Submit and monitor</h3>
+            <p>Applications flow into a dedicated tracking view so candidates always understand their current status.</p>
+          </article>
+          <article className="workflow-step">
+            <span className="workflow-number">04</span>
+            <h3>Recruiters manage decisions</h3>
+            <p>Employers create listings, review talent, and update hiring decisions from a structured recruiter workspace.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="section" id="reviewSection">
+        <div className="section-head">
+          <div className="page-intro">
+            <span className="section-label">Platform Feedback</span>
+            <h2>Share your experience with Fresher Connect.</h2>
+            <p className="muted">
+              Add concise feedback on job discovery, recruiter workflows, or the overall application experience.
+            </p>
+          </div>
+        </div>
+
+        <div className="split-grid review-section-grid">
+          <section className="form-section-card review-form-card">
+            <div className="form-section-head">
+              <span className="preview-kicker">Submit Feedback</span>
+              <h3>Tell us what is working well and where the experience can improve.</h3>
+              <p>Feedback submitted here is saved to the platform and reflected immediately below.</p>
+            </div>
+
+            <Feedback message={message} tone={tone} />
+            <form className="form-grid two-col" onSubmit={handleSubmit}>
               <label className="field">
                 <span>Your name</span>
                 <input
@@ -198,71 +248,73 @@ export default function HomePage() {
                   required
                 />
               </label>
+
               <label className="field">
-                <span>Role</span>
+                <span>I am a</span>
                 <select
                   value={form.role}
                   onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}
                 >
                   <option value="fresher">Candidate</option>
-                  <option value="company">Company</option>
+                  <option value="company">Recruiter</option>
                   <option value="guest">Guest</option>
                 </select>
               </label>
-            </div>
-            <div className="two-col">
+
               <label className="field">
                 <span>Rating</span>
                 <select
                   value={form.rating}
                   onChange={(event) => setForm((current) => ({ ...current, rating: event.target.value }))}
                 >
-                  <option value="5">5 / 5</option>
-                  <option value="4">4 / 5</option>
-                  <option value="3">3 / 5</option>
-                  <option value="2">2 / 5</option>
-                  <option value="1">1 / 5</option>
+                  <option value="5">5 stars</option>
+                  <option value="4">4 stars</option>
+                  <option value="3">3 stars</option>
+                  <option value="2">2 stars</option>
+                  <option value="1">1 star</option>
                 </select>
               </label>
-              <div className="field">
-                <span className="helper">Backend-powered social proof</span>
-                <div className="message">Reviews are loaded from <code>/api/reviews</code>.</div>
-              </div>
-            </div>
-            <label className="field">
-              <span>Review</span>
-              <textarea
-                value={form.review}
-                onChange={(event) => setForm((current) => ({ ...current, review: event.target.value }))}
-                placeholder="Share what is working and what should improve."
-                required
-              />
-            </label>
-            <button className="btn primary" type="submit">
-              Submit review
-            </button>
-          </form>
-        </section>
 
-        <section className="panel stack">
-          <span className="section-label">Latest feedback</span>
-          <h2>Recent reviews from the platform database</h2>
-          {loading ? <div className="empty">Loading reviews...</div> : null}
-          {!loading && !reviews.length ? <div className="empty">No reviews available yet.</div> : null}
-          <div className="list">
-            {reviews.map((review) => (
-              <article className="activity-card stack" key={review.id}>
-                <div className="row">
-                  <strong>{review.name}</strong>
-                  <span className="pill">{review.role}</span>
-                </div>
-                <div className="meta">Rating: {review.rating} / 5</div>
-                <p>{review.review}</p>
-                <span className="helper">{formatDateTime(review.created_at)}</span>
-              </article>
-            ))}
-          </div>
-        </section>
+              <label className="field full-span">
+                <span>Your feedback</span>
+                <textarea
+                  value={form.review}
+                  onChange={(event) => setForm((current) => ({ ...current, review: event.target.value }))}
+                  placeholder="Share your experience with Fresher Connect"
+                  rows={5}
+                  required
+                />
+              </label>
+
+              <button className="btn primary" type="submit">
+                Submit feedback
+              </button>
+            </form>
+          </section>
+
+          <section className="card review-list-shell">
+            <div className="form-section-head">
+              <span className="preview-kicker">Recent Feedback</span>
+              <h3>Latest feedback from the platform community</h3>
+              <p>Candidates, recruiters, and guests can all share concise feedback here.</p>
+            </div>
+            {loading ? <div className="empty-state">Loading feedback...</div> : null}
+            {!loading && !reviews.length ? <div className="empty-state">No feedback available yet.</div> : null}
+            <div className="review-list">
+              {reviews.map((review) => (
+                <article className="activity-card" key={review.id}>
+                  <div className="row">
+                    <strong>{review.name}</strong>
+                    <span className="status-pill applied">{review.role}</span>
+                  </div>
+                  <p>Rating: {review.rating} / 5</p>
+                  <p>{review.review}</p>
+                  <span className="helper">{formatDateTime(review.created_at)}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
       </section>
     </AppShell>
   );

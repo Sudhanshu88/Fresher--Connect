@@ -1,97 +1,245 @@
 "use client";
 
-import { create } from "zustand";
+import { type EntityState } from "@reduxjs/toolkit";
+import { useMemo, useRef } from "react";
 
-import { apiRequest, writeAccessToken } from "@/lib/api";
-import type { AdminDashboard, CompanyDashboard, SessionUser, UserDashboard } from "@/lib/types";
+import {
+  type AuthPayload,
+  applyToJob,
+  hydrateSession,
+  loadAdminDashboard,
+  loadCompanyDashboard,
+  loadJobDetail,
+  loadJobsDirectory,
+  loadSavedJobs,
+  loadUserDashboard,
+  loginAdminUser,
+  loginUser,
+  logoutUser,
+  markNotificationRead,
+  saveJob,
+  unsaveJob,
+  updateCompanyApplication
+} from "@/lib/state/platform-actions";
+import { setUser } from "@/lib/state/session-slice";
+import { useAppDispatch, useAppSelector } from "@/lib/state/store";
+import type {
+  AdminDashboard,
+  Application,
+  CompanyDashboard,
+  Job,
+  JobsDirectoryFilters,
+  NotificationItem,
+  SessionUser,
+  UserDashboard
+} from "@/lib/types";
 
-type PlatformStore = {
+type PlatformStoreFacade = {
   user: SessionUser | null;
+  bootstrapped: boolean;
   userDashboard: UserDashboard | null;
   companyDashboard: CompanyDashboard | null;
   adminDashboard: AdminDashboard | null;
-  bootstrapped: boolean;
+  notifications: NotificationItem[];
+  notificationUnreadCount: number;
+  candidateApplications: Application[];
+  companyApplications: Application[];
+  savedJobs: Job[];
+  savedJobsLoaded: boolean;
   hydrateSession: () => Promise<void>;
-  login: (payload: { email: string; password: string }) => Promise<SessionUser>;
-  loginAdmin: (payload: { email: string; password: string }) => Promise<SessionUser>;
+  login: (payload: AuthPayload) => Promise<SessionUser>;
+  loginAdmin: (payload: AuthPayload) => Promise<SessionUser>;
   logout: () => Promise<void>;
   loadUserDashboard: () => Promise<UserDashboard>;
   loadCompanyDashboard: () => Promise<CompanyDashboard>;
   loadAdminDashboard: () => Promise<AdminDashboard>;
+  loadSavedJobs: () => Promise<void>;
+  markNotificationRead: (notificationId: number) => Promise<void>;
+  applyToJob: (job: Job) => Promise<Application>;
+  saveJob: (job: Job) => Promise<void>;
+  unsaveJob: (job: Job) => Promise<void>;
+  updateCompanyApplication: (payload: {
+    application: Application;
+    status: string;
+    interview_at: string;
+    decision_reason: string;
+  }) => Promise<Application>;
+  loadJobsDirectory: (filters: JobsDirectoryFilters) => Promise<void>;
+  loadJobDetail: (jobId: number | string) => Promise<Job>;
   setUser: (user: SessionUser | null) => void;
 };
 
-type SessionResponse = {
-  ok: boolean;
-  user: SessionUser | null;
-  access_token?: string;
-};
+function orderedValues<T, Id extends string | number>(state: EntityState<T, Id>): T[] {
+  return state.ids
+    .map((id) => state.entities[id])
+    .filter((value): value is T => Boolean(value));
+}
 
-export const usePlatformStore = create<PlatformStore>((set, get) => ({
-  user: null,
-  userDashboard: null,
-  companyDashboard: null,
-  adminDashboard: null,
-  bootstrapped: false,
-  async hydrateSession() {
-    if (get().bootstrapped) {
-      return;
+export function usePlatformStore<T>(selector: (state: PlatformStoreFacade) => T): T {
+  const dispatch = useAppDispatch();
+  const session = useAppSelector((state) => state.session);
+  const notificationsState = useAppSelector((state) => state.notifications);
+  const applicationsState = useAppSelector((state) => state.applications);
+  const jobsState = useAppSelector((state) => state.jobs);
+  const workspacesState = useAppSelector((state) => state.workspaces);
+  const optimisticIdRef = useRef(-1);
+
+  const notifications = useMemo(
+    () => orderedValues(notificationsState),
+    [notificationsState.entities, notificationsState.ids]
+  );
+  const candidateApplications = useMemo(
+    () => orderedValues(applicationsState.candidate),
+    [applicationsState.candidate.entities, applicationsState.candidate.ids]
+  );
+  const companyApplications = useMemo(
+    () => orderedValues(applicationsState.company),
+    [applicationsState.company.entities, applicationsState.company.ids]
+  );
+  const recommendedJobs = useMemo(
+    () => orderedValues(jobsState.recommended),
+    [jobsState.recommended.entities, jobsState.recommended.ids]
+  );
+  const savedJobs = useMemo(
+    () => orderedValues(jobsState.saved),
+    [jobsState.saved.entities, jobsState.saved.ids]
+  );
+  const postedJobs = useMemo(
+    () => orderedValues(jobsState.posted),
+    [jobsState.posted.entities, jobsState.posted.ids]
+  );
+  const moderatedJobs = useMemo(
+    () => orderedValues(jobsState.moderated),
+    [jobsState.moderated.entities, jobsState.moderated.ids]
+  );
+
+  const userDashboard = useMemo<UserDashboard | null>(() => {
+    if (!workspacesState.userDashboardMeta) {
+      return null;
     }
-    try {
-      const session = await apiRequest<SessionResponse>("/api/session");
-      set({ user: session.user, bootstrapped: true });
-    } catch (_error) {
-      set({ user: null, bootstrapped: true });
+
+    return {
+      ...workspacesState.userDashboardMeta,
+      jobs: recommendedJobs,
+      saved_jobs: savedJobs,
+      applications: candidateApplications,
+      notifications,
+      notification_unread_count: notificationsState.unreadCount
+    };
+  }, [
+    candidateApplications,
+    notifications,
+    notificationsState.unreadCount,
+    recommendedJobs,
+    savedJobs,
+    workspacesState.userDashboardMeta
+  ]);
+
+  const companyDashboard = useMemo<CompanyDashboard | null>(() => {
+    if (!workspacesState.companyDashboardMeta) {
+      return null;
     }
-  },
-  async login(payload) {
-    const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/login", {
-      method: "POST",
-      body: payload
-    });
-    writeAccessToken(response.access_token);
-    set({ user: response.user, bootstrapped: true });
-    return response.user as SessionUser;
-  },
-  async loginAdmin(payload) {
-    const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/admin/login", {
-      method: "POST",
-      body: payload
-    });
-    writeAccessToken(response.access_token);
-    set({ user: response.user, bootstrapped: true });
-    return response.user as SessionUser;
-  },
-  async logout() {
-    try {
-      await apiRequest("/api/auth/logout", { method: "POST" });
-    } finally {
-      writeAccessToken("");
-      set({
-        user: null,
-        userDashboard: null,
-        companyDashboard: null,
-        adminDashboard: null,
-        bootstrapped: true
-      });
+
+    return {
+      ...workspacesState.companyDashboardMeta,
+      posted_jobs: postedJobs,
+      applications: companyApplications
+    };
+  }, [companyApplications, postedJobs, workspacesState.companyDashboardMeta]);
+
+  const adminDashboard = useMemo<AdminDashboard | null>(() => {
+    if (!workspacesState.adminDashboardMeta) {
+      return null;
     }
-  },
-  async loadUserDashboard() {
-    const dashboard = await apiRequest<UserDashboard>("/api/user/dashboard");
-    set({ userDashboard: dashboard, user: dashboard.user });
-    return dashboard;
-  },
-  async loadCompanyDashboard() {
-    const dashboard = await apiRequest<CompanyDashboard>("/api/company/dashboard");
-    set({ companyDashboard: dashboard, user: dashboard.user });
-    return dashboard;
-  },
-  async loadAdminDashboard() {
-    const dashboard = await apiRequest<AdminDashboard>("/api/admin/dashboard");
-    set({ adminDashboard: dashboard, user: dashboard.user });
-    return dashboard;
-  },
-  setUser(user) {
-    set({ user });
-  }
-}));
+
+    return {
+      ...workspacesState.adminDashboardMeta,
+      jobs: moderatedJobs
+    };
+  }, [moderatedJobs, workspacesState.adminDashboardMeta]);
+
+  const actions = useMemo(
+    () => ({
+      hydrateSession: async () => {
+        await dispatch(hydrateSession()).unwrap();
+      },
+      login: (payload: AuthPayload) => dispatch(loginUser(payload)).unwrap(),
+      loginAdmin: (payload: AuthPayload) => dispatch(loginAdminUser(payload)).unwrap(),
+      logout: async () => {
+        await dispatch(logoutUser()).unwrap();
+      },
+      loadUserDashboard: () => dispatch(loadUserDashboard()).unwrap(),
+      loadCompanyDashboard: () => dispatch(loadCompanyDashboard()).unwrap(),
+      loadAdminDashboard: () => dispatch(loadAdminDashboard()).unwrap(),
+      loadSavedJobs: async () => {
+        await dispatch(loadSavedJobs()).unwrap();
+      },
+      markNotificationRead: async (notificationId: number) => {
+        await dispatch(markNotificationRead({ notificationId })).unwrap();
+      },
+      applyToJob: async (job: Job) => {
+        const optimisticId = optimisticIdRef.current;
+        optimisticIdRef.current -= 1;
+        const response = await dispatch(applyToJob({ job, optimisticId })).unwrap();
+        return response.application;
+      },
+      saveJob: async (job: Job) => {
+        await dispatch(saveJob({ job })).unwrap();
+      },
+      unsaveJob: async (job: Job) => {
+        await dispatch(unsaveJob({ job })).unwrap();
+      },
+      updateCompanyApplication: async (payload: {
+        application: Application;
+        status: string;
+        interview_at: string;
+        decision_reason: string;
+      }) => {
+        const response = await dispatch(updateCompanyApplication(payload)).unwrap();
+        return response.application;
+      },
+      loadJobsDirectory: async (filters: JobsDirectoryFilters) => {
+        await dispatch(loadJobsDirectory(filters)).unwrap();
+      },
+      loadJobDetail: (jobId: number | string) => dispatch(loadJobDetail({ jobId })).unwrap(),
+      setUser: (user: SessionUser | null) => {
+        dispatch(setUser(user));
+      }
+    }),
+    [dispatch]
+  );
+
+  const facade = useMemo(
+    () =>
+      ({
+        user: session.user,
+        bootstrapped: session.bootstrapped,
+        userDashboard,
+        companyDashboard,
+        adminDashboard,
+        notifications,
+        notificationUnreadCount: notificationsState.unreadCount,
+        candidateApplications,
+        companyApplications,
+        savedJobs,
+        savedJobsLoaded: jobsState.savedLoaded,
+        ...actions
+      }) satisfies PlatformStoreFacade,
+    [
+      actions,
+      adminDashboard,
+      candidateApplications,
+      companyApplications,
+      companyDashboard,
+      jobsState.savedLoaded,
+      notifications,
+      notificationsState.unreadCount,
+      savedJobs,
+      session.bootstrapped,
+      session.user,
+      userDashboard
+    ]
+  );
+
+  return selector(facade);
+}

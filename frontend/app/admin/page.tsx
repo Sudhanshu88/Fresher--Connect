@@ -6,7 +6,6 @@ import { AppShell } from "@/components/app-shell";
 import { Feedback } from "@/components/feedback";
 import { LoadingBlock } from "@/components/loading-block";
 import { RoleGate } from "@/components/role-gate";
-import { StatCard } from "@/components/stat-card";
 import { StatusPill } from "@/components/status-pill";
 import { apiRequest } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -29,7 +28,7 @@ type JobDraftMap = Record<
 
 export default function AdminPage() {
   return (
-    <AppShell title="Admin workspace for company verification, moderation, and audit visibility." subtitle="Typed control layer over company review and platform policy">
+    <AppShell>
       <RoleGate roles={["admin"]}>{() => <AdminWorkspace />}</RoleGate>
     </AppShell>
   );
@@ -176,11 +175,28 @@ function AdminWorkspace() {
     <div className="stack">
       <Feedback message={message} tone={tone} />
 
-      <section className="stats-grid">
-        <StatCard label="Users" value={analyticsNumber("users")} hint={`${analyticsNumber("admins")} admins`} />
-        <StatCard label="Candidates" value={analyticsNumber("candidates")} hint={`${analyticsNumber("companies")} companies`} />
-        <StatCard label="Active jobs" value={analyticsNumber("active_jobs")} hint={`${analyticsNumber("moderated_jobs")} moderated`} />
-        <StatCard label="Applications" value={analyticsNumber("applications")} hint={`${analyticsNumber("saved_jobs")} saved jobs`} />
+      <section className="panel dashboard-hero-panel">
+        <div className="dashboard-hero-grid">
+          <div className="page-intro">
+            <span className="section-label">Admin Workspace</span>
+            <h1 className="page-title">Moderate the platform, verify employers, and review audit activity from one admin workspace.</h1>
+            <p className="muted">Governance controls for employer access, listing quality, and platform health.</p>
+          </div>
+          <div className="hero-mini-grid">
+            <div className="mini-stat">
+              <span>Total accounts</span>
+              <strong>{analyticsNumber("users")}</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Active listings</span>
+              <strong>{analyticsNumber("active_jobs")}</strong>
+            </div>
+            <div className="mini-stat">
+              <span>Applications</span>
+              <strong>{analyticsNumber("applications")}</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="panel stack">
@@ -250,7 +266,7 @@ function AdminWorkspace() {
                     </td>
                     <td>
                       <button
-                        className="btn secondary"
+                        className="btn secondary compact-btn"
                         type="button"
                         disabled={savingUserId === userId}
                         onClick={() => void handleSaveUser(userId)}
@@ -331,7 +347,7 @@ function AdminWorkspace() {
                     <td>{job.application_count || 0}</td>
                     <td>
                       <button
-                        className="btn secondary"
+                        className="btn secondary compact-btn"
                         type="button"
                         disabled={savingJobId === job.id}
                         onClick={() => void handleSaveJob(job.id)}

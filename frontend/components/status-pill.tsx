@@ -15,6 +15,10 @@ function statusTone(value?: string | null) {
 }
 
 export function StatusPill({ value }: { value?: string | null }) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
   const tone = statusTone(value);
-  return <span className={`pill${tone ? ` ${tone}` : ""}`}>{normalizeStatusLabel(value)}</span>;
+  return <span className={`status-pill ${normalized}${tone ? ` ${tone}` : ""}`.trim()}>{normalizeStatusLabel(value)}</span>;
 }

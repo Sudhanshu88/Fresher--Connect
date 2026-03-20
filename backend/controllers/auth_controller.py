@@ -144,6 +144,7 @@ def register_account():
         skills=parse_skills(payload.get("skills")),
         education=education,
         experience=str(payload.get("experience") or "fresher").strip(),
+        profile_photo=str(payload.get("profile_photo") or payload.get("photo_url") or "").strip(),
         resume_url=str(payload.get("resume_url") or payload.get("resume_path") or "").strip(),
         linkedin=str(payload.get("linkedin") or "").strip(),
         portfolio=str(payload.get("portfolio") or "").strip(),
