@@ -70,7 +70,7 @@
       return normalizeBase(window.location.origin);
     }
 
-    return "http://127.0.0.1:5000";
+    return "https://fresher-connect-2.onrender.com";
   }
 
   var state = {
