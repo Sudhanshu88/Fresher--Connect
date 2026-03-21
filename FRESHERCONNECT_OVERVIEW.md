@@ -196,7 +196,7 @@ Note: runtime database MongoDB hai, lekin SQL file documentation/reference ke ka
 
 ## 8. Dockerfile / YAML
 
-**Kahan use hui hai:** `docker/`, `backend/Dockerfile.backend`, `frontend/Dockerfile.frontend`
+**Kahan use hui hai:** `docker/`, `backend/Dockerfile`, `frontend/Dockerfile`
 
 **Kyu use hui hai:**
 

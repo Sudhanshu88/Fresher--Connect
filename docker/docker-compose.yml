@@ -17,8 +17,8 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: backend/Dockerfile.backend
+      context: ../backend
+      dockerfile: Dockerfile
     container_name: fresher-connect-backend
     depends_on:
       mongodb:
@@ -53,8 +53,8 @@ services:
 
   frontend:
     build:
-      context: ..
-      dockerfile: frontend/Dockerfile.frontend
+      context: ../frontend
+      dockerfile: Dockerfile
     container_name: fresher-connect-frontend
     depends_on:
       backend:
@@ -63,7 +63,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/index.html"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3

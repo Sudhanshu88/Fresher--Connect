@@ -18,7 +18,7 @@ Fresher--Connect
 |   |-- app.py
 |   |-- server.py
 |   |-- requirements.txt
-|   `-- Dockerfile.backend
+|   `-- Dockerfile
 |-- frontend
 |   |-- app
 |   |-- components
@@ -26,7 +26,7 @@ Fresher--Connect
 |   |-- public
 |   |-- package.json
 |   |-- .env.example
-|   `-- Dockerfile.frontend
+|   `-- Dockerfile
 |-- database
 |   |-- init.js
 |   `-- schema.sql
@@ -154,14 +154,16 @@ Shared Docker assets:
 Backend image:
 
 ```bash
-docker build -f backend/Dockerfile.backend -t fresher-connect-backend .
+cd backend
+docker build -t fresher-connect-backend .
 docker run -p 5000:5000 -e MONGODB_URI=mongodb://host.docker.internal:27017/fresher_connect fresher-connect-backend
 ```
 
 Frontend image:
 
 ```bash
-docker build -f frontend/Dockerfile.frontend -t fresher-connect-frontend .
+cd frontend
+docker build -t fresher-connect-frontend .
 docker run -p 3000:3000 fresher-connect-frontend
 ```
 

@@ -1,20 +1,15 @@
 FROM node:20-alpine AS builder
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 
 RUN npm ci --include=dev
 
-COPY frontend/app ./app
-COPY frontend/components ./components
-COPY frontend/lib ./lib
-COPY frontend/public ./public
-COPY frontend/next-env.d.ts ./next-env.d.ts
-COPY frontend/next.config.ts ./next.config.ts
-COPY frontend/tsconfig.json ./tsconfig.json
+COPY . .
 
 RUN npm run build
 
@@ -22,6 +17,7 @@ RUN npm run build
 FROM node:20-alpine AS runner
 
 ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
@@ -30,6 +26,12 @@ WORKDIR /app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+
+RUN addgroup --system nextjs \
+    && adduser --system --ingroup nextjs --home /app nextjs \
+    && chown -R nextjs:nextjs /app
+
+USER nextjs
 
 EXPOSE 3000
 

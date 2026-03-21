@@ -13,10 +13,10 @@ WORKDIR /app
 
 RUN python -m venv "$VIRTUAL_ENV"
 
-COPY backend/requirements.txt ./backend/requirements.txt
+COPY requirements.txt ./requirements.txt
 
 RUN pip install --upgrade pip \
-    && pip install -r backend/requirements.txt
+    && pip install -r requirements.txt
 
 
 FROM python:3.11-slim AS runtime
@@ -32,7 +32,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY --from=builder "$VIRTUAL_ENV" "$VIRTUAL_ENV"
-COPY backend ./backend
+COPY . ./backend
 
 RUN addgroup --system app \
     && adduser --system --ingroup app --home /app app \
