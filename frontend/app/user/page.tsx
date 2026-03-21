@@ -66,7 +66,7 @@ function CandidateWorkspace() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Candidate dashboard could not be loaded.");
+          setMessage("We couldn't open your career dashboard right now.");
         }
       } finally {
         if (active) {
@@ -122,10 +122,10 @@ function CandidateWorkspace() {
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("Profile updated.");
+      setMessage("Your profile has been updated successfully.");
     } catch (_error) {
       setTone("error");
-      setMessage("Profile update failed.");
+      setMessage("We couldn't save your profile changes. Please try again.");
     } finally {
       setSavingProfile(false);
     }
@@ -134,7 +134,7 @@ function CandidateWorkspace() {
   async function handleResumeUpload() {
     if (!resumeFile) {
       setTone("error");
-      setMessage("Choose a resume file before uploading.");
+      setMessage("Please choose a resume before uploading.");
       return;
     }
 
@@ -151,10 +151,10 @@ function CandidateWorkspace() {
       await refreshDashboard();
       setResumeFile(null);
       setTone("success");
-      setMessage("Resume uploaded and parsed.");
+      setMessage("Your resume is live and ready for future applications.");
     } catch (_error) {
       setTone("error");
-      setMessage("Resume upload failed.");
+      setMessage("We couldn't upload your resume. Please try again.");
     } finally {
       setUploadingResume(false);
     }
@@ -167,10 +167,10 @@ function CandidateWorkspace() {
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("Notification marked as read.");
+      setMessage("Notification marked as reviewed.");
     } catch (_error) {
       setTone("error");
-      setMessage("Notification update failed.");
+      setMessage("We couldn't update that notification right now.");
     }
   }
 
@@ -185,21 +185,21 @@ function CandidateWorkspace() {
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("Application submitted.");
+      setMessage("Application submitted successfully. We'll keep you updated at every stage.");
     } catch (_error) {
       setTone("error");
-      setMessage("Application could not be created.");
+      setMessage("We couldn't submit your application. Please try again in a moment.");
     } finally {
       setApplyingJobId(null);
     }
   }
 
   if (loading && !dashboard) {
-    return <LoadingBlock label="Loading candidate workspace..." />;
+    return <LoadingBlock label="Loading your career dashboard..." />;
   }
 
   if (!dashboard) {
-    return <Feedback message={message || "Candidate dashboard unavailable."} tone="error" />;
+    return <Feedback message={message || "Your career dashboard is currently unavailable."} tone="error" />;
   }
 
   return (
@@ -209,13 +209,13 @@ function CandidateWorkspace() {
       <section className="panel dashboard-hero-panel">
         <div className="dashboard-hero-grid">
           <div className="page-intro">
-            <span className="section-label">Candidate Workspace</span>
-            <h1 className="page-title">Track applications, profile strength, and hiring updates from one candidate workspace.</h1>
-            <p className="muted">Everything from resume uploads to decision timelines stays in one place.</p>
+            <span className="section-label">Career Dashboard</span>
+            <h1 className="page-title">Stay ahead of every opportunity, application, and recruiter update.</h1>
+            <p className="muted">Your profile, resume, job matches, and hiring progress are organized in one professional workspace.</p>
           </div>
           <div className="hero-mini-grid">
             <div className="mini-stat">
-              <span>Profile</span>
+              <span>Profile strength</span>
               <strong>{dashboard.user.profile_completion || 0}%</strong>
             </div>
             <div className="mini-stat">
@@ -223,7 +223,7 @@ function CandidateWorkspace() {
               <strong>{dashboard.applications.length}</strong>
             </div>
             <div className="mini-stat">
-              <span>Notifications</span>
+              <span>Unread updates</span>
               <strong>{dashboard.notification_unread_count}</strong>
             </div>
           </div>
@@ -234,12 +234,12 @@ function CandidateWorkspace() {
         <section className="panel stack">
           <div className="row">
             <div className="stack">
-              <span className="section-label">Profile</span>
+              <span className="section-label">Professional Profile</span>
               <h2>{dashboard.user.name}</h2>
             </div>
             {dashboard.user.resume_url ? (
               <a className="btn secondary" href={dashboard.user.resume_url} target="_blank" rel="noreferrer">
-                Open resume
+                View Resume
               </a>
             ) : null}
           </div>
@@ -268,7 +268,7 @@ function CandidateWorkspace() {
         </section>
 
         <section className="panel stack">
-          <span className="section-label">Profile editor</span>
+          <span className="section-label">Profile Editor</span>
           <form className="form" onSubmit={handleSaveProfile}>
             <div className="two-col">
               <label className="field">
@@ -354,14 +354,14 @@ function CandidateWorkspace() {
               />
             </label>
             <button className="btn primary" type="submit" disabled={savingProfile}>
-              {savingProfile ? "Saving..." : "Save profile"}
+              {savingProfile ? "Saving changes..." : "Save Profile Changes"}
             </button>
           </form>
           <div className="field">
-            <span>Upload resume</span>
+            <span>Resume Upload</span>
             <input type="file" accept=".pdf,.doc,.docx" onChange={(event) => setResumeFile(event.target.files?.[0] || null)} />
             <button className="btn secondary" type="button" disabled={uploadingResume} onClick={() => void handleResumeUpload()}>
-              {uploadingResume ? "Uploading..." : "Upload resume"}
+              {uploadingResume ? "Uploading resume..." : "Upload Resume"}
             </button>
           </div>
         </section>
@@ -371,10 +371,10 @@ function CandidateWorkspace() {
         <div className="row">
           <div className="stack">
             <span className="section-label">Applications</span>
-            <h2>Track every hiring stage from one view</h2>
+            <h2>Track every hiring stage from one clear timeline</h2>
           </div>
         </div>
-        {!dashboard.applications.length ? <div className="empty">No applications yet.</div> : null}
+        {!dashboard.applications.length ? <div className="empty">No applications yet. Start with a verified opportunity that fits your goals.</div> : null}
         <div className="table-wrap">
           <table>
             <thead>
@@ -402,7 +402,7 @@ function CandidateWorkspace() {
                   <td>{formatDateTime(application.interview_at)}</td>
                   <td>
                     <Link href={applicationPath(application.id)} className="btn secondary">
-                      Open timeline
+                      View Timeline
                     </Link>
                   </td>
                 </tr>
@@ -415,8 +415,8 @@ function CandidateWorkspace() {
       <section className="two-col">
         <section className="panel stack">
           <span className="section-label">Notifications</span>
-          <h2>Recent updates</h2>
-          {!dashboard.notifications.length ? <div className="empty">No notifications available.</div> : null}
+          <h2>Recent hiring updates</h2>
+          {!dashboard.notifications.length ? <div className="empty">No updates yet. Recruiter activity and reminders will appear here.</div> : null}
           <div className="list">
             {dashboard.notifications.map((notification) => (
               <article className="activity-card stack" key={notification.id}>
@@ -433,7 +433,7 @@ function CandidateWorkspace() {
                       type="button"
                       onClick={() => void handleMarkNotificationRead(notification.id)}
                     >
-                      Mark read
+                      Mark as Read
                     </button>
                   ) : null}
                 </div>
@@ -443,9 +443,9 @@ function CandidateWorkspace() {
         </section>
 
         <section className="panel stack">
-          <span className="section-label">Recommended jobs</span>
-          <h2>Continue browsing without leaving the dashboard</h2>
-          {!dashboard.jobs.length ? <div className="empty">No recommended jobs available.</div> : null}
+          <span className="section-label">Recommended Opportunities</span>
+          <h2>Keep momentum with roles matched to your profile</h2>
+          {!dashboard.jobs.length ? <div className="empty">No recommended opportunities are available yet.</div> : null}
           <div className="list">
             {dashboard.jobs.slice(0, 3).map((job) => (
               <JobCard
@@ -458,7 +458,7 @@ function CandidateWorkspace() {
                     disabled={applyingJobId === job.id}
                     onClick={() => void handleApply(job.id)}
                   >
-                    {applyingJobId === job.id ? "Applying..." : "Apply"}
+                    {applyingJobId === job.id ? "Submitting..." : "Apply Now"}
                   </button>
                 }
               />
@@ -466,7 +466,7 @@ function CandidateWorkspace() {
           </div>
           {dashboard.saved_jobs.length ? (
             <div className="stack">
-              <span className="section-label">Saved roles</span>
+              <span className="section-label">Saved Opportunities</span>
               <div className="tag-list">
                 {dashboard.saved_jobs.slice(0, 6).map((job) => (
                   <Link className="tag" href={jobPath(job.id)} key={job.id}>

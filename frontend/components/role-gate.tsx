@@ -38,7 +38,7 @@ export function RoleGate({
   }, [bootstrapped, roles, router, user]);
 
   if (!bootstrapped || !user || !roles.includes(user.role)) {
-    return <LoadingBlock label="Checking session..." />;
+    return <LoadingBlock label="Verifying secure access..." />;
   }
 
   return <>{children(user)}</>;

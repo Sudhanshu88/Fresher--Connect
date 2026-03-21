@@ -51,12 +51,12 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
         if (active) {
           setApplication(resolved);
           if (!resolved) {
-            setMessage("Application not found in the current workspace.");
+            setMessage("We couldn't find this application in your current workspace.");
           }
         }
       } catch (_error) {
         if (active) {
-          setMessage("Application detail could not be loaded.");
+          setMessage("We couldn't load this application timeline right now.");
         }
       } finally {
         if (active) {
@@ -72,11 +72,11 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
   }, [loadCompanyDashboard, params.id, user.role]);
 
   if (loading) {
-    return <LoadingBlock label="Loading application detail..." />;
+    return <LoadingBlock label="Loading your application timeline..." />;
   }
 
   if (!application) {
-    return <Feedback message={message || "Application not found."} tone="error" />;
+    return <Feedback message={message || "This application is not available right now."} tone="error" />;
   }
 
   return (
@@ -92,10 +92,10 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
           </div>
           <div className="button-row">
             <Link href={dashboardPath(user.role)} className="btn secondary">
-              Back to dashboard
+              Back to Workspace
             </Link>
             <Link href={jobPath(application.job.id)} className="btn secondary">
-              Open job
+              View Opportunity
             </Link>
           </div>
           <div className="detail-list">
@@ -119,7 +119,7 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
         </section>
 
         <section className="hero-card stack">
-          <span className="section-label">Timeline</span>
+          <span className="section-label">Application Timeline</span>
           <div className="timeline">
             {workflowStatuses.map((status) => {
               const currentIndex = workflowStatuses.indexOf(application.status);
@@ -149,7 +149,7 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
       <section className="detail-grid">
         {user.role === "company" ? (
           <section className="panel stack">
-            <span className="section-label">Candidate</span>
+            <span className="section-label">Candidate Snapshot</span>
             <div className="detail-list">
               <div className="detail-item">
                 <span>Name</span>
@@ -172,11 +172,11 @@ function ApplicationWorkspace({ user }: { user: SessionUser }) {
         ) : null}
 
         <section className="panel stack">
-          <span className="section-label">Job context</span>
+          <span className="section-label">Opportunity Context</span>
           <div className="detail-list">
             <div className="detail-item">
               <span>Location</span>
-              <strong>{application.job.location || "Flexible"}</strong>
+              <strong>{application.job.location || "Location flexible"}</strong>
             </div>
             <div className="detail-item">
               <span>Mode</span>

@@ -12,55 +12,55 @@ import { usePlatformStore } from "@/lib/stores/platform-store";
 const roleContent = {
   fresher: {
     label: "Candidate Sign In",
-    title: "Return to your hiring journey with full visibility.",
-    description: "Access live opportunities, saved roles, and application progress from one professional workspace.",
-    summary: "Use your candidate account to continue exploring roles and monitoring every application milestone.",
-    noteTitle: "Candidate workspace",
-    noteBody: "Continue from saved roles, recent applications, and your latest hiring updates.",
+    title: "Return to your search with complete visibility.",
+    description: "Review verified openings, saved opportunities, and live application progress from one organized career dashboard.",
+    summary: "Use your candidate account to continue exploring opportunities, monitoring updates, and presenting yourself professionally.",
+    noteTitle: "Candidate access",
+    noteBody: "Continue exploring roles, tracking recruiter updates, and building momentum toward your next opportunity.",
     featureA: {
-      kicker: "Candidate Workspace",
-      title: "Search, submit, track",
-      body: "Review verified opportunities, submit applications, and monitor progress from one workspace."
+      kicker: "Career Momentum",
+      title: "Discover better-fit opportunities",
+      body: "Review verified roles faster and focus your time on openings that truly match your strengths."
     },
     featureB: {
-      kicker: "Application Progress",
-      title: "Stay informed at every stage",
-      body: "See where each application stands and what action, if any, is required next."
+      kicker: "Application Clarity",
+      title: "Track every recruiter response",
+      body: "Stay informed at each stage so you always know what comes next and when to act."
     },
     flowPoints: [
-      "Opportunity discovery remains available before sign-in.",
-      "Application tracking becomes available after account access is confirmed.",
-      "Authentication and session controls stay protected through the platform API."
+      "Browse verified roles before signing in, then unlock faster applications once your account is active.",
+      "Saved opportunities, application timelines, and profile tools remain connected in one place.",
+      "Secure session controls protect your account while keeping access simple and professional."
     ],
     registerHref: "/register",
-    registerText: "Create a candidate account",
-    submitText: "Sign in as candidate"
+    registerText: "Build your career profile",
+    submitText: "Continue to Career Dashboard"
   },
   company: {
-    label: "Company Sign In",
-    title: "Return to your recruiter workspace and move hiring decisions forward.",
-    description: "Verified company accounts unlock job listing creation, applicant review, and hiring pipeline management in one workspace.",
-    summary: "Use your verified company account to publish opportunities, review candidate profiles, and update every hiring stage.",
-    noteTitle: "Recruiter workspace",
-    noteBody: "Create listings, review candidates, and manage hiring decisions after admin verification.",
+    label: "Employer Sign In",
+    title: "Return to your hiring workflow with confidence.",
+    description: "Verified employer accounts unlock job posting, candidate review, and structured hiring decisions from one professional workspace.",
+    summary: "Use your employer account to publish opportunities, evaluate talent, and move every hiring stage forward with clarity.",
+    noteTitle: "Employer access",
+    noteBody: "Create opportunities, review candidates, and keep recruiters aligned after account verification is complete.",
     featureA: {
-      kicker: "Recruiter Workspace",
-      title: "Create and manage listings",
-      body: "Launch structured job listings, keep employer details consistent, and stay ready for new applicants."
+      kicker: "Hiring Efficiency",
+      title: "Publish roles with consistency",
+      body: "Launch polished opportunities quickly while keeping employer branding and job expectations aligned."
     },
     featureB: {
-      kicker: "Candidate Pipeline",
-      title: "Review and update talent",
-      body: "Move applicants between stages, collaborate around decisions, and keep the hiring team aligned."
+      kicker: "Pipeline Visibility",
+      title: "Move talent forward decisively",
+      body: "Review applicants, update stages, and keep your hiring team informed without scattered communication."
     },
     flowPoints: [
-      "Only admin-verified company accounts can access the recruiter workspace.",
-      "Unauthenticated access returns to the dedicated company sign-in path.",
-      "Authentication and session controls stay protected through the platform API."
+      "Only verified employer accounts can enter the hiring workspace and manage live opportunities.",
+      "Job publishing, applicant review, and stage updates stay connected inside one secure operating flow.",
+      "Protected session controls help your team move quickly without compromising access integrity."
     ],
     registerHref: "/register?role=company",
-    registerText: "Create a company account",
-    submitText: "Sign in to recruiter workspace"
+    registerText: "Create an employer account",
+    submitText: "Enter Hiring Workspace"
   }
 } as const;
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
       fallback={
         <main className="auth-shell">
           <section className="auth-card auth-card-strong">
-            <div className="empty-state">Loading sign-in experience...</div>
+            <div className="empty-state">Preparing secure sign-in...</div>
           </section>
         </main>
       }
@@ -120,11 +120,11 @@ function LoginPageContent() {
       const nextPath = searchParams.get("next");
       const sessionUser = await login(form);
       setTone("success");
-      setMessage("Sign-in successful. Redirecting to your workspace.");
+      setMessage("Welcome back. Your workspace is ready.");
       router.push(nextPath || dashboardPath(sessionUser.role));
     } catch (_error) {
       setTone("error");
-      setMessage("Sign-in failed. Check your email, password, and backend availability.");
+      setMessage("We couldn't sign you in. Please confirm your credentials and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +174,7 @@ function LoginPageContent() {
           </div>
 
           <section className="card auth-note-card">
-            <span className="section-label">Access Flow</span>
+            <span className="section-label">What You Can Do</span>
             <div className="detail-list">
               {content.flowPoints.map((point) => (
                 <div className="detail-item" key={point}>
@@ -196,27 +196,27 @@ function LoginPageContent() {
           <Feedback message={message} tone={tone} />
           <form className="form-grid" onSubmit={handleSubmit}>
             <label className="field">
-              <span>Email</span>
+              <span>Professional Email Address</span>
               <input
                 type="email"
                 value={form.email}
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                placeholder="name@example.com"
+                placeholder="you@example.com"
                 required
               />
             </label>
             <label className="field">
-              <span>Password</span>
+              <span>Secure Password</span>
               <input
                 type="password"
                 value={form.password}
                 onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                placeholder="Enter password"
+                placeholder="Enter your password"
                 required
               />
             </label>
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "Signing in..." : content.submitText}
+              {submitting ? "Signing you in..." : content.submitText}
             </button>
           </form>
 
@@ -230,7 +230,7 @@ function LoginPageContent() {
           <div className="auth-inline-meta">
             <span>Platform administrator?</span>
             <Link href="/admin/login" className="text-link">
-              Use the admin sign-in
+              Use the governance sign in
             </Link>
           </div>
         </>

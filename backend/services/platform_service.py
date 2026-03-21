@@ -809,13 +809,13 @@ def seed_database(store):
                 "name": "Aarav",
                 "role": "fresher",
                 "rating": 5,
-                "review": "Job listing se apply flow tak sab pages connected feel hote hain, isliye tracking easy ho gayi.",
+                "review": "Fresher Connect gave me a far more confident start to my job search because every role felt verified, professional, and easy to track.",
             },
             {
                 "name": "Nisha",
                 "role": "company",
                 "rating": 4,
-                "review": "The recruiter workspace and applicant review workflow are structured and easy to manage.",
+                "review": "The recruiter workspace helped our team move faster with clearer candidate context and a much more organized review flow.",
             },
         ]
 

@@ -59,7 +59,7 @@ export function AuthShell({
                   <path d="M12 3a14.5 14.5 0 0 1 0 18" />
                   <path d="M12 3a14.5 14.5 0 0 0 0 18" />
                 </svg>
-                <span>Blog</span>
+                <span>Opportunities</span>
               </Link>
 
               <span className="auth-utility-divider" aria-hidden="true" />
@@ -69,19 +69,19 @@ export function AuthShell({
                   <path d="M7 7h10l1 11H6L7 7Z" />
                   <path d="M9 7a3 3 0 1 1 6 0" />
                 </svg>
-                <span>Pricing</span>
+                <span>Hiring Teams</span>
               </Link>
 
               <Link className="auth-utility-item auth-utility-pill" href="/">
-                Help
+                Support
               </Link>
 
               <div className="button-row auth-utility-cta">
                 <Link className="btn ghost compact-btn auth-signin-btn" href={signInHref}>
-                  Sign in
+                  Sign In
                 </Link>
                 <Link className="btn primary compact-btn auth-signup-btn" href={createAccountHref}>
-                  Sign up
+                  Get Started
                 </Link>
               </div>
             </div>

@@ -8,9 +8,9 @@ import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
 
 const links = [
-  { href: "/jobs", label: "Jobs" },
+  { href: "/jobs", label: "Opportunities" },
   { href: "/register", label: "Candidates" },
-  { href: "/login?role=company", label: "Employers" },
+  { href: "/login?role=company", label: "Hiring Teams" },
   { href: "/admin/login", label: "Admin" }
 ];
 
@@ -62,7 +62,7 @@ export function AppShell({
             </span>
             <span>
               <span className="brand-title">Fresher Connect</span>
-              <span className="brand-sub">Enterprise talent marketplace</span>
+              <span className="brand-sub">Early-career hiring, elevated</span>
             </span>
           </Link>
           <div className="header-inline-tools">
@@ -79,18 +79,18 @@ export function AppShell({
             </nav>
             <form className="header-search" onSubmit={handleSearch} role="search">
               <label className="sr-only" htmlFor="headerSearch">
-                Search roles, skills, or employers
+                Search opportunities, skills, or employers
               </label>
               <input
                 className="header-search-input"
                 id="headerSearch"
                 name="search"
                 type="search"
-                placeholder="Search roles, skills, or employers"
+                placeholder="Search opportunities, skills, or employers"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
-              <button className="header-search-button" type="submit" aria-label="Search roles">
+              <button className="header-search-button" type="submit" aria-label="Search opportunities">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="11" cy="11" r="6" />
                   <path d="m20 20-4.35-4.35" />
@@ -101,7 +101,7 @@ export function AppShell({
               {user ? (
                 <>
                   <Link href={dashboardPath(user.role)} className="btn primary compact-btn">
-                    Workspace
+                    Open Workspace
                   </Link>
                   <button
                     className="btn ghost compact-btn"
@@ -111,16 +111,16 @@ export function AppShell({
                       router.push("/");
                     }}
                   >
-                    Sign out
+                    Sign Out
                   </button>
                 </>
               ) : (
                 <>
                   <Link href="/login" className="btn ghost compact-btn">
-                    Sign in
+                    Sign In
                   </Link>
                   <Link href="/register" className="btn primary compact-btn">
-                    Create account
+                    Launch Your Career
                   </Link>
                 </>
               )}
@@ -152,67 +152,67 @@ export function AppShell({
               </span>
               <span>
                 <span className="brand-title footer-brand-title">Fresher Connect</span>
-                <span className="brand-sub footer-brand-sub">Trusted hiring, clear communication</span>
+                <span className="brand-sub footer-brand-sub">Careers launched. Hiring simplified.</span>
               </span>
             </Link>
             <p className="footer-copy">
-              Fresher Connect helps candidates discover credible opportunities and gives employers a structured workspace for hiring decisions.
+              Fresher Connect helps ambitious graduates stand out faster and gives employers a trusted channel for hiring early-career talent with confidence.
             </p>
           </section>
 
           <nav className="footer-link-column" aria-label="Platform links">
-            <span className="footer-column-title">Platform</span>
+            <span className="footer-column-title">Solutions</span>
             <Link className="footer-link" href="/">
-              About Fresher Connect
+              Why Fresher Connect
             </Link>
             <Link className="footer-link" href="/jobs">
-              Explore opportunities
+              Explore Opportunities
             </Link>
             <Link className="footer-link" href="/login?role=company">
-              Employer access
+              Employer Sign In
             </Link>
             <Link className="footer-link" href="/admin/login">
-              Admin access
+              Admin Console
             </Link>
           </nav>
 
           <nav className="footer-link-column" aria-label="Candidate links">
-            <span className="footer-column-title">Candidates</span>
+            <span className="footer-column-title">For Candidates</span>
             <Link className="footer-link" href="/register">
-              Create account
+              Build Your Profile
             </Link>
             <Link className="footer-link" href="/login">
-              Sign in
+              Candidate Sign In
             </Link>
             <Link className="footer-link" href="/jobs">
-              Browse verified roles
+              Browse Verified Roles
             </Link>
             <Link className="footer-link" href="/user">
-              Candidate workspace
+              Career Dashboard
             </Link>
           </nav>
 
           <nav className="footer-link-column" aria-label="Employer links">
-            <span className="footer-column-title">Employers</span>
+            <span className="footer-column-title">For Employers</span>
             <Link className="footer-link" href="/register?role=company">
-              Register company
+              Create Employer Account
             </Link>
             <Link className="footer-link" href="/login?role=company">
-              Recruiter sign in
+              Recruiter Sign In
             </Link>
             <Link className="footer-link" href="/company">
-              Employer workspace
+              Hiring Workspace
             </Link>
             <Link className="footer-link" href="/admin">
-              Governance workspace
+              Governance Console
             </Link>
           </nav>
         </div>
 
         <div className="container footer-bottom-row">
-          <span>Move from discovery to application progress without leaving the product context.</span>
+          <span>Trusted by graduates and hiring teams that expect clarity, speed, and professional communication.</span>
           <Link className="text-link" href="/jobs">
-            Browse opportunities
+            Explore Opportunities
           </Link>
         </div>
       </footer>

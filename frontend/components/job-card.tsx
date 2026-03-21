@@ -11,12 +11,12 @@ export function JobCard({
   job: Job;
   action?: React.ReactNode;
 }) {
-  const compensation = job.salary_range || job.internship_stipend || "Compensation not disclosed";
+  const compensation = job.salary_range || job.internship_stipend || "Compensation shared by the employer";
   const stages = toCommaList(job.hiring_stages);
   const facts = [
-    { label: "Location", value: job.location || "Flexible" },
-    { label: "Work mode", value: job.work_mode || "Onsite" },
-    { label: "Experience", value: job.experience_level || job.degree_required || "Entry-level" },
+    { label: "Location", value: job.location || "Location flexible" },
+    { label: "Work model", value: job.work_mode || "On-site" },
+    { label: "Experience level", value: job.experience_level || job.degree_required || "Early career" },
     { label: "Compensation", value: compensation }
   ];
 
@@ -31,16 +31,16 @@ export function JobCard({
           <span className="tag">{job.job_type || job.employment_type || "Full-time"}</span>
         </div>
         <p className="job-description">
-          {job.description || job.role_overview || "Role details are available in the full job view."}
+          {job.description || job.role_overview || "Explore the full opportunity brief for responsibilities, growth path, and hiring expectations."}
         </p>
         {typeof job.match_score === "number" ? (
           <div className="match-insights compact">
             <div className="match-insights-top">
-              <strong>Candidate fit preview</strong>
+              <strong>Profile alignment preview</strong>
               <span className="match-pill medium">{formatPercent(job.match_score)}</span>
             </div>
             <span className="meta-line">
-              Backend scoring compares your profile with the role skills and hiring criteria.
+              See how your current profile aligns with the employer's most important requirements.
             </span>
           </div>
         ) : null}
@@ -68,10 +68,10 @@ export function JobCard({
           ))}
         </div>
         <div className="job-card-footer">
-          <span className="meta-line">{stages || "Structured hiring stages shared after application review."}</span>
+          <span className="meta-line">{stages || "Structured interview stages are shared as your application progresses."}</span>
           <div className="job-card-actions">
             <Link href={jobPath(job.id)} className="btn ghost">
-              Review role
+              View Opportunity
             </Link>
             {action}
           </div>

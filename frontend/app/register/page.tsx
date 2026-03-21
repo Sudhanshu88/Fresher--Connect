@@ -57,21 +57,21 @@ const defaultForm = {
 const roleContent = {
   fresher: {
     label: "Candidate Registration",
-    title: "Create a candidate account and start a structured hiring journey.",
-    description: "Build your profile, add your education and skills, then move from role discovery to application tracking.",
+    title: "Build a recruiter-ready profile in minutes.",
+    description: "Create a polished professional profile, upload your resume, and start applying to verified graduate opportunities with confidence.",
     noteTitle: "Candidate onboarding",
-    noteBody: "Candidate accounts can sign in immediately after registration and continue from the opportunity directory.",
+    noteBody: "Once your profile is live, you can explore roles, apply faster, and track every stage from one dashboard.",
     loginHref: "/login",
-    loginText: "Sign in as candidate"
+    loginText: "Sign in to your candidate account"
   },
   company: {
-    label: "Company Registration",
-    title: "Register your company and prepare a verified recruiter workspace.",
-    description: "Share employer details, hiring context, and company information so the admin team can verify your account.",
+    label: "Employer Registration",
+    title: "Create a trusted hiring hub for your team.",
+    description: "Set up your employer profile, share your hiring goals, and prepare your recruiter workspace for verification.",
     noteTitle: "Employer onboarding",
-    noteBody: "Company accounts are created first, then activated for recruiter access after admin verification.",
+    noteBody: "Verified employer accounts unlock professional job posting, candidate review, and structured hiring coordination.",
     loginHref: "/login?role=company",
-    loginText: "Sign in as recruiter"
+    loginText: "Sign in to recruiter workspace"
   }
 } as const;
 
@@ -81,7 +81,7 @@ export default function RegisterPage() {
       fallback={
         <main className="auth-shell">
           <section className="auth-card auth-card-strong">
-            <div className="empty-state">Loading registration experience...</div>
+            <div className="empty-state">Preparing your registration journey...</div>
           </section>
         </main>
       }
@@ -161,13 +161,13 @@ function RegisterPageContent() {
     const extension = file.name.split(".").pop()?.toLowerCase() || "";
     if (!PHOTO_EXTENSIONS.has(extension)) {
       setTone("error");
-      setMessage("Upload a PNG, JPG, JPEG, WEBP, or GIF image for the candidate photo.");
+      setMessage("Please upload your photo as a PNG, JPG, JPEG, WEBP, or GIF file.");
       return false;
     }
 
     if (file.size > PHOTO_MAX_SIZE) {
       setTone("error");
-      setMessage("Candidate photo must be 5 MB or smaller.");
+      setMessage("Please keep your photo file under 5 MB.");
       return false;
     }
 
@@ -214,13 +214,13 @@ function RegisterPageContent() {
     const extension = file.name.split(".").pop()?.toLowerCase() || "";
     if (!RESUME_EXTENSIONS.has(extension)) {
       setTone("error");
-      setMessage("Upload the candidate resume as a PDF, DOC, or DOCX file.");
+      setMessage("Please upload your resume as a PDF, DOC, or DOCX file.");
       return false;
     }
 
     if (file.size > RESUME_MAX_SIZE) {
       setTone("error");
-      setMessage("Candidate resume must be 10 MB or smaller.");
+      setMessage("Please keep your resume file under 10 MB.");
       return false;
     }
 
@@ -332,13 +332,13 @@ function RegisterPageContent() {
           }
         }
 
-        let successMessage = "Account created. Redirecting to your workspace.";
+        let successMessage = "Welcome aboard! Your profile is ready and we're taking you to your workspace.";
         if (uploadSuccesses.length && !uploadFailures.length) {
-          successMessage = `Account created with ${formatUploadList(uploadSuccesses)}. Redirecting to your workspace.`;
+          successMessage = `Welcome aboard! Your ${formatUploadList(uploadSuccesses)} ${uploadSuccesses.length === 1 ? "is" : "are"} ready, and your workspace is next.`;
         } else if (uploadFailures.length && !uploadSuccesses.length) {
-          successMessage = `Account created, but ${formatUploadList(uploadFailures)} could not be uploaded. You can add ${uploadFailures.length === 1 ? "it" : "them"} later.`;
+          successMessage = `Your account is live, but ${formatUploadList(uploadFailures)} could not be uploaded. You can add ${uploadFailures.length === 1 ? "it" : "them"} later.`;
         } else if (uploadSuccesses.length && uploadFailures.length) {
-          successMessage = `Account created with ${formatUploadList(uploadSuccesses)}, but ${formatUploadList(uploadFailures)} could not be uploaded. You can add ${uploadFailures.length === 1 ? "it" : "them"} later.`;
+          successMessage = `Your account is live with ${formatUploadList(uploadSuccesses)}, but ${formatUploadList(uploadFailures)} still need${uploadFailures.length === 1 ? "s" : ""} your attention later.`;
         }
 
         setUser(currentUser);
@@ -349,12 +349,12 @@ function RegisterPageContent() {
         writeAccessToken("");
         setUser(null);
         setTone("success");
-        setMessage(response.message || "Company account created. Wait for admin verification before login.");
+        setMessage(response.message || "Your employer account has been created and submitted for verification.");
         setForm((current) => ({ ...defaultForm, role: current.role }));
       }
     } catch (_error) {
       setTone("error");
-      setMessage("Registration failed. Check the required fields and backend connection.");
+      setMessage("We couldn't create your account. Please review the form details and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -387,32 +387,32 @@ function RegisterPageContent() {
 
           <div className="auth-feature-grid">
             <article className="auth-feature-card">
-              <span className="preview-kicker">Scalable Frontend</span>
-              <h3>Reusable forms and route-level structure</h3>
-              <p>Role-specific onboarding now lives in one reusable frontend flow without duplicating page logic.</p>
+              <span className="preview-kicker">Professional First Impression</span>
+              <h3>Stand out from the very first review</h3>
+              <p>Present your strengths clearly so recruiters can understand your fit without digging for context.</p>
             </article>
             <article className="auth-feature-card">
-              <span className="preview-kicker">Backend Aligned</span>
-              <h3>Payloads map directly to the existing APIs</h3>
-              <p>Candidate and company registration keep the current backend flows intact while the UI stays modular and reusable.</p>
+              <span className="preview-kicker">Faster Hiring Momentum</span>
+              <h3>Move from sign-up to real opportunities quickly</h3>
+              <p>Once your account is active, the platform keeps opportunity discovery, applications, and updates connected.</p>
             </article>
           </div>
 
           {!isCompanyFlow ? (
             <section className="card auth-note-card">
-              <span className="section-label">Why This Flow</span>
+              <span className="section-label">Why Professionals Choose Fresher Connect</span>
               <div className="detail-list">
                 <div className="detail-item">
                   <span>{content.noteTitle}</span>
                   <strong>{content.noteBody}</strong>
                 </div>
                 <div className="detail-item">
-                  <span>Candidate access</span>
-                  <strong>Education, skills, and summary fields support immediate role discovery after signup.</strong>
+                  <span>Candidate outcomes</span>
+                  <strong>Profiles, resumes, and summaries are organized to help recruiters evaluate you faster.</strong>
                 </div>
                 <div className="detail-item">
-                  <span>Employer access</span>
-                  <strong>Company accounts are created first and activated after admin verification.</strong>
+                  <span>Employer trust</span>
+                  <strong>Employer accounts are verified before access, helping candidates engage with more confidence.</strong>
                 </div>
               </div>
             </section>
@@ -422,7 +422,7 @@ function RegisterPageContent() {
       right={
         <>
           <div className={isCompanyFlow ? "company-form-head" : ""}>
-            <span className="section-label">Account Setup</span>
+            <span className="section-label">Create Your Account</span>
             <div className="role-switch auth-role-switch" aria-label="Select registration role" role="tablist">
               <button
                 type="button"
@@ -454,103 +454,103 @@ function RegisterPageContent() {
           <Feedback message={message} tone={tone} />
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="form-grid two-col">
-              <label className="field">
-                <span>Name</span>
-                <input
-                  value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  placeholder={form.role === "company" ? "Recruiter or contact name" : "Candidate name"}
-                  required
-                />
-              </label>
-              <label className="field">
-                <span>Email</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                  placeholder="name@example.com"
-                  required
-                />
-              </label>
-            </div>
+                <label className="field">
+                  <span>Your Full Name</span>
+                  <input
+                    value={form.name}
+                    onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                    placeholder={form.role === "company" ? "Primary recruiter or hiring contact" : "Your full name"}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Professional Email Address</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                    placeholder="you@example.com"
+                    required
+                  />
+                </label>
+              </div>
 
-            <div className="form-grid two-col">
-              <label className="field">
-                <span>Password</span>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                  placeholder="Minimum 8 characters"
-                  minLength={8}
-                  required
-                />
-              </label>
-              <label className="field">
-                <span>Location</span>
-                <input
-                  value={form.location}
-                  onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
-                  placeholder="City, state, or remote preference"
-                />
-              </label>
-            </div>
+              <div className="form-grid two-col">
+                <label className="field">
+                  <span>Create a Secure Password</span>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+                    placeholder="Use at least 8 characters"
+                    minLength={8}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>City, State, or Preferred Work Region</span>
+                  <input
+                    value={form.location}
+                    onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
+                    placeholder="Bengaluru, Pune, Remote"
+                  />
+                </label>
+              </div>
 
             {form.role === "company" ? (
               <>
                 <div className="form-grid two-col">
                   <label className="field">
-                    <span>Company name</span>
+                    <span>Registered Company Name</span>
                     <input
                       value={form.company_name}
                       onChange={(event) => setForm((current) => ({ ...current, company_name: event.target.value }))}
-                      placeholder="Company name"
+                      placeholder="Your company name"
                       required
                     />
                   </label>
                   <label className="field">
-                    <span>Website</span>
+                    <span>Company Website</span>
                     <input
                       value={form.company_website}
                       onChange={(event) => setForm((current) => ({ ...current, company_website: event.target.value }))}
-                      placeholder="https://company.com"
+                      placeholder="https://yourcompany.com"
                     />
                   </label>
                 </div>
 
                 <div className="form-grid two-col">
                   <label className="field">
-                    <span>Industry</span>
+                    <span>Industry Focus</span>
                     <input
                       value={form.industry_type}
                       onChange={(event) => setForm((current) => ({ ...current, industry_type: event.target.value }))}
-                      placeholder="IT, SaaS, EdTech..."
+                      placeholder="Technology, Finance, Operations..."
                     />
                   </label>
                   <label className="field">
-                    <span>Company size</span>
+                    <span>Team Size</span>
                     <input
                       value={form.company_size}
                       onChange={(event) => setForm((current) => ({ ...current, company_size: event.target.value }))}
-                      placeholder="1-10, 11-50..."
+                      placeholder="1-10, 11-50, 51-200..."
                     />
                   </label>
                 </div>
 
                 <label className="field">
-                  <span>Description</span>
+                  <span>Company Overview</span>
                   <textarea
                     value={form.company_description}
                     onChange={(event) => setForm((current) => ({ ...current, company_description: event.target.value }))}
-                    placeholder="Describe the company and hiring context."
+                    placeholder="Describe your company, hiring goals, and the kind of talent you want to attract."
                   />
                 </label>
               </>
             ) : (
               <>
                 <div className="field full-span">
-                  <span>Candidate photo</span>
+                  <span>Professional Photo</span>
                   <input
                     ref={candidatePhotoInputRef}
                     id="candidatePhotoFile"
@@ -573,24 +573,24 @@ function RegisterPageContent() {
                           <img src={candidatePhotoPreview} alt="Candidate photo preview" />
                         </span>
                         <span className="candidate-photo-copy">
-                          <strong>{candidatePhotoFile?.name || "Candidate photo selected"}</strong>
-                          <span className="file-dropzone-note">Drag a new image here or click to replace the current photo.</span>
+                          <strong>{candidatePhotoFile?.name || "Professional photo selected"}</strong>
+                          <span className="file-dropzone-note">Drag a new image here or click to replace your current photo.</span>
                           <span className="file-dropzone-meta has-file">PNG, JPG, WEBP, or GIF up to 5 MB.</span>
                         </span>
                       </span>
                     ) : (
                       <>
-                        <strong>Drag and drop your profile photo here</strong>
-                        <span className="file-dropzone-note">or click to upload a PNG, JPG, WEBP, or GIF file</span>
-                        <span className="file-dropzone-meta">Square headshots work best. Max file size: 5 MB.</span>
+                        <strong>Drag and drop your professional photo here</strong>
+                        <span className="file-dropzone-note">or click to upload a PNG, JPG, WEBP, or GIF image</span>
+                        <span className="file-dropzone-meta">A clear headshot works best. Maximum file size: 5 MB.</span>
                       </>
                     )}
                   </label>
                   {candidatePhotoFile ? (
                     <div className="candidate-upload-actions">
-                      <span className="file-dropzone-meta has-file">Selected: {candidatePhotoFile.name}</span>
+                      <span className="file-dropzone-meta has-file">Ready to upload: {candidatePhotoFile.name}</span>
                       <button className="btn secondary compact-btn" type="button" onClick={clearCandidatePhoto}>
-                        Remove photo
+                        Remove Photo
                       </button>
                     </div>
                   ) : null}
@@ -617,18 +617,18 @@ function RegisterPageContent() {
                     <strong>{candidateResumeFile?.name || "Drag and drop your resume here"}</strong>
                     <span className="file-dropzone-note">
                       {candidateResumeFile
-                        ? "Drag a new resume here or click to replace the current file."
-                        : "or click to upload a PDF, DOC, or DOCX resume file"}
+                        ? "Drag a new resume here or click to replace your current file."
+                        : "or click to upload a PDF, DOC, or DOCX resume"}
                     </span>
                     <span className={`file-dropzone-meta ${candidateResumeFile ? "has-file" : ""}`}>
-                      {candidateResumeFile ? "Resume selected for upload during account creation." : "Resume parsing will start automatically after signup. Max file size: 10 MB."}
+                      {candidateResumeFile ? "Your resume is ready to upload as soon as the account is created." : "Resume parsing begins automatically after sign-up. Maximum file size: 10 MB."}
                     </span>
                   </label>
                   {candidateResumeFile ? (
                     <div className="candidate-upload-actions">
-                      <span className="file-dropzone-meta has-file">Selected: {candidateResumeFile.name}</span>
+                      <span className="file-dropzone-meta has-file">Ready to upload: {candidateResumeFile.name}</span>
                       <button className="btn secondary compact-btn" type="button" onClick={clearCandidateResume}>
-                        Remove resume
+                        Remove Resume
                       </button>
                     </div>
                   ) : null}
@@ -636,11 +636,11 @@ function RegisterPageContent() {
 
                 <div className="form-grid two-col">
                   <label className="field">
-                    <span>Education</span>
+                    <span>Highest Qualification</span>
                     <input
                       value={form.education}
                       onChange={(event) => setForm((current) => ({ ...current, education: event.target.value }))}
-                      placeholder="B.Tech, BCA, MCA..."
+                      placeholder="B.Tech, BCA, MCA, MBA..."
                       required
                     />
                   </label>
@@ -657,32 +657,32 @@ function RegisterPageContent() {
                 </div>
 
                 <label className="field">
-                  <span>Skills</span>
+                  <span>Key Skills</span>
                   <input
                     value={form.skills}
                     onChange={(event) => setForm((current) => ({ ...current, skills: event.target.value }))}
-                    placeholder="JavaScript, SQL, React"
+                    placeholder="React, SQL, communication, problem solving"
                   />
                 </label>
 
                 <label className="field">
-                  <span>Summary</span>
+                  <span>Professional Summary</span>
                   <textarea
                     value={form.summary}
                     onChange={(event) => setForm((current) => ({ ...current, summary: event.target.value }))}
-                    placeholder="Short introduction for your candidate profile."
+                    placeholder="Write a concise introduction recruiters can understand quickly."
                   />
                 </label>
               </>
             )}
 
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "Creating account..." : "Create account"}
+              {submitting ? "Creating your account..." : form.role === "company" ? "Create Employer Account" : "Launch Your Career Today"}
             </button>
           </form>
 
           <div className="auth-inline-meta">
-            <span>Already registered?</span>
+            <span>Already have access?</span>
             <Link href={content.loginHref} className="text-link">
               {content.loginText}
             </Link>

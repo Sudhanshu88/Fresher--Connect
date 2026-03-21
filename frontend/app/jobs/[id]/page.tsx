@@ -41,7 +41,7 @@ export default function JobDetailPage() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Job details could not be loaded.");
+          setMessage("We couldn't load this opportunity right now.");
         }
       } finally {
         if (active) {
@@ -66,7 +66,7 @@ export default function JobDetailPage() {
     }
     if (user.role !== "fresher") {
       setTone("error");
-      setMessage("Only candidate accounts can submit an application for this role.");
+      setMessage("Applications for this role can only be submitted from a candidate account.");
       return;
     }
 
@@ -78,11 +78,11 @@ export default function JobDetailPage() {
         body: { job_id: job.id }
       });
       setTone("success");
-      setMessage("Application created. Open the timeline view for status tracking.");
+      setMessage("Your application has been submitted. We'll take you to the tracking timeline next.");
       router.push(applicationPath(response.application.id));
     } catch (_error) {
       setTone("error");
-      setMessage("Application failed. You may already have applied or the backend may be unavailable.");
+      setMessage("We couldn't submit this application. You may have already applied, or the role may no longer be accepting candidates.");
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +91,7 @@ export default function JobDetailPage() {
   if (loading) {
     return (
       <AppShell>
-        <LoadingBlock label="Loading job details..." />
+        <LoadingBlock label="Loading opportunity details..." />
       </AppShell>
     );
   }
@@ -99,7 +99,7 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <AppShell>
-        <Feedback message={message || "Job not found."} tone="error" />
+        <Feedback message={message || "This opportunity is no longer available."} tone="error" />
       </AppShell>
     );
   }
@@ -113,19 +113,19 @@ export default function JobDetailPage() {
             <StatusPill value={job.moderation_status || (job.is_active ? "approved" : "inactive")} />
           </div>
           <p className="muted">
-            {job.description || job.role_overview || "Detailed role information is available below."}
+            {job.description || job.role_overview || "Review the role scope, employer context, and hiring expectations below."}
           </p>
           <Feedback message={message} tone={tone} />
           <div className="button-row">
             <button className="btn primary" type="button" disabled={submitting} onClick={() => void handleApply()}>
-              {submitting ? "Applying..." : "Apply on platform"}
+              {submitting ? "Submitting..." : "Submit Application"}
             </button>
             <Link href="/jobs" className="btn secondary">
-              Back to jobs
+              Back to Opportunities
             </Link>
             {job.application_method && job.application_method !== "platform" && job.application_url ? (
               <a className="btn secondary" href={job.application_url} target="_blank" rel="noreferrer">
-                External application
+                Apply on Company Site
               </a>
             ) : null}
           </div>
@@ -144,11 +144,11 @@ export default function JobDetailPage() {
         </section>
 
         <section className="hero-card stack">
-          <span className="section-label">Summary</span>
+          <span className="section-label">Opportunity Snapshot</span>
           <div className="detail-list">
             <div className="detail-item">
               <span>Location</span>
-              <strong>{job.location || "Flexible"}</strong>
+              <strong>{job.location || "Location flexible"}</strong>
             </div>
             <div className="detail-item">
               <span>Work mode</span>
@@ -160,7 +160,7 @@ export default function JobDetailPage() {
             </div>
             <div className="detail-item">
               <span>Compensation</span>
-              <strong>{job.salary_range || job.internship_stipend || "Not disclosed"}</strong>
+              <strong>{job.salary_range || job.internship_stipend || "Shared by employer"}</strong>
             </div>
             <div className="detail-item">
               <span>Posted</span>
@@ -182,7 +182,7 @@ export default function JobDetailPage() {
 
       <section className="detail-grid">
         <section className="panel stack">
-          <span className="section-label">Role detail</span>
+          <span className="section-label">Role Highlights</span>
           <div className="detail-list">
             <div className="detail-item">
               <span>Overview</span>
@@ -212,7 +212,7 @@ export default function JobDetailPage() {
         </section>
 
         <section className="panel stack">
-          <span className="section-label">Company detail</span>
+          <span className="section-label">Employer Snapshot</span>
           <div className="detail-list">
             <div className="detail-item">
               <span>Company</span>

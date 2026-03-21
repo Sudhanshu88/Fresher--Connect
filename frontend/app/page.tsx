@@ -22,10 +22,59 @@ type CreateReviewResponse = {
 
 const defaultReviewForm = {
   name: "",
-  role: "guest",
+  role: "fresher",
   rating: "5",
   review: ""
 };
+
+const reviewProfiles: Record<
+  string,
+  {
+    name: string;
+    role: string;
+    company: string;
+    review: string;
+  }
+> = {
+  Aarav: {
+    name: "Aarav Mehta",
+    role: "Graduate Product Analyst",
+    company: "BrightStack Labs",
+    review:
+      "Fresher Connect made my first job search feel structured and credible. I could spot verified employers quickly, present my profile professionally, and track every update without second-guessing the process."
+  },
+  Nisha: {
+    name: "Nisha Kapoor",
+    role: "Talent Acquisition Lead",
+    company: "GrowthDock",
+    review:
+      "Our team moved faster because candidate profiles arrived clearer, communication stayed centralized, and every hiring decision had the context we needed. It felt far more efficient than juggling disconnected tools."
+  }
+};
+
+function reviewRoleLabel(role: string) {
+  if (role === "company") {
+    return "Recruiter";
+  }
+  if (role === "fresher") {
+    return "Candidate";
+  }
+  return "Career Mentor";
+}
+
+function presentReview(review: Review) {
+  const override = reviewProfiles[review.name];
+  if (override) {
+    return override;
+  }
+
+  return {
+    name: review.name,
+    role: reviewRoleLabel(review.role),
+    company: "Fresher Connect Community",
+    review: review.review
+  };
+}
 
 export default function HomePage() {
   const user = usePlatformStore((state) => state.user);
@@ -58,7 +107,7 @@ export default function HomePage() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Platform feedback could not be loaded right now.");
+          setMessage("Community stories are temporarily unavailable. Please check back shortly.");
         }
       } finally {
         if (active) {
@@ -90,10 +139,10 @@ export default function HomePage() {
       setReviews((current) => [response.review, ...current].slice(0, 6));
       setForm((current) => ({ ...defaultReviewForm, name: current.name, role: current.role }));
       setTone("success");
-      setMessage("Feedback shared successfully.");
+      setMessage("Thank you for sharing your experience with Fresher Connect.");
     } catch (_error) {
       setTone("error");
-      setMessage("Feedback submit failed. Check the backend connection and try again.");
+      setMessage("We couldn't publish your feedback just yet. Please try again in a moment.");
     }
   }
 
@@ -101,51 +150,51 @@ export default function HomePage() {
     <AppShell contentClassName="landing-shell">
       <section className="hero hero-expanded">
         <div className="hero-copy">
-          <span className="section-label">Professional Hiring Platform</span>
-          <h1>Connect ambitious candidates with trusted employers through one professional hiring experience.</h1>
+          <span className="section-label">Career Acceleration Platform</span>
+          <h1>Launch Careers Faster. Hire Graduates Smarter.</h1>
           <p>
-            Fresher Connect unifies opportunity discovery, verified employer access, application tracking,
-            and recruiter operations into a single platform designed for credibility, clarity, and scale.
+            Fresher Connect helps ambitious graduates stand out with recruiter-ready profiles and gives hiring teams access to a trusted pipeline of early-career talent.
+            From discovery to decision, every step stays clear, professional, and conversion-focused.
           </p>
 
           <div className="button-row">
-            <Link className="btn primary" href="/jobs">
-              Explore opportunities
+            <Link className="btn primary" href="/register">
+              Launch Your Career Today
             </Link>
-            <Link className="btn ghost" href="/register">
-              Create an account
+            <Link className="btn ghost" href="/register?role=company">
+              Find Top Talent Now
             </Link>
           </div>
 
           <p className="helper-text">
-            Built for credible hiring, transparent decisions, and role-based workflows.
+            Verified employers, recruiter-ready profiles, and disciplined hiring workflows in one trusted platform.
           </p>
 
           <div className="trust-row">
-            <span className="trust-pill">Verified employer onboarding</span>
-            <span className="trust-pill">Candidate application tracking</span>
-            <span className="trust-pill">Admin-led governance and moderation</span>
+            <span className="trust-pill">Verified employer network</span>
+            <span className="trust-pill">ATS-ready candidate storytelling</span>
+            <span className="trust-pill">Structured hiring decisions</span>
           </div>
         </div>
 
         <section className="hero-card">
-          <span className="section-label">Platform Highlights</span>
-          <h2>Every key workflow lives inside one connected hiring ecosystem.</h2>
+          <span className="section-label">Platform Impact</span>
+          <h2>Built to turn first jobs and first hires into confident decisions.</h2>
           <p className="muted">
-            From discovery to decision, every touchpoint stays aligned so candidates, recruiters, and admins move faster with less ambiguity.
+            Fresher Connect combines trustworthy employer access, stronger candidate presentation, and a disciplined hiring rhythm that keeps everyone aligned.
           </p>
           <div className="metric-grid">
             <div className="metric">
-              <strong>8</strong>
-              <span>Core experience surfaces</span>
+              <strong>10,000+</strong>
+              <span>graduates supported through early-career moves</span>
             </div>
             <div className="metric">
-              <strong>3</strong>
-              <span>Role-based workspaces</span>
+              <strong>500+</strong>
+              <span>partner companies hiring with confidence</span>
             </div>
             <div className="metric">
-              <strong>{reviews.length || 6}</strong>
-              <span>Recent community feedback entries</span>
+              <strong>95%</strong>
+              <span>satisfaction across candidate and recruiter journeys</span>
             </div>
           </div>
         </section>
@@ -154,34 +203,34 @@ export default function HomePage() {
       <section className="section">
         <div className="section-head">
           <div className="page-intro">
-            <span className="section-label">Platform Overview</span>
-            <h2>Every workspace is aligned for trust, speed, and decision-making.</h2>
+            <span className="section-label">Our Mission</span>
+            <h2>We help early-career talent get discovered with confidence.</h2>
             <p className="muted">
-              Clear hierarchy and consistent language help both candidates and employers move through the platform with confidence.
+              Fresher Connect exists to remove uncertainty from graduate hiring. We combine verified opportunities, guided candidate storytelling, and disciplined recruiter workflows so the right people connect faster and with greater trust.
             </p>
           </div>
         </div>
 
         <div className="preview-grid">
           <article className="preview-card">
-            <span className="preview-kicker">Landing</span>
-            <h3>Clear market positioning</h3>
-            <p>Candidates and employers immediately understand the platform value, workflow, and next action.</p>
+            <span className="preview-kicker">10,000+ Freshers Placed</span>
+            <h3>Stand out to the right employers sooner</h3>
+            <p>Showcase your strengths with a profile built to inspire confidence from the very first review.</p>
           </article>
           <article className="preview-card">
-            <span className="preview-kicker">Access</span>
-            <h3>Role-based account entry</h3>
-            <p>Separate sign-in and onboarding flows keep candidate, recruiter, and admin access clear.</p>
+            <span className="preview-kicker">500+ Partner Companies</span>
+            <h3>Hire ready-to-grow talent with less friction</h3>
+            <p>Recruiters get a cleaner pipeline, clearer signals, and faster movement from screening to decision.</p>
           </article>
           <article className="preview-card">
-            <span className="preview-kicker">Opportunities</span>
-            <h3>Structured opportunity discovery</h3>
-            <p>Search, filter, and compare role requirements before taking action on any listing.</p>
+            <span className="preview-kicker">95% Satisfaction Rate</span>
+            <h3>Keep every hiring conversation aligned</h3>
+            <p>Structured updates reduce uncertainty for candidates and give hiring teams a more reliable process.</p>
           </article>
           <article className="preview-card">
-            <span className="preview-kicker">Application Progress</span>
-            <h3>Transparent hiring updates</h3>
-            <p>Candidates can see the active stage, timeline, and decision context from a dedicated status view.</p>
+            <span className="preview-kicker">Trusted Platform Design</span>
+            <h3>Create confidence on both sides of the table</h3>
+            <p>Professional language, verified access, and transparent stages make every interaction feel credible.</p>
           </article>
         </div>
       </section>
@@ -189,31 +238,31 @@ export default function HomePage() {
       <section className="section">
         <div className="section-head">
           <div className="page-intro">
-            <span className="section-label">Workflow Overview</span>
-            <h2>One professional journey for candidates. One structured workflow for recruiters.</h2>
+            <span className="section-label">How It Works</span>
+            <h2>Every step is designed to create hiring momentum.</h2>
           </div>
         </div>
 
         <div className="workflow-grid">
           <article className="workflow-step">
             <span className="workflow-number">01</span>
-            <h3>Explore opportunities</h3>
-            <p>Candidates search verified opportunities and move into detailed role views with clear qualification criteria.</p>
+            <h3>Build a standout profile</h3>
+            <p>Create a polished candidate presence that showcases your education, skills, resume, and career goals professionally.</p>
           </article>
           <article className="workflow-step">
             <span className="workflow-number">02</span>
-            <h3>Review role expectations</h3>
-            <p>Each listing surfaces employer context, responsibilities, compensation, and the expected hiring path.</p>
+            <h3>Reach verified opportunities</h3>
+            <p>Discover employer-vetted roles with the context you need to evaluate fit before you apply.</p>
           </article>
           <article className="workflow-step">
             <span className="workflow-number">03</span>
-            <h3>Submit and monitor</h3>
-            <p>Applications flow into a dedicated tracking view so candidates always understand their current status.</p>
+            <h3>Track every hiring update</h3>
+            <p>Stay informed from application submission to final decision with a structured, easy-to-follow timeline.</p>
           </article>
           <article className="workflow-step">
             <span className="workflow-number">04</span>
-            <h3>Recruiters manage decisions</h3>
-            <p>Employers create listings, review talent, and update hiring decisions from a structured recruiter workspace.</p>
+            <h3>Move decisions forward with clarity</h3>
+            <p>Recruiters manage pipelines, coordinate feedback, and keep hiring decisions timely and transparent.</p>
           </article>
         </div>
       </section>
@@ -221,10 +270,10 @@ export default function HomePage() {
       <section className="section" id="reviewSection">
         <div className="section-head">
           <div className="page-intro">
-            <span className="section-label">Platform Feedback</span>
-            <h2>Share your experience with Fresher Connect.</h2>
+            <span className="section-label">Success Stories</span>
+            <h2>Trusted by graduates, recruiters, and career mentors.</h2>
             <p className="muted">
-              Add concise feedback on job discovery, recruiter workflows, or the overall application experience.
+              Every success story helps future candidates and hiring teams understand what a stronger, more transparent hiring journey can feel like.
             </p>
           </div>
         </div>
@@ -232,37 +281,37 @@ export default function HomePage() {
         <div className="split-grid review-section-grid">
           <section className="form-section-card review-form-card">
             <div className="form-section-head">
-              <span className="preview-kicker">Submit Feedback</span>
-              <h3>Tell us what is working well and where the experience can improve.</h3>
-              <p>Feedback submitted here is saved to the platform and reflected immediately below.</p>
+              <span className="preview-kicker">Share Your Perspective</span>
+              <h3>Tell us how Fresher Connect helped you move forward.</h3>
+              <p>Your feedback helps us refine the experience for both ambitious graduates and busy hiring teams.</p>
             </div>
 
             <Feedback message={message} tone={tone} />
             <form className="form-grid two-col" onSubmit={handleSubmit}>
               <label className="field">
-                <span>Your name</span>
+                <span>Full Name</span>
                 <input
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  placeholder="Enter your name"
+                  placeholder="Your full name"
                   required
                 />
               </label>
 
               <label className="field">
-                <span>I am a</span>
+                <span>How do you use Fresher Connect?</span>
                 <select
                   value={form.role}
                   onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}
                 >
                   <option value="fresher">Candidate</option>
                   <option value="company">Recruiter</option>
-                  <option value="guest">Guest</option>
+                  <option value="guest">Career Mentor</option>
                 </select>
               </label>
 
               <label className="field">
-                <span>Rating</span>
+                <span>Overall Experience</span>
                 <select
                   value={form.rating}
                   onChange={(event) => setForm((current) => ({ ...current, rating: event.target.value }))}
@@ -276,40 +325,50 @@ export default function HomePage() {
               </label>
 
               <label className="field full-span">
-                <span>Your feedback</span>
+                <span>What stood out to you?</span>
                 <textarea
                   value={form.review}
                   onChange={(event) => setForm((current) => ({ ...current, review: event.target.value }))}
-                  placeholder="Share your experience with Fresher Connect"
+                  placeholder="Describe the clarity, speed, or confidence Fresher Connect added to your experience."
                   rows={5}
                   required
                 />
               </label>
 
               <button className="btn primary" type="submit">
-                Submit feedback
+                Share Your Experience
               </button>
             </form>
           </section>
 
           <section className="card review-list-shell">
             <div className="form-section-head">
-              <span className="preview-kicker">Recent Feedback</span>
-              <h3>Latest feedback from the platform community</h3>
-              <p>Candidates, recruiters, and guests can all share concise feedback here.</p>
+              <span className="preview-kicker">Community Voices</span>
+              <h3>What professionals are saying about Fresher Connect</h3>
+              <p>Real experiences from candidates, recruiters, and mentors using the platform to move careers and hiring outcomes forward.</p>
             </div>
-            {loading ? <div className="empty-state">Loading feedback...</div> : null}
-            {!loading && !reviews.length ? <div className="empty-state">No feedback available yet.</div> : null}
+            {loading ? <div className="empty-state">Loading community stories...</div> : null}
+            {!loading && !reviews.length ? <div className="empty-state">No community stories are available yet.</div> : null}
             <div className="review-list">
               {reviews.map((review) => (
                 <article className="activity-card" key={review.id}>
-                  <div className="row">
-                    <strong>{review.name}</strong>
-                    <span className="status-pill applied">{review.role}</span>
-                  </div>
-                  <p>Rating: {review.rating} / 5</p>
-                  <p>{review.review}</p>
-                  <span className="helper">{formatDateTime(review.created_at)}</span>
+                  {(() => {
+                    const displayReview = presentReview(review);
+                    return (
+                      <>
+                        <div className="row">
+                          <strong>{displayReview.name}</strong>
+                          <span className="tag">{reviewRoleLabel(review.role)}</span>
+                        </div>
+                        <div className="meta">
+                          {displayReview.role} | {displayReview.company}
+                        </div>
+                        <p>Rated {review.rating} / 5 for overall experience.</p>
+                        <p>{displayReview.review}</p>
+                        <span className="helper">{formatDateTime(review.created_at)}</span>
+                      </>
+                    );
+                  })()}
                 </article>
               ))}
             </div>

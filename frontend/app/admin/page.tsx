@@ -58,7 +58,7 @@ function AdminWorkspace() {
       } catch (_error) {
         if (active) {
           setTone("error");
-          setMessage("Admin dashboard could not be loaded.");
+          setMessage("We couldn't open the governance console right now.");
         }
       } finally {
         if (active) {
@@ -119,10 +119,10 @@ function AdminWorkspace() {
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("Company verification updated.");
+      setMessage("Employer verification status updated successfully.");
     } catch (_error) {
       setTone("error");
-      setMessage("Company verification update failed.");
+      setMessage("We couldn't update that employer verification status.");
     } finally {
       setSavingUserId(null);
     }
@@ -143,21 +143,21 @@ function AdminWorkspace() {
       });
       await refreshDashboard();
       setTone("success");
-      setMessage("Job moderation updated.");
+      setMessage("Opportunity moderation status updated successfully.");
     } catch (_error) {
       setTone("error");
-      setMessage("Job moderation update failed.");
+      setMessage("We couldn't update that opportunity moderation status.");
     } finally {
       setSavingJobId(null);
     }
   }
 
   if (loading && !dashboard) {
-    return <LoadingBlock label="Loading admin workspace..." />;
+    return <LoadingBlock label="Loading the governance console..." />;
   }
 
   if (!dashboard) {
-    return <Feedback message={message || "Admin dashboard unavailable."} tone="error" />;
+    return <Feedback message={message || "The governance console is currently unavailable."} tone="error" />;
   }
 
   const applicationStatuses =
@@ -178,9 +178,9 @@ function AdminWorkspace() {
       <section className="panel dashboard-hero-panel">
         <div className="dashboard-hero-grid">
           <div className="page-intro">
-            <span className="section-label">Admin Workspace</span>
-            <h1 className="page-title">Moderate the platform, verify employers, and review audit activity from one admin workspace.</h1>
-            <p className="muted">Governance controls for employer access, listing quality, and platform health.</p>
+            <span className="section-label">Governance Console</span>
+            <h1 className="page-title">Protect marketplace quality with fast, accountable decisions.</h1>
+            <p className="muted">Oversee employer verification, opportunity moderation, and platform activity from one professional control center.</p>
           </div>
           <div className="hero-mini-grid">
             <div className="mini-stat">
@@ -192,7 +192,7 @@ function AdminWorkspace() {
               <strong>{analyticsNumber("active_jobs")}</strong>
             </div>
             <div className="mini-stat">
-              <span>Applications</span>
+              <span>Total applications</span>
               <strong>{analyticsNumber("applications")}</strong>
             </div>
           </div>
@@ -200,7 +200,7 @@ function AdminWorkspace() {
       </section>
 
       <section className="panel stack">
-        <span className="section-label">Application status mix</span>
+        <span className="section-label">Application Health Snapshot</span>
         <div className="tag-list">
           {Object.entries(applicationStatuses).map(([key, value]) => (
             <span className="tag" key={key}>
@@ -213,8 +213,8 @@ function AdminWorkspace() {
       <section className="panel stack">
         <div className="row">
           <div className="stack">
-            <span className="section-label">Company verification</span>
-            <h2>Approve or reject recruiter accounts</h2>
+            <span className="section-label">Employer Verification</span>
+            <h2>Approve, hold, or decline employer access requests</h2>
           </div>
         </div>
         <div className="table-wrap">
@@ -285,8 +285,8 @@ function AdminWorkspace() {
       <section className="panel stack">
         <div className="row">
           <div className="stack">
-            <span className="section-label">Job moderation</span>
-            <h2>Approve, hold, or reject company listings</h2>
+            <span className="section-label">Opportunity Moderation</span>
+            <h2>Control which roles become visible to candidates</h2>
           </div>
         </div>
         <div className="table-wrap">
@@ -364,8 +364,8 @@ function AdminWorkspace() {
       </section>
 
       <section className="panel stack">
-        <span className="section-label">Recent activity</span>
-        {!dashboard.recent_activity.length ? <div className="empty">No audit events yet.</div> : null}
+        <span className="section-label">Audit Trail</span>
+        {!dashboard.recent_activity.length ? <div className="empty">Recent governance actions will appear here as the platform evolves.</div> : null}
         <div className="list">
           {dashboard.recent_activity.map((event) => (
             <article className="activity-card stack" key={event.id}>

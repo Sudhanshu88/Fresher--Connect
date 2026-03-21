@@ -32,11 +32,11 @@ export default function AdminLoginPage() {
     try {
       await loginAdmin(form);
       setTone("success");
-      setMessage("Admin login successful. Redirecting to the governance workspace.");
+      setMessage("Welcome back. Your governance workspace is ready.");
       router.push("/admin");
     } catch (_error) {
       setTone("error");
-      setMessage("Admin login failed. Use an admin account and confirm the backend is running.");
+      setMessage("We couldn't verify admin access. Please review your credentials and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -49,35 +49,35 @@ export default function AdminLoginPage() {
         <>
           <div className="page-intro auth-copy-block">
             <span className="section-label">Admin Sign In</span>
-            <h1 className="page-title">Access the moderation and governance workspace.</h1>
+            <h1 className="page-title">Access the governance console with confidence.</h1>
             <p className="muted">
-              This route is reserved for platform admins who verify companies, review jobs, and manage access controls.
+              This route is reserved for platform leaders who verify employers, moderate live roles, and protect marketplace quality.
             </p>
           </div>
 
           <div className="auth-feature-grid">
             <article className="auth-feature-card">
-              <span className="preview-kicker">Company Verification</span>
-              <h3>Control recruiter access</h3>
-              <p>Approve or reject employer accounts before workspace access is enabled.</p>
+              <span className="preview-kicker">Employer Verification</span>
+              <h3>Control who enters the hiring ecosystem</h3>
+              <p>Approve trusted employer accounts before recruiter access is activated across the platform.</p>
             </article>
             <article className="auth-feature-card">
-              <span className="preview-kicker">Job Moderation</span>
-              <h3>Review listing quality</h3>
-              <p>Hide, approve, or reject listings before they become visible to candidates.</p>
+              <span className="preview-kicker">Marketplace Quality</span>
+              <h3>Review listings before they go live</h3>
+              <p>Approve, hold, or reject opportunities to protect candidate trust and listing quality.</p>
             </article>
           </div>
 
           <section className="card auth-note-card">
-            <span className="section-label">Admin Scope</span>
+            <span className="section-label">Leadership Scope</span>
             <div className="detail-list">
               <div className="detail-item">
                 <span>Audit visibility</span>
-                <strong>Review recent platform activity and keep moderation decisions accountable.</strong>
+                <strong>Monitor high-impact actions and keep every moderation decision accountable.</strong>
               </div>
               <div className="detail-item">
                 <span>Access controls</span>
-                <strong>Admin routes stay isolated from candidate and recruiter authentication flows.</strong>
+                <strong>Admin access remains isolated from candidate and recruiter authentication for stronger governance.</strong>
               </div>
             </div>
           </section>
@@ -88,40 +88,40 @@ export default function AdminLoginPage() {
           <div className="auth-card-copy">
             <span className="section-label">Admin Access</span>
             <h2>Welcome back</h2>
-            <p className="muted">Sign in with an administrator account to continue platform governance.</p>
+            <p className="muted">Sign in with your administrator credentials to continue platform governance and quality control.</p>
           </div>
 
           <Feedback message={message} tone={tone} />
           <form className="form-grid" onSubmit={handleSubmit}>
             <label className="field">
-              <span>Email</span>
+              <span>Administrator Email Address</span>
               <input
                 type="email"
                 value={form.email}
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                placeholder="admin@example.com"
+                placeholder="admin@company.com"
                 required
               />
             </label>
             <label className="field">
-              <span>Password</span>
+              <span>Administrator Password</span>
               <input
                 type="password"
                 value={form.password}
                 onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                placeholder="Enter admin password"
+                placeholder="Enter your administrator password"
                 required
               />
             </label>
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "Signing in..." : "Sign in as admin"}
+              {submitting ? "Verifying access..." : "Enter Governance Console"}
             </button>
           </form>
 
           <div className="auth-inline-meta">
             <span>Not an admin?</span>
             <Link href="/login" className="text-link">
-              Use the standard login
+              Use standard sign in
             </Link>
           </div>
         </>

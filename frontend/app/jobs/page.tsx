@@ -79,7 +79,7 @@ export default function JobsPage() {
     <Suspense
       fallback={
         <AppShell>
-          <div className="empty-state">Loading opportunities...</div>
+          <div className="empty-state">Loading verified opportunities...</div>
         </AppShell>
       }
     >
@@ -138,7 +138,7 @@ function JobsPageContent() {
       setFilters(nextFilters);
     } catch (_error) {
       setTone("error");
-      setMessage("Jobs could not be loaded from the backend.");
+      setMessage("We couldn't load opportunities right now. Please refresh and try again.");
     } finally {
       setLoading(false);
     }
@@ -151,7 +151,7 @@ function JobsPageContent() {
     }
     if (user.role !== "fresher") {
       setTone("error");
-      setMessage("Only candidate accounts can submit applications.");
+      setMessage("Applications can only be submitted from a candidate account.");
       return;
     }
 
@@ -163,10 +163,10 @@ function JobsPageContent() {
         body: { job_id: jobId }
       });
       setTone("success");
-      setMessage("Application submitted. Track it from the candidate workspace.");
+      setMessage("Application submitted successfully. You can track every update from your career dashboard.");
     } catch (_error) {
       setTone("error");
-      setMessage("Application failed. It may already exist or the backend may be unavailable.");
+      setMessage("We couldn't submit this application. You may have already applied, or the role is temporarily unavailable.");
     } finally {
       setSubmittingJobId(null);
     }
@@ -182,30 +182,30 @@ function JobsPageContent() {
       <section className="hero">
         <section className="panel stack">
           <div className="page-intro">
-            <span className="section-label">Opportunity Directory</span>
-            <h1 className="page-title">Browse verified roles with structured filters and clear hiring context.</h1>
+            <span className="section-label">Opportunity Marketplace</span>
+            <h1 className="page-title">Find early-career roles built for growth.</h1>
             <p className="muted">
-              Search, filter, compare requirements, and move into full role detail before applying.
+              Explore verified opportunities, compare role expectations, and focus on openings where your profile can stand out.
             </p>
           </div>
           <Feedback message={message} tone={tone} />
           <form className="form" onSubmit={handleSearch}>
             <div className="two-col">
               <label className="field">
-                <span>Search</span>
+                <span>Search Roles</span>
                 <input
                   value={filters.search}
                   onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
-                  placeholder="Frontend, analyst, support..."
+                  placeholder="Software engineer, analyst, operations..."
                 />
               </label>
               <label className="field">
-                <span>Category</span>
+                <span>Career Track</span>
                 <select
                   value={filters.category}
                   onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}
                 >
-                  <option value="">All categories</option>
+                  <option value="">All career tracks</option>
                   {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -216,7 +216,7 @@ function JobsPageContent() {
             </div>
             <div className="two-col">
               <label className="field">
-                <span>Location</span>
+                <span>Preferred Location</span>
                 <select
                   value={filters.location}
                   onChange={(event) => setFilters((current) => ({ ...current, location: event.target.value }))}
@@ -230,7 +230,7 @@ function JobsPageContent() {
                 </select>
               </label>
               <label className="field">
-                <span>Skills</span>
+                <span>Core Skills</span>
                 <input
                   value={filters.skills}
                   onChange={(event) => setFilters((current) => ({ ...current, skills: event.target.value }))}
@@ -240,40 +240,40 @@ function JobsPageContent() {
             </div>
             <div className="button-row">
               <button className="btn primary" type="submit">
-                Search jobs
+                Find Opportunities
               </button>
               <button className="btn ghost" type="button" onClick={() => router.push("/jobs")}>
-                Reset filters
+                Clear Search
               </button>
             </div>
           </form>
         </section>
 
         <section className="hero-card">
-          <span className="section-label">Hiring Signals</span>
+          <span className="section-label">Market Snapshot</span>
           <div className="stats-grid compact-grid">
-            <StatCard label="Available roles" value={pagination?.total ?? 0} hint="Live count from the backend opportunity feed" />
-            <StatCard label="Locations" value={locations.length} hint="Structured filters across remote and on-site roles" />
-            <StatCard label="Categories" value={categories.length} hint="Verified role groups from the opportunity directory" />
+            <StatCard label="Live opportunities" value={pagination?.total ?? 0} hint="Fresh openings from verified employers" />
+            <StatCard label="Hiring locations" value={locations.length} hint="On-site, hybrid, and remote options in one search" />
+            <StatCard label="Career tracks" value={categories.length} hint="Structured categories to narrow your focus quickly" />
             <StatCard
-              label="Candidate fit"
+              label="Profile match"
               value={user?.role === "fresher" ? "Enabled" : "Sign in"}
-              hint={user?.role === "fresher" ? "Match support appears on roles with profile-backed scoring" : "Sign in as a candidate to unlock fit previews"}
+              hint={user?.role === "fresher" ? "See where your profile aligns with role expectations" : "Sign in as a candidate to unlock alignment previews"}
             />
           </div>
         </section>
       </section>
 
-      {loading ? <div className="empty-state">Loading opportunities...</div> : null}
-      {!loading && !jobs.length ? <div className="empty-state">No jobs matched the current filters.</div> : null}
+      {loading ? <div className="empty-state">Loading verified opportunities...</div> : null}
+      {!loading && !jobs.length ? <div className="empty-state">No opportunities match your current search. Try broadening the filters.</div> : null}
 
       <section className="section">
         <div className="section-head">
           <div className="page-intro">
-            <span className="section-label">Verified Listings</span>
-            <h2>Compare live roles before you commit to an application.</h2>
+            <span className="section-label">Curated Opportunities</span>
+            <h2>Compare the roles most worth your attention.</h2>
             <p className="muted">
-              Review employer context, expected skills, and hiring stages without leaving the directory.
+              Review employer context, required skills, and hiring stages before you commit to an application.
             </p>
           </div>
         </div>
@@ -290,7 +290,7 @@ function JobsPageContent() {
                   disabled={submittingJobId === job.id}
                   onClick={() => void handleApply(job.id)}
                 >
-                  {submittingJobId === job.id ? "Applying..." : "Apply"}
+                  {submittingJobId === job.id ? "Submitting..." : "Apply Now"}
                 </button>
               }
             />
@@ -302,7 +302,7 @@ function JobsPageContent() {
         <section className="panel stack">
           <div className="row">
             <div className="meta">
-              Page {pagination.page} of {pagination.total_pages} with {pagination.total} total roles listed
+              Page {pagination.page} of {pagination.total_pages} with {pagination.total} live opportunities available
             </div>
             <div className="button-row">
               <button
@@ -311,7 +311,7 @@ function JobsPageContent() {
                 disabled={!pagination.has_prev}
                 onClick={() => router.push(buildJobsHref({ ...filters, page: Math.max(1, pagination.page - 1) }))}
               >
-                Previous
+                Previous Page
               </button>
               <button
                 className="btn ghost"
@@ -319,7 +319,7 @@ function JobsPageContent() {
                 disabled={!pagination.has_next}
                 onClick={() => router.push(buildJobsHref({ ...filters, page: pagination.page + 1 }))}
               >
-                Next
+                Next Page
               </button>
             </div>
           </div>
