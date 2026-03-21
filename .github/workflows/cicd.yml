@@ -70,13 +70,10 @@ jobs:
           BACKEND_IMAGE: ghcr.io/example/fresher-connect-backend:test
           FRONTEND_IMAGE: ghcr.io/example/fresher-connect-frontend:test
         run: |
-          rm -f .env
-          cp .env.example docker/.env
-          docker compose -f docker/docker-compose.yml --env-file .env.example config
-          docker compose -f docker/docker-compose.ec2.yml config
-          rm -f docker/.env
-          docker build -f backend/Dockerfile.backend -t fresher-connect-backend:ci .
-          docker build -f frontend/Dockerfile.frontend -t fresher-connect-frontend:ci .
+          docker compose -f docker-compose.yml --env-file .env.example config
+          docker compose -f docker-compose.ec2.yml config
+          docker build -t fresher-connect-backend:ci ./backend
+          docker build -t fresher-connect-frontend:ci ./frontend
 
   publish:
     name: Publish Images
@@ -114,8 +111,8 @@ jobs:
       - name: Publish backend image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: backend/Dockerfile.backend
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: |
             ${{ steps.meta.outputs.backend_image }}
@@ -124,8 +121,8 @@ jobs:
       - name: Publish frontend image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: frontend/Dockerfile.frontend
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: |
             ${{ steps.meta.outputs.frontend_image }}
@@ -193,7 +190,7 @@ jobs:
         shell: bash
         run: |
           ssh -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p '$APP_DIR'"
-          scp -P "$EC2_PORT" docker/docker-compose.ec2.yml "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/docker-compose.yml"
+          scp -P "$EC2_PORT" docker-compose.ec2.yml "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/docker-compose.yml"
           scp -P "$EC2_PORT" .env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/.env"
           scp -P "$EC2_PORT" .images.env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:$APP_DIR/.images.env"
 

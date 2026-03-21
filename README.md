@@ -30,9 +30,8 @@ Fresher--Connect
 |-- database
 |   |-- init.js
 |   `-- schema.sql
-|-- docker
-|   |-- Dockerfile
-|   `-- docker-compose.yml
+|-- docker-compose.ec2.yml
+|-- docker-compose.yml
 |-- .github
 |   `-- workflows
 |       `-- ci.yml
@@ -148,8 +147,8 @@ Reference relational schema:
 
 Shared Docker assets:
 
-- `docker/Dockerfile`
-- `docker/docker-compose.yml`
+- `docker-compose.yml`
+- `docker-compose.ec2.yml`
 
 Backend image:
 
@@ -179,7 +178,7 @@ npm run build
 Compose:
 
 ```bash
-docker compose -f docker/docker-compose.yml up --build
+docker compose -f docker-compose.yml up --build
 ```
 
 Docker assets target the `frontend/` runtime and the single asset source in `frontend/public/`.

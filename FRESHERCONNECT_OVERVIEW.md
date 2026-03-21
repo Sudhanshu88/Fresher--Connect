@@ -196,7 +196,7 @@ Note: runtime database MongoDB hai, lekin SQL file documentation/reference ke ka
 
 ## 8. Dockerfile / YAML
 
-**Kahan use hui hai:** `docker/`, `backend/Dockerfile`, `frontend/Dockerfile`
+**Kahan use hui hai:** `docker-compose.yml`, `docker-compose.ec2.yml`, `backend/Dockerfile`, `frontend/Dockerfile`
 
 **Kyu use hui hai:**
 
@@ -260,7 +260,8 @@ S3 storage support ke liye use hua hai.
   product photos / preview images
 - `scripts/`
   local run aur utility scripts
-- `docker/`
+- `docker-compose.yml`
+- `docker-compose.ec2.yml`
   deployment/container setup
 
 ## Short Demo Explanation
