@@ -70,6 +70,7 @@ jobs:
           BACKEND_IMAGE: ghcr.io/example/fresher-connect-backend:test
           FRONTEND_IMAGE: ghcr.io/example/fresher-connect-frontend:test
         run: |
+          cp .env.example .env
           docker compose -f docker-compose.yml --env-file .env.example config
           docker compose -f docker-compose.ec2.yml config
           docker build -t fresher-connect-backend:ci ./backend
