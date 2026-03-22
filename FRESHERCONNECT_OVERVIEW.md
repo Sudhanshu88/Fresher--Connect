@@ -1,14 +1,25 @@
 # FresherConnect Overview
 
-FresherConnect ek fresher hiring platform hai jahan 3 main user roles kaam karte hain:
+FresherConnect ek full-stack job portal aur hiring platform hai jo fresh graduates, recruiters, aur platform admins ko ek hi system me connect karta hai.
+Iska main goal hai fresher hiring ko zyada structured, professional, aur transparent banana, taaki:
+
+- candidates verified jobs dhoondh sakein
+- companies faster hiring kar sakein
+- admin platform quality maintain kar sake
+
+FresherConnect ab React + Next.js frontend, Redux Toolkit state management, aur Python Flask backend ke saath modern production-style architecture par chal raha hai.
+
+![FresherConnect Logo](frontend/public/fc-logo.svg)
+
+## User Roles
+
+Platform me 3 main roles hain:
 
 - `Fresher / Candidate`
 - `Company / Recruiter`
 - `Admin`
 
-Is project ka purpose hai hiring process ko simple banana: job discover karo, apply karo, application track karo, aur company side se candidates manage karo.
-
-![FresherConnect Logo](frontend/public/fc-logo.svg)
+Har role ka apna dedicated workflow, dashboard, aur permissions model hai.
 
 ## Product Photos
 
@@ -16,260 +27,445 @@ Is project ka purpose hai hiring process ko simple banana: job discover karo, ap
 
 ![Candidate Dashboard](docs/screenshots/dashboard-preview.svg)
 
-Ye screen candidate ko jobs, saved jobs, applications aur notifications ek jagah dikhati hai.
+Ye screen candidate ko profile, applications, notifications, recommended jobs, aur saved opportunities ek jagah dikhati hai.
 
 ### 2. Job Apply Flow
 
 ![Job Apply Page](docs/screenshots/job-apply-page-preview.svg)
 
-Ye screen job details, eligibility, skills aur application action ko explain karti hai.
+Ye screen role details, company details, skills, hiring stages, aur application action ko clear format me show karti hai.
 
 ### 3. Company Panel
 
 ![Company Panel](docs/screenshots/company-panel-preview.svg)
 
-Ye screen recruiter/company ko posted jobs, candidate applications, analytics aur activity track karne me help karti hai.
+Ye screen recruiter/company ko job posting, candidate pipeline, analytics, logo management, aur recent hiring activity manage karne me help karti hai.
 
-## FresherConnect Ke Main Features
+## FresherConnect Ke All Main Features
 
-### 1. Public Features
+### 1. Shared Platform Features
 
-- Home page jahan platform intro aur user reviews/testimonials dikhte hain.
-- Public jobs listing page jahan jobs browse ki ja sakti hain.
-- Job detail page jahan company, role, skills, location aur compensation details milti hain.
-- Search, category, location, company, experience, skills aur salary based filtering.
-- Pagination support, taaki large job list easily manage ho.
+- React based modern frontend with reusable components
+- Next.js App Router based route structure
+- Redux Toolkit based centralized state management
+- TypeScript validation for safer frontend development
+- Professional SaaS-style UI with responsive layout
+- Shared sticky header and navigation shell
+- Live Updates ticker header ke neeche jo latest companies aur latest jobs ko auto-scroll karta hai
+- Hover par pause hone wala seamless infinite marquee
+- Public reviews / testimonials section
+- Dynamic API-based frontend data loading using `fetch` / shared API helpers
+- Mobile responsive pages
+- Legacy HTML route redirects for backward compatibility
 
-### 2. Fresher / Candidate Features
+### 2. Public / Visitor Features
 
-- Fresher registration aur login.
-- Profile update: name, education, grad year, phone, location, skills, portfolio, LinkedIn, summary.
-- Resume upload.
-- Resume parsing aur skills extraction.
-- Recommended jobs with match insight.
-- Job apply karna.
-- Applied jobs ko dashboard me track karna.
-- Saved jobs list maintain karna.
-- Notifications dekhna aur mark as read karna.
-- Application status track karna, jaise `applied`, `reviewing`, `shortlisted`, `interview`, `offered`, `rejected`.
+- Professional landing page with hero section, mission, impact stats, workflow explanation, and testimonials
+- Public opportunity directory
+- Public job detail page
+- Search bar for roles, skills, and employers
+- Advanced filters:
+  category, location, company, experience, skills, salary
+- Pagination support on jobs listing
+- Public company and role visibility based on moderation status
+- Dynamic Live Updates ticker showing:
+  latest companies as `Company` badges
+  latest jobs as `Job` badges
 
-### 3. Company / Recruiter Features
+### 3. Candidate Registration And Onboarding Features
 
-- Company login.
-- Company profile and logo upload.
-- New job create karna.
-- Job fields manage karna:
-  title, description, experience, education, work mode, salary, skills, benefits, hiring stages, application method.
-- Apni posted jobs dekhna.
-- Candidates ki application list dekhna.
-- Candidate-job match score/fit dekhna.
-- Candidate application status update karna.
-- Interview timing aur decision reason maintain karna.
-- Company analytics dekhna.
-- Recent activity / audit trail dekhna.
-- Overdue applications track karna.
+- Candidate registration page with modern utility header
+- Candidate / Company role switch on registration page
+- Candidate-specific onboarding copy and UX
+- Drag-and-drop profile photo upload
+- Candidate photo preview before upload
+- Replace / remove photo flow
+- Drag-and-drop resume upload
+- Resume file preview and replace / remove flow
+- Resume auto-upload immediately after successful sign-up
+- Resume parsing pipeline trigger after upload
+- Friendly success and failure messaging during onboarding
 
-### 4. Admin Features
+### 4. Candidate / Fresher Features
 
-- Admin login.
-- Full dashboard with analytics.
-- All users dekhna.
-- Company verification status manage karna.
-- Jobs moderate karna:
-  `approved`, `pending`, `rejected`
-- Public visibility control karna.
-- System-wide recent activity track karna.
+- Candidate login
+- Candidate dashboard
+- Profile completion percentage
+- Profile editing:
+  name
+  education
+  graduation year
+  skills
+  phone
+  location
+  summary
+  experience
+  LinkedIn
+  portfolio
+- Resume upload from dashboard
+- Resume parser status display
+- Parsed resume skills display
+- View uploaded resume
+- Recommended jobs section
+- Match-based role visibility
+- Job application submission
+- Saved jobs / saved opportunities list
+- Candidate notifications list
+- Mark notifications as read
+- Application tracking dashboard
+- Detailed application timeline page
+- Workflow statuses:
+  `applied`
+  `reviewing`
+  `shortlisted`
+  `interview`
+  `offered`
+  `rejected`
 
-### 5. System / Platform Features
+### 5. Job Discovery Features
 
-- Role-based access control.
-- JWT-based authentication.
-- Password hashing.
-- MongoDB-based storage.
-- Mock database mode for local testing.
-- Rate limiting for security.
-- In-app notifications.
-- Optional email notification flow.
-- Audit logging.
-- File storage abstraction:
-  local storage ya S3 storage dono support.
-- Health check endpoint.
-- Docker-based deployment support.
-- GitHub Actions CI verification support.
+- Opportunity directory with professional card layout
+- Detailed job page with:
+  title
+  company name
+  company logo
+  company description
+  industry
+  company size
+  location
+  work mode
+  salary range
+  required skills
+  role overview
+  responsibilities
+  required qualifications
+  preferred qualifications
+  benefits
+  hiring stages
+- Candidate-facing match score / profile alignment support
+- Apply directly from job listing and job detail page
+- Visibility only for approved and active jobs
 
-## Kaunsi Language / Technology Use Hui Hai Aur Kyu
+### 6. Company / Recruiter Registration Features
 
-## 1. TypeScript
+- Dedicated company registration flow
+- Enterprise-style header and registration layout
+- Recruiter contact registration
+- Company profile creation during sign-up
+- Company verification-aware onboarding
+- Verification messaging after account creation
+- Company information collection:
+  company name
+  website
+  location
+  company description
+  industry type
+  company size
+
+### 7. Company / Recruiter Workspace Features
+
+- Recruiter login
+- Hiring workspace dashboard
+- Company verification status display
+- Employer profile summary
+- Company logo upload
+- Employer branding update flow
+- Create / publish new job
+- Job publishing form fields:
+  title
+  description
+  experience required
+  education required
+  employment type
+  work mode
+  department
+  skills
+  location
+  salary range
+  role overview
+  benefits
+  hiring stages
+- View posted jobs
+- Posted jobs applicant counts
+- Opportunity moderation status view
+- Company analytics dashboard
+- Metrics:
+  open jobs
+  total jobs
+  total applicants
+  shortlisted rate
+  interview rate
+  offer rate
+  rejection rate
+  decision rate
+  average decision time
+  SLA breaches
+- Top performing jobs insights
+- Candidate pipeline table
+- Update candidate application stage
+- Add interview time
+- Add decision reason / recruiter note
+- Recent activity / audit log section
+- Overdue application tracking through analytics and workflow engine
+
+### 8. Admin Features
+
+- Admin login
+- Governance console / admin workspace
+- System-wide analytics
+- Employer verification management
+- Employer statuses:
+  `verified`
+  `pending`
+  `rejected`
+- Opportunity moderation management
+- Job moderation statuses:
+  `approved`
+  `pending`
+  `rejected`
+- Job visibility control:
+  active
+  hidden
+- All employer accounts view
+- Job moderation table
+- Application health snapshot
+- Recent governance activity / audit trail
+
+### 9. Reviews And Trust Features
+
+- Public reviews / testimonials display on landing page
+- Review submission form
+- Review role types:
+  fresher
+  company
+  guest / mentor
+- Rating support
+- Dynamic review loading from backend
+- Review publishing API
+
+### 10. Backend / System Features
+
+- Flask API backend
+- Modular route/controller/service architecture
+- JWT-based authentication
+- Password hashing
+- Role-based access control
+- Session endpoint for frontend bootstrap
+- MongoDB persistence
+- Mongomock support for local testing
+- Health check endpoint
+- Rate limiting middleware
+- File upload support
+- Local storage support
+- S3 storage support
+- Company logo storage
+- Candidate photo storage
+- Resume storage
+- Uploaded file serving endpoint
+- Notification engine
+- Audit logging system
+- Workflow automation for application status and SLA handling
+- Resume parsing and skill extraction
+- Matching support between candidate profile and jobs
+- Seed data for companies, jobs, admin account, and reviews
+
+### 11. Frontend State Management Features
+
+Redux Toolkit based slices already organized for major app domains:
+
+- `session-slice.ts`
+  user session, auth bootstrap, logout, current user state
+- `notifications-slice.ts`
+  notifications list and unread state
+- `applications-slice.ts`
+  candidate/company application state
+- `jobs-slice.ts`
+  job entity state
+- `job-directory-slice.ts`
+  filters, pagination, and jobs directory state
+- `workspaces-slice.ts`
+  dashboard data for user/company/admin
+- `platform-actions.ts`
+  async thunks and cross-module API actions
+
+### 12. API Surface Highlights
+
+Important API categories:
+
+- Auth APIs
+  register, login, logout, session
+- Job APIs
+  list jobs, job detail
+- Candidate APIs
+  dashboard, profile update, photo upload, resume upload, applications, saved jobs, notifications
+- Company APIs
+  dashboard, jobs, logo upload, candidate application updates
+- Admin APIs
+  dashboard, employer verification, job moderation
+- System APIs
+  reviews, live updates, health check, uploaded files
+
+### 13. Deployment And DevOps Features
+
+- Backend Dockerfile
+- Frontend Dockerfile
+- Root `docker-compose.yml`
+- Root `docker-compose.ec2.yml`
+- Docker-ready backend/frontend service setup
+- EC2 deployment compose file
+- GitHub Actions CI/CD workflow
+- Frontend build verification
+- Backend compile verification
+- Docker config validation in CI
+- Publish pipeline for backend and frontend images
+
+## Languages / Technologies Aur Kyu Use Hui Hain
+
+### 1. TypeScript
 
 **Kahan use hui hai:** `frontend/app`, `frontend/components`, `frontend/lib`
 
 **Kyu use hui hai:**
 
-- React frontend ko type-safe banane ke liye
-- Compile time par errors pakadne ke liye
-- Large project me maintainability aur scalability better rakhne ke liye
-- State shape, API response aur UI props ko clearly define karne ke liye
+- frontend ko type-safe banane ke liye
+- compile time par errors pakadne ke liye
+- API response aur UI props ko strongly typed rakhne ke liye
+- scalable React codebase maintain karne ke liye
 
-**Example kaam:**
-
-- React pages
-- reusable components
-- Redux Toolkit slices
-- API helpers
-- route helpers
-
-## 2. JavaScript
+### 2. JavaScript
 
 **Kahan use hui hai:** `frontend/public/services`, `database/init.js`
 
 **Kyu use hui hai:**
 
-- Legacy static frontend logic ko support karne ke liye
-- MongoDB seed / init script chalane ke liye
-- Backward compatibility maintain karne ke liye
+- legacy static frontend compatibility ke liye
+- browser utility scripts ke liye
+- MongoDB seed/init script ke liye
 
-**Example kaam:**
-
-- old HTML pages ka browser logic
-- MongoDB initial data setup
-
-## 3. Python
+### 3. Python
 
 **Kahan use hui hai:** `backend/`
 
 **Kyu use hui hai:**
 
-- Backend API banane ke liye
-- Business logic handle karne ke liye
-- Authentication, notifications, matching, analytics, audit aur workflow process karne ke liye
+- Flask APIs banane ke liye
+- authentication, workflow, analytics, notifications, parsing, aur business logic ke liye
+- MongoDB access aur file handling ke liye
 
-**Example kaam:**
-
-- Flask routes and controllers
-- MongoDB access
-- resume parsing
-- job matching
-- rate limiting
-- file upload handling
-
-## 4. HTML
+### 4. HTML
 
 **Kahan use hui hai:** `frontend/public/*.html`
 
 **Kyu use hui hai:**
 
-- Legacy static pages ke structure ke liye
-- Simple browser-rendered screens ke liye
-- Earlier UI compatibility maintain rakhne ke liye
+- legacy pages aur backward compatibility ke liye
+- existing static asset layer ko preserve karne ke liye
 
-## 5. CSS
+### 5. CSS
 
 **Kahan use hui hai:** `frontend/app/globals.css`, `frontend/public/styles/app.css`
 
 **Kyu use hui hai:**
 
-- UI styling ke liye
-- layout, colors, typography aur responsiveness ke liye
-- React UI aur static UI dono ko consistent look dene ke liye
+- layout, spacing, typography, responsive design, marquee animation, and shared styling ke liye
 
-## 6. SQL
+### 6. SQL
 
 **Kahan use hui hai:** `database/schema.sql`
 
 **Kyu use hui hai:**
 
-- Reference relational schema dikhane ke liye
-- Database design samjhane ke liye
-- Future migration/documentation support ke liye
+- reference relational schema document karne ke liye
+- future database planning aur explanation ke liye
 
-Note: runtime database MongoDB hai, lekin SQL file documentation/reference ke kaam aati hai.
+Note: runtime database MongoDB hai.
 
-## 7. PowerShell
+### 7. PowerShell
 
 **Kahan use hui hai:** `scripts/*.ps1`
 
 **Kyu use hui hai:**
 
-- Local development start karne ke liye
-- backend/frontend launch scripts dene ke liye
+- local backend/frontend start karne ke liye
 - developer workflow ko fast banane ke liye
 
-## 8. Dockerfile / YAML
+### 8. Docker / YAML
 
-**Kahan use hui hai:** `docker-compose.yml`, `docker-compose.ec2.yml`, `backend/Dockerfile`, `frontend/Dockerfile`
+**Kahan use hui hai:** `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml`, `docker-compose.ec2.yml`
 
 **Kyu use hui hai:**
 
-- App ko container me run karne ke liye
-- Deployment aur environment setup easy banane ke liye
-- Same environment me frontend aur backend run karne ke liye
+- containerized deployment ke liye
+- local multi-service startup ke liye
+- cloud / EC2 deployment ke liye
 
 ## Major Frameworks Aur Tools
 
 ### React
 
-Frontend UI ko reusable components me break karne ke liye use hua hai.
+Reusable frontend components aur interactive UI flows ke liye.
 
 ### Next.js
 
-React app ko route-based structure, build system aur frontend runtime dene ke liye use hua hai.
+App Router, route structure, build system, aur frontend runtime ke liye.
 
 ### Redux Toolkit
 
-Global state management ke liye use hua hai, jaise:
+Centralized state sync ke liye:
 
-- user session
+- session
+- jobs
 - notifications
-- job data
 - applications
 - dashboards
 
 ### Flask
 
-Python backend API framework ke roop me use hua hai.
+Backend API framework ke roop me.
 
 ### MongoDB
 
-Main database ke roop me use hua hai, kyunki job platform jaisa data flexible documents me easily store hota hai.
+Flexible document data ke liye primary runtime database.
 
 ### PyMongo
 
-Python se MongoDB connect aur query karne ke liye use hua hai.
-
-### bcrypt
-
-Passwords secure hash karne ke liye use hua hai.
+Python aur MongoDB integration ke liye.
 
 ### JWT
 
-User authentication tokens issue aur verify karne ke liye use hua hai.
+Authentication token issue aur verification ke liye.
+
+### bcrypt
+
+Password hashing ke liye.
 
 ### boto3
 
-S3 storage support ke liye use hua hai.
+S3 file storage support ke liye.
 
 ## Project Structure Simple Words Me
 
 - `frontend/`
-  React + Next.js based frontend
+  React + Next.js app, components, state, styling
 - `backend/`
-  Flask API, business logic, services
+  Flask API, business logic, routes, controllers, services
 - `database/`
-  schema aur initialization files
+  init script aur reference schema
 - `docs/screenshots/`
-  product photos / preview images
+  product preview images
 - `scripts/`
-  local run aur utility scripts
+  local startup utilities
 - `docker-compose.yml`
+  local multi-container setup
 - `docker-compose.ec2.yml`
-  deployment/container setup
+  deployment compose setup
 
 ## Short Demo Explanation
 
-Aap agar kisi ko short me explain karna chaho to ye line use kar sakte ho:
+Agar aap kisi ko short me explain karna chaho to ye line use kar sakte ho:
 
-> FresherConnect ek fresher hiring platform hai jo React/Next.js frontend aur Python Flask backend par bana hai. Isme candidates jobs search aur apply kar sakte hain, companies jobs post karke applications manage kar sakti hain, aur admin poore platform ko monitor aur moderate kar sakta hai.
+> FresherConnect ek modern hiring platform hai jo fresh graduates ko verified opportunities se connect karta hai, recruiters ko structured hiring workspace deta hai, aur admins ko platform governance controls provide karta hai.
 
 ## Best One-Line Summary
 
-FresherConnect ek full-stack hiring platform hai jo fresher job search, company recruitment workflow, aur admin moderation ko ek hi system me handle karta hai.
+FresherConnect ek full-stack fresher hiring platform hai jo candidate onboarding, job discovery, recruiter workflow, admin moderation, aur live platform updates ko ek hi system me manage karta hai.

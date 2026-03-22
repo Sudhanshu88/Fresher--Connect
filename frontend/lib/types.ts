@@ -45,6 +45,20 @@ export interface Review {
   created_at?: string;
 }
 
+export interface LiveUpdateItem {
+  id: string;
+  type: "company" | "job";
+  title: string;
+  message: string;
+  company_name?: string;
+  created_at?: string;
+}
+
+export interface LiveUpdatesResponse {
+  ok: boolean;
+  updates: LiveUpdateItem[];
+}
+
 export interface NotificationItem {
   id: number;
   type: string;

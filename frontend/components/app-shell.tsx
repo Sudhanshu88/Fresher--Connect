@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { LiveUpdatesTicker } from "@/components/live-updates-ticker";
 import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
 
@@ -128,6 +129,7 @@ export function AppShell({
           </div>
         </div>
       </header>
+      <LiveUpdatesTicker />
       <main>
         <div className={`container page-shell${contentClassName ? ` ${contentClassName}` : ""}`}>
           {title ? (

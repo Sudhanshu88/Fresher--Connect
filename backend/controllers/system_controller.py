@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from io import BytesIO
 
 from flask import current_app, jsonify, request, send_file, send_from_directory
@@ -7,7 +8,15 @@ from pymongo import DESCENDING
 from pymongo.errors import PyMongoError
 
 from backend.middleware.auth import current_account
-from backend.services.platform_service import get_store, isoformat, json_error, parse_optional_int, serialize_user, utcnow
+from backend.services.platform_service import (
+    get_store,
+    isoformat,
+    json_error,
+    parse_optional_datetime,
+    parse_optional_int,
+    serialize_user,
+    utcnow,
+)
 from backend.services.storage_service import open_upload, storage_backend, upload_path_for_key
 
 
@@ -74,6 +83,64 @@ def serialize_review(review):
         "created_at": isoformat(review.get("created_at")),
         "updated_at": isoformat(review.get("updated_at")),
     }
+
+
+def _update_sort_time(record, *keys):
+    for key in keys:
+        parsed = parse_optional_datetime(record.get(key))
+        if parsed:
+            return parsed
+    return datetime.min
+
+
+def serialize_live_update(update):
+    if not update:
+        return None
+    return {
+        "id": update.get("id"),
+        "type": update.get("type"),
+        "title": update.get("title"),
+        "message": update.get("message"),
+        "company_name": update.get("company_name"),
+        "created_at": isoformat(update.get("created_at")),
+    }
+
+
+def list_live_updates():
+    store = get_store()
+    limit = parse_optional_int(request.args.get("limit")) or 10
+    limit = max(4, min(limit, 20))
+
+    company_updates = [
+        {
+            "id": f"company-{company.get('company_id') or company.get('id')}",
+            "type": "company",
+            "title": str(company.get("company_name") or "Unnamed company").strip(),
+            "message": "New company joined",
+            "company_name": str(company.get("company_name") or "Unnamed company").strip(),
+            "created_at": _update_sort_time(company, "created_at", "updated_at"),
+        }
+        for company in store.companies.find({}, {"_id": 0}).sort("created_at", DESCENDING).limit(limit)
+        if str(company.get("company_name") or "").strip()
+    ]
+
+    job_updates = [
+        {
+            "id": f"job-{job.get('job_id') or job.get('id')}",
+            "type": "job",
+            "title": str(job.get("title") or job.get("job_title") or "Untitled role").strip(),
+            "message": str(job.get("company_name") or "Unknown company").strip(),
+            "company_name": str(job.get("company_name") or "Unknown company").strip(),
+            "created_at": _update_sort_time(job, "posted_date", "created_at", "updated_at"),
+        }
+        for job in store.jobs.find({"is_active": True, "moderation_status": "approved"}, {"_id": 0}).sort("posted_date", DESCENDING).limit(limit)
+        if str(job.get("title") or job.get("job_title") or "").strip()
+    ]
+
+    updates = company_updates + job_updates
+    updates.sort(key=lambda item: item.get("created_at") or datetime.min, reverse=True)
+
+    return jsonify({"ok": True, "updates": [serialize_live_update(item) for item in updates[:limit]]})
 
 
 def list_reviews():

@@ -24,6 +24,130 @@ a {
   min-height: 100vh;
 }
 
+.live-updates-shell {
+  margin-top: clamp(10px, 1.8vw, 16px);
+  margin-bottom: clamp(12px, 2vw, 18px);
+}
+
+.live-updates-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 6px 12px;
+  border: 1px solid rgba(18, 58, 114, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(17, 33, 61, 0.06);
+  overflow: hidden;
+}
+
+.live-updates-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 104px;
+  min-height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(18, 58, 114, 0.08);
+  color: var(--brand-navy);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.live-updates-viewport {
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+.live-updates-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: live-updates-scroll var(--ticker-duration, 24s) linear infinite;
+}
+
+.live-updates-card:hover .live-updates-track {
+  animation-play-state: paused;
+}
+
+.live-updates-segment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  padding-right: 12px;
+}
+
+.live-update-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 58, 114, 0.08);
+  border-radius: 999px;
+  background: rgba(247, 250, 253, 0.98);
+  white-space: nowrap;
+}
+
+.live-update-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.live-update-badge.company {
+  background: #2166dc;
+}
+
+.live-update-badge.job {
+  background: #198754;
+}
+
+.live-update-title {
+  color: var(--brand-navy);
+  font-weight: 800;
+}
+
+.live-update-separator,
+.live-update-message,
+.live-updates-empty {
+  color: var(--muted);
+}
+
+.live-updates-empty {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  white-space: nowrap;
+}
+
+@keyframes live-updates-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .page-shell {
   min-height: calc(100vh - 220px);
 }
@@ -676,6 +800,34 @@ code {
 @media (max-width: 760px) {
   .container {
     width: min(1280px, calc(100% - 28px));
+  }
+
+  .live-updates-shell {
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
+
+  .live-updates-card {
+    min-height: 40px;
+    gap: 10px;
+    padding: 6px 10px;
+  }
+
+  .live-updates-label {
+    min-width: 88px;
+    padding: 0 12px;
+    font-size: 0.68rem;
+  }
+
+  .live-updates-segment {
+    gap: 10px;
+    padding-right: 10px;
+  }
+
+  .live-update-item {
+    gap: 8px;
+    min-height: 28px;
+    padding: 0 12px;
   }
 
   .auth-utility-inner,
