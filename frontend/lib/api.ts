@@ -2,6 +2,7 @@
 
 const TOKEN_KEY = "fc_next_auth_token";
 const API_BASE_KEY = "fc_next_api_base";
+const FALLBACK_API_BASE = "http://13.201.31.227:5000";
 
 export class ApiError extends Error {
   status: number;
@@ -22,24 +23,55 @@ function isBrowser() {
   return typeof window !== "undefined";
 }
 
+function normalizeApiBase(value: string | null | undefined) {
+  return String(value || "").trim().replace(/\/+$/, "");
+}
+
+function readConfiguredApiBase() {
+  return normalizeApiBase(process.env.NEXT_PUBLIC_API_BASE);
+}
+
+function browserDefaultApiBase() {
+  return normalizeApiBase(window.location.origin);
+}
+
+function coerceBrowserApiBase(value: string) {
+  if (!value) {
+    return browserDefaultApiBase();
+  }
+
+  if (window.location.protocol === "https:" && /^http:\/\//i.test(value)) {
+    return browserDefaultApiBase();
+  }
+
+  return value;
+}
+
 export function resolveApiBase() {
+  const configuredBase = readConfiguredApiBase();
+
   if (!isBrowser()) {
-    return process.env.NEXT_PUBLIC_API_BASE || "http://13.201.31.227:5000";
+    return configuredBase || FALLBACK_API_BASE;
   }
 
   const params = new URLSearchParams(window.location.search);
-  const queryBase = params.get("api")?.trim();
+  const queryBase = normalizeApiBase(params.get("api"));
   if (queryBase) {
-    window.sessionStorage.setItem(API_BASE_KEY, queryBase.replace(/\/+$/, ""));
-    return queryBase.replace(/\/+$/, "");
+    const nextBase = coerceBrowserApiBase(queryBase);
+    window.sessionStorage.setItem(API_BASE_KEY, nextBase);
+    return nextBase;
   }
 
-  const stored = window.sessionStorage.getItem(API_BASE_KEY)?.trim();
+  const stored = normalizeApiBase(window.sessionStorage.getItem(API_BASE_KEY));
   if (stored) {
-    return stored.replace(/\/+$/, "");
+    return coerceBrowserApiBase(stored);
   }
 
-  return (process.env.NEXT_PUBLIC_API_BASE || "http://13.201.31.227:5000").replace(/\/+$/, "");
+  if (configuredBase) {
+    return coerceBrowserApiBase(configuredBase);
+  }
+
+  return browserDefaultApiBase();
 }
 
 export function readAccessToken() {

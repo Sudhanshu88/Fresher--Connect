@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+const apiProxyTarget = (
+  process.env.API_PROXY_TARGET ||
+  process.env.NEXT_PUBLIC_API_BASE ||
+  "http://13.201.31.227:5000"
+).replace(/\/+$/, "");
+
 const nextConfig: NextConfig = {
   output: "standalone",
   async redirects() {
@@ -29,6 +35,14 @@ const nextConfig: NextConfig = {
       { source: "/user.html", destination: "/user", permanent: false },
       { source: "/company.html", destination: "/company", permanent: false },
       { source: "/admin.html", destination: "/admin", permanent: false }
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiProxyTarget}/api/:path*`
+      }
     ];
   }
 };

@@ -57,28 +57,46 @@
     return String(value || "").trim().replace(/\/+$/, "");
   }
 
+  function browserDefaultBase() {
+    return normalizeBase(window.location.origin);
+  }
+
+  function coerceBrowserBase(value) {
+    var normalized = normalizeBase(value);
+    if (!normalized) {
+      return browserDefaultBase();
+    }
+
+    if (window.location.protocol === "https:" && /^http:\/\//i.test(normalized)) {
+      return browserDefaultBase();
+    }
+
+    return normalized;
+  }
+
   function detectApiBase() {
     var params = new URLSearchParams(window.location.search);
     var queryBase = normalizeBase(params.get("api"));
     if (queryBase) {
-      writeSessionValue("fc_api_base", queryBase);
-      return queryBase;
+      var nextQueryBase = coerceBrowserBase(queryBase);
+      writeSessionValue("fc_api_base", nextQueryBase);
+      return nextQueryBase;
     }
 
     if (typeof window.FC_API_BASE === "string" && window.FC_API_BASE.trim()) {
-      return normalizeBase(window.FC_API_BASE);
+      return coerceBrowserBase(window.FC_API_BASE);
     }
 
     var stored = normalizeBase(readSessionValue("fc_api_base"));
     if (stored) {
-      return stored;
+      return coerceBrowserBase(stored);
     }
 
     if (window.location.port === "5000") {
       return normalizeBase(window.location.origin);
     }
 
-    return "http://13.201.31.227:5000";
+    return browserDefaultBase();
   }
 
   var state = {

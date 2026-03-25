@@ -49,7 +49,7 @@ export const hydrateSession = createAsyncThunk<SessionUser | null>(
 export const loginUser = createAsyncThunk<SessionUser, AuthPayload>(
   "session/loginUser",
   async (payload) => {
-    const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/login", {
+    const response = await apiRequest<SessionResponse & { access_token: string }>("/api/auth/login", {
       method: "POST",
       body: payload
     });
@@ -61,7 +61,7 @@ export const loginUser = createAsyncThunk<SessionUser, AuthPayload>(
 export const loginAdminUser = createAsyncThunk<SessionUser, AuthPayload>(
   "session/loginAdminUser",
   async (payload) => {
-    const response = await apiRequest<SessionResponse & { access_token: string }>("/auth/admin/login", {
+    const response = await apiRequest<SessionResponse & { access_token: string }>("/api/auth/admin/login", {
       method: "POST",
       body: payload
     });
