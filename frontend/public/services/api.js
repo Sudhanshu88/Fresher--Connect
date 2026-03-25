@@ -14,10 +14,18 @@
     admin_access_required: "This area is restricted to administrator accounts.",
     admin_login_required: "Administrator accounts must use the dedicated admin sign-in page.",
     company_not_found: "The selected employer record could not be found.",
+    company_name_required: "Enter your registered company name before continuing.",
     company_verification_only: "This action only supports employer verification decisions.",
     company_verification_pending: "Your company account is pending administrator verification before sign-in can be enabled.",
     company_verification_rejected: "Your company account did not pass the administrator verification review.",
+    education_required: "Enter your highest qualification before continuing.",
+    email_already_registered: "This email is already registered. Sign in instead or use a different email.",
+    email_required: "Enter your email address before continuing.",
+    grad_year_required: "Enter your graduation year before continuing.",
     invalid_credentials: "The email address or password you entered is incorrect.",
+    invalid_role: "Please choose whether you are creating a candidate or company account.",
+    name_required: "Enter your full name before continuing.",
+    password_too_short: "Use a password with at least 8 characters.",
     verification_status_required: "Select a verification decision before saving."
   };
 

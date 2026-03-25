@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthShell } from "@/components/auth-shell";
 import { Feedback } from "@/components/feedback";
-import { apiRequest, writeAccessToken } from "@/lib/api";
+import { ApiError, apiRequest, writeAccessToken } from "@/lib/api";
 import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
 import type { SessionUser } from "@/lib/types";
@@ -74,6 +74,33 @@ const roleContent = {
     loginText: "Sign in to recruiter workspace"
   }
 } as const;
+
+const registerErrorMessages: Record<string, string> = {
+  invalid_role: "Please choose whether you are creating a candidate or company account.",
+  name_required: "Enter your full name before continuing.",
+  email_required: "Enter your email address before continuing.",
+  password_too_short: "Use a password with at least 8 characters.",
+  email_already_registered: "This email is already registered. Sign in instead or use a different email.",
+  company_name_required: "Enter your registered company name before continuing.",
+  grad_year_required: "Enter your graduation year before continuing.",
+  education_required: "Enter your highest qualification before continuing."
+};
+
+function resolveRegisterErrorMessage(error: unknown) {
+  if (error instanceof ApiError) {
+    const payload = error.payload;
+    const errorCode =
+      typeof payload === "object" && payload !== null && "error" in payload
+        ? String((payload as { error?: string }).error || "").trim()
+        : "";
+
+    if (errorCode && registerErrorMessages[errorCode]) {
+      return registerErrorMessages[errorCode];
+    }
+  }
+
+  return "We couldn't create your account. Please review the form details and try again.";
+}
 
 export default function RegisterPage() {
   return (
@@ -352,9 +379,9 @@ function RegisterPageContent() {
         setMessage(response.message || "Your employer account has been created and submitted for verification.");
         setForm((current) => ({ ...defaultForm, role: current.role }));
       }
-    } catch (_error) {
+    } catch (error) {
       setTone("error");
-      setMessage("We couldn't create your account. Please review the form details and try again.");
+      setMessage(resolveRegisterErrorMessage(error));
     } finally {
       setSubmitting(false);
     }
