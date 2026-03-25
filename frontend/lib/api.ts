@@ -24,7 +24,7 @@ function isBrowser() {
 
 export function resolveApiBase() {
   if (!isBrowser()) {
-    return process.env.NEXT_PUBLIC_API_BASE || "https://fresher-connect-2.onrender.com";
+    return process.env.NEXT_PUBLIC_API_BASE || "http://13.201.31.227:5000";
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -39,7 +39,7 @@ export function resolveApiBase() {
     return stored.replace(/\/+$/, "");
   }
 
-  return (process.env.NEXT_PUBLIC_API_BASE || "https://fresher-connect-2.onrender.com").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_API_BASE || "http://13.201.31.227:5000").replace(/\/+$/, "");
 }
 
 export function readAccessToken() {
