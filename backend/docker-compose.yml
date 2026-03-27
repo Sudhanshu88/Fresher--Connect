@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fresher-connect-backend:latest
+    env_file:
+      - .env
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    volumes:
+      - uploads-data:/app/instance/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/healthz').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  uploads-data:

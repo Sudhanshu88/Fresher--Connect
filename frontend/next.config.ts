@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
 
-const apiProxyTarget = (
-  process.env.API_PROXY_TARGET ||
-  process.env.NEXT_PUBLIC_API_BASE ||
-  "http://13.201.31.227:5000"
-).replace(/\/+$/, "");
+const DEFAULT_API_PROXY_TARGET = "http://127.0.0.1:5000";
+
+function normalizeApiTarget(value: string | undefined) {
+  return String(value || "").trim().replace(/\/+$/, "");
+}
+
+const apiProxyTarget =
+  normalizeApiTarget(process.env.API_PROXY_TARGET) ||
+  normalizeApiTarget(process.env.NEXT_PUBLIC_API_BASE) ||
+  DEFAULT_API_PROXY_TARGET;
 
 const nextConfig: NextConfig = {
   output: "standalone",

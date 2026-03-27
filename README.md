@@ -34,10 +34,9 @@ Fresher--Connect
 |-- docker-compose.yml
 |-- .github
 |   `-- workflows
-|       `-- ci.yml
+|       `-- cicd.yml
 |-- scripts
-|-- app.py
-`-- requirements.txt
+`-- README.md
 ```
 
 ## Stack
@@ -145,10 +144,15 @@ Reference relational schema:
 
 ## Docker
 
-Shared Docker assets:
+Shared Docker assets for combined local or legacy single-host runs:
 
 - `docker-compose.yml`
 - `docker-compose.ec2.yml`
+
+Separate EC2 deployment files live in:
+
+- `backend/docker-compose.yml`
+- `frontend/docker-compose.yml`
 
 Backend image:
 
@@ -187,7 +191,7 @@ Docker assets target the `frontend/` runtime and the single asset source in `fro
 
 GitHub Actions workflow:
 
-- `.github/workflows/ci.yml`
+- `.github/workflows/cicd.yml`
 
 It verifies Python compilation, mocked backend flow, Docker Compose configuration, and container builds.
 

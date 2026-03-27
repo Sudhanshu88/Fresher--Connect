@@ -2,7 +2,7 @@
 
 const TOKEN_KEY = "fc_next_auth_token";
 const API_BASE_KEY = "fc_next_api_base";
-const FALLBACK_API_BASE = "http://13.201.31.227:5000";
+const FALLBACK_API_BASE = "http://127.0.0.1:5000";
 
 export class ApiError extends Error {
   status: number;
@@ -100,6 +100,26 @@ async function parseResponse(response: Response) {
   return response.text();
 }
 
+function readPayloadMessage(payload: unknown) {
+  if (typeof payload === "string") {
+    return payload.trim();
+  }
+
+  if (typeof payload !== "object" || payload === null) {
+    return "";
+  }
+
+  const payloadRecord = payload as Record<string, unknown>;
+  for (const key of ["message", "detail", "error"]) {
+    const value = payloadRecord[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return "";
+}
+
 export async function apiRequest<T>(path: string, init?: ApiRequestInit) {
   const headers = new Headers(init?.headers || {});
   const token = readAccessToken();
@@ -122,10 +142,7 @@ export async function apiRequest<T>(path: string, init?: ApiRequestInit) {
 
   const payload = await parseResponse(response);
   if (!response.ok) {
-    const message =
-      typeof payload === "object" && payload !== null && "error" in payload
-        ? String((payload as { error?: string }).error || "Request failed")
-        : "Request failed";
+    const message = readPayloadMessage(payload) || `Request failed with status ${response.status}`;
     throw new ApiError(message, response.status, payload);
   }
 

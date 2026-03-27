@@ -86,6 +86,33 @@ const registerErrorMessages: Record<string, string> = {
   education_required: "Enter your highest qualification before continuing."
 };
 
+function readServerRegisterMessage(error: ApiError) {
+  const payload = error.payload;
+
+  if (typeof payload === "object" && payload !== null && "message" in payload) {
+    const payloadMessage = (payload as { message?: unknown }).message;
+    if (typeof payloadMessage === "string" && payloadMessage.trim()) {
+      return payloadMessage.trim();
+    }
+  }
+
+  if (typeof payload === "string" && payload.trim()) {
+    return payload.trim();
+  }
+
+  const fallbackMessage = error.message.trim();
+  if (
+    !fallbackMessage ||
+    fallbackMessage === "Request failed" ||
+    fallbackMessage === `Request failed with status ${error.status}` ||
+    /^[a-z0-9_]+$/i.test(fallbackMessage)
+  ) {
+    return "";
+  }
+
+  return fallbackMessage;
+}
+
 function resolveRegisterErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
     const payload = error.payload;
@@ -96,6 +123,19 @@ function resolveRegisterErrorMessage(error: unknown) {
 
     if (errorCode && registerErrorMessages[errorCode]) {
       return registerErrorMessages[errorCode];
+    }
+
+    const serverMessage = readServerRegisterMessage(error);
+    if (error.status === 503) {
+      return serverMessage
+        ? `Registration service is temporarily unavailable. ${serverMessage}`
+        : "Registration service is temporarily unavailable. Please try again in a few minutes.";
+    }
+
+    if (error.status >= 500) {
+      return serverMessage
+        ? `The server could not create your account right now. ${serverMessage}`
+        : "The server could not create your account right now. Please try again shortly.";
     }
   }
 
