@@ -52,7 +52,7 @@ export function LiveUpdatesTicker() {
     <div className="container live-updates-shell">
       <section className="live-updates-card" aria-label="Live updates ticker">
         <div className="live-updates-label">Live Updates</div>
-        <div className="live-updates-viewport">
+        <div className={`live-updates-viewport${updates.length ? "" : " is-empty"}`}>
           {updates.length ? (
             <div className="live-updates-track" style={tickerStyle}>
               <div className="live-updates-segment">
@@ -61,7 +61,7 @@ export function LiveUpdatesTicker() {
                     <span className={`live-update-badge ${update.type}`}>{update.type === "company" ? "Company" : "Job"}</span>
                     <span className="live-update-title">{update.title}</span>
                     <span className="live-update-separator" aria-hidden="true">
-                      •
+                      &bull;
                     </span>
                     <span className="live-update-message">{update.message}</span>
                   </article>
@@ -73,7 +73,7 @@ export function LiveUpdatesTicker() {
                     <span className={`live-update-badge ${update.type}`}>{update.type === "company" ? "Company" : "Job"}</span>
                     <span className="live-update-title">{update.title}</span>
                     <span className="live-update-separator" aria-hidden="true">
-                      •
+                      &bull;
                     </span>
                     <span className="live-update-message">{update.message}</span>
                   </article>

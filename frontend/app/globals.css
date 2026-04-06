@@ -67,6 +67,11 @@ a {
   mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
 }
 
+.live-updates-viewport.is-empty {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .live-updates-track {
   display: flex;
   width: max-content;
@@ -132,10 +137,11 @@ a {
 }
 
 .live-updates-empty {
-  display: inline-flex;
-  align-items: center;
+  display: block;
   min-height: 30px;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 }
 
 @keyframes live-updates-scroll {
@@ -830,6 +836,10 @@ code {
     padding: 0 12px;
   }
 
+  .live-updates-empty {
+    font-size: 0.82rem;
+  }
+
   .auth-utility-inner,
   .enterprise-auth-shell {
     width: min(1300px, calc(100% - 32px));
@@ -882,6 +892,10 @@ code {
   .landing-shell {
     padding-top: 22px;
     padding-bottom: 56px;
+  }
+
+  .landing-shell .hero {
+    grid-template-columns: 1fr;
   }
 
   .landing-shell .section {

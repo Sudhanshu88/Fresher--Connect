@@ -4,6 +4,31 @@ Fresher Connect is a fresher hiring platform with a Flask + MongoDB backend and 
 
 Frontend and backend are now organized to be launched as separate servers with independent setup.
 
+## Deploying On Railpack-Style Platforms
+
+If you deploy this repository from the repo root, buildpack autodetection can fail because the actual runtimes live in `frontend/` and `backend/`.
+
+You now have two supported deployment patterns:
+
+- Preferred: deploy `frontend/` and `backend/` as separate services using their own Dockerfiles or service root directories.
+- Single service from repo root: use the root `Dockerfile`, which starts the Flask API internally on port `5000` and exposes the Next.js app on the platform `PORT`.
+
+For single-service root deploys, set at least:
+
+```env
+MONGODB_URI=<your-mongodb-uri>
+SECRET_KEY=<strong-secret>
+JWT_SECRET_KEY=<strong-secret>
+```
+
+Optional single-service variables:
+
+```env
+FRONTEND_ORIGINS=https://your-public-app-domain
+SESSION_COOKIE_SECURE=true
+MONGODB_USE_MOCK=false
+```
+
 ## Repository Structure
 
 ```text
@@ -168,6 +193,17 @@ Frontend image:
 cd frontend
 docker build -t fresher-connect-frontend .
 docker run -p 3000:3000 fresher-connect-frontend
+```
+
+Single-container root image:
+
+```bash
+docker build -t fresher-connect .
+docker run -p 3000:3000 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017/fresher_connect \
+  -e SECRET_KEY=change-this-before-production \
+  -e JWT_SECRET_KEY=change-this-before-production \
+  fresher-connect
 ```
 
 Frontend build:
