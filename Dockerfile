@@ -60,6 +60,10 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 ca-certificates \
+    && mkdir -p /usr/local/bin \
+    && ln -sf /usr/bin/python3 /usr/local/bin/python \
+    && ln -sf /usr/bin/python3 /usr/local/bin/python3 \
+    && ln -sf /usr/bin/python3 /usr/local/bin/python3.11 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend-builder /opt/venv /opt/venv
