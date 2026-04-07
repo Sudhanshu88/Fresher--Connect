@@ -54,14 +54,14 @@ jobs:
           python scripts/verify_mock_backend_flow.py
 
       - name: Run frontend checks
+        working-directory: frontend
         run: |
-          node --check frontend/public/services/api.js
-          node --check frontend/public/services/app.js
+          npm ci
+          npm run typecheck
 
       - name: Build frontend
         working-directory: frontend
         run: |
-          npm ci
           npm run build
 
       - name: Validate Docker files

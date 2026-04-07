@@ -1,6 +1,6 @@
 # Fresher Connect
 
-Fresher Connect is a fresher hiring platform with a Flask + MongoDB backend and a Next.js frontend runtime in `frontend/`. The live UI is served from `frontend/public/`, which holds the single static asset source used by the app.
+Fresher Connect is a fresher hiring platform with a Flask + MongoDB backend and a Next.js frontend runtime in `frontend/`.
 
 Frontend and backend are now organized to be launched as separate servers with independent setup.
 
@@ -67,7 +67,7 @@ Fresher--Connect
 ## Stack
 
 - Frontend runtime: Next.js App Router + React + TypeScript + Zustand in `frontend/`
-- UI asset source: static HTML, CSS, and JavaScript in `frontend/public/`
+- Shared public assets: CSS, images, and static files in `frontend/public/`
 - Backend: Flask API with route, controller, middleware, and service layers in `backend/`
 - Database: MongoDB collections, plus SQL reference schema in `database/schema.sql`
 - Local verification mode: `mongomock`
@@ -115,8 +115,6 @@ Shortcut:
 powershell -File scripts/start-frontend.ps1
 ```
 
-The `frontend/` app redirects route entries such as `/`, `/jobs`, `/login`, and `/company` to the `.html` pages inside `frontend/public/`, so the visual output remains the same as the earlier UI while keeping only one asset source.
-
 ## Environment Variables
 
 Backend config lives in `backend/.env`.
@@ -149,7 +147,6 @@ NEXT_PUBLIC_API_BASE=http://127.0.0.1:5000
 Notes:
 
 - The backend loads `backend/.env` first and falls back to the root `.env` only for backward compatibility
-- Legacy static pages under `frontend/public/` can override the backend target with `?api=http://host:port` on first load
 - If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`
 - Set `MONGODB_USE_MOCK=true` to run the backend against an in-memory mocked MongoDB
 - Set `DISABLE_SEED_DATA=true` to skip sample companies and jobs
@@ -221,7 +218,7 @@ Compose:
 docker compose -f docker-compose.yml up --build
 ```
 
-Docker assets target the `frontend/` runtime and the single asset source in `frontend/public/`.
+Docker assets target the `frontend/` runtime and its shared public assets in `frontend/public/`.
 
 ## CI
 

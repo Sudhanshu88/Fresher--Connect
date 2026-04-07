@@ -1,6 +1,6 @@
 This folder is the canonical frontend source.
 
-The active runtime, build configuration, and public UI assets all live here.
+The active runtime, build configuration, and shared public assets all live here.
 
 ## Run Locally
 
@@ -21,8 +21,6 @@ Backend defaults:
 
 Set `NEXT_PUBLIC_API_BASE` in `frontend/.env.local` if the browser can reach the backend directly on another host or port.
 Set `API_PROXY_TARGET` in `frontend/.env.local` for the Next.js `/api/*` rewrite target, especially when the frontend is served over HTTPS and the backend is only reachable over HTTP.
-Legacy static pages in `frontend/public/` can also be pointed at another backend with `?api=http://host:port` on first load.
-
 ## Deploy On Separate EC2
 
 Use the files in this folder when the frontend runs on its own EC2 instance:

@@ -354,12 +354,12 @@ Important API categories:
 
 ### 4. HTML
 
-**Kahan use hui hai:** `frontend/public/*.html`
+**Kahan use hui hai:** `frontend/app/*.tsx`, `frontend/components/*.tsx`, `frontend/next.config.ts`
 
 **Kyu use hui hai:**
 
-- legacy pages aur backward compatibility ke liye
-- existing static asset layer ko preserve karne ke liye
+- Next.js route rendering ke liye
+- legacy `.html` URLs ko React routes par redirect karne ke liye
 
 ### 5. CSS
 
