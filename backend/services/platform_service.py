@@ -49,6 +49,10 @@ def normalize_mongodb_uri():
     if mongodb_uri:
         return mongodb_uri
 
+    mongo_uri = str(os.getenv("MONGO_URI", "")).strip()
+    if mongo_uri:
+        return mongo_uri
+
     database_url = str(os.getenv("DATABASE_URL", "")).strip()
     if database_url.startswith("mongodb://") or database_url.startswith("mongodb+srv://"):
         return database_url
