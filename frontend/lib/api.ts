@@ -2,7 +2,8 @@
 
 const TOKEN_KEY = "fc_next_auth_token";
 const API_BASE_KEY = "fc_next_api_base";
-const FALLBACK_API_BASE = "http://127.0.0.1:5000";
+const FALLBACK_API_BASE = "https://api.freshersconnect.net";
+
 
 export class ApiError extends Error {
   status: number;
