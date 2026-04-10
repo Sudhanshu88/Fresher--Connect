@@ -16,7 +16,12 @@ RUN npm ci --include=dev
 
 COPY . .
 
-RUN npm run build
+RUN npm run build \
+    && mkdir -p .next/standalone/.next \
+    && cp -R .next/static .next/standalone/.next/static \
+    && cp -R public .next/standalone/public \
+    && test -f .next/standalone/server.js \
+    && test -d .next/standalone/.next/static
 
 
 FROM node:20-alpine AS runner
@@ -34,8 +39,6 @@ ENV NODE_ENV=production \
 WORKDIR /app
 
 COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
 
 RUN addgroup --system nextjs \
     && adduser --system --ingroup nextjs --home /app nextjs \

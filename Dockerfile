@@ -37,7 +37,12 @@ RUN npm ci --include=dev
 
 COPY frontend ./
 
-RUN npm run build
+RUN npm run build \
+    && mkdir -p .next/standalone/.next \
+    && cp -R .next/static .next/standalone/.next/static \
+    && cp -R public .next/standalone/public \
+    && test -f .next/standalone/server.js \
+    && test -d .next/standalone/.next/static
 
 
 FROM node:20-bookworm-slim AS runner
@@ -69,8 +74,6 @@ RUN apt-get update \
 COPY --from=backend-builder /opt/venv /opt/venv
 COPY backend ./backend
 COPY --from=frontend-builder /app/frontend/.next/standalone ./frontend
-COPY --from=frontend-builder /app/frontend/.next/static ./frontend/.next/static
-COPY --from=frontend-builder /app/frontend/public ./frontend/public
 COPY start.sh ./start.sh
 
 RUN chmod +x /app/start.sh \
