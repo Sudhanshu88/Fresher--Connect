@@ -18,6 +18,7 @@ Backend server default:
 - `http://127.0.0.1:5000`
 
 The backend loads configuration from `backend/.env` first and falls back to the legacy root `.env` only if needed.
+The local example file uses a localhost MongoDB URI for native development outside Docker.
 
 ## Deploy On Separate EC2
 
@@ -31,7 +32,16 @@ Typical production flow:
 ```bash
 cd backend
 cp .env.ec2.example .env
+nano .env
 docker compose up -d --build
 ```
 
-Set `MONGODB_URI` to the real database endpoint and keep `FRONTEND_ORIGINS` aligned with the frontend EC2 public URL or domain.
+Before starting the container, set a real `MONGODB_URI` in `backend/.env` and keep `FRONTEND_ORIGINS` aligned with the frontend domain.
+Do not commit production secrets into the repository.
+
+Quick verification after deploy:
+
+```bash
+docker compose exec backend python -c "from backend.config.settings import normalize_mongodb_uri; print(normalize_mongodb_uri())"
+curl http://127.0.0.1:5000/healthz
+```
