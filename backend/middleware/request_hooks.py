@@ -42,5 +42,6 @@ def register_request_hooks(app):
         try:
             get_store().bootstrap()
         except (PyMongoError, RuntimeError):
+            app.logger.exception("Database bootstrap failed for %s %s", request.method, request.path)
             return json_error("database_unavailable", 503)
         return None

@@ -44,11 +44,11 @@ def api_session():
 def healthcheck():
     store = get_store()
     try:
-        store.ping()
-        return jsonify({"database": "available", "engine": "mongodb", "ok": True})
+        store.bootstrap()
+        return jsonify({"database": "available", "engine": "mongodb", "ok": True, "ready": True})
     except (PyMongoError, RuntimeError) as error:
         current_app.logger.warning("Healthcheck error: %s", error)
-        return jsonify({"database": "unavailable", "engine": "mongodb", "ok": False}), 503
+        return jsonify({"database": "unavailable", "engine": "mongodb", "ok": False, "ready": False}), 503
 
 
 def uploaded_file(filename):

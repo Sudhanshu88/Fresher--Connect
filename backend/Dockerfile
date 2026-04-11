@@ -43,7 +43,7 @@ USER app
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=20s --start-period=60s --retries=3 \
   CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/healthz').read()"
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--access-logfile", "-", "--error-logfile", "-", "backend.wsgi:app"]
