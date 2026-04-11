@@ -5,15 +5,13 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-}
-        API_PROXY_TARGET: ${API_PROXY_TARGET}
+        API_PROXY_TARGET: ${API_PROXY_TARGET:-http://127.0.0.1:5000}
     image: fresher-connect-frontend:latest
-    env_file:
-      - .env
     environment:
       PORT: 3000
       HOSTNAME: 0.0.0.0
       NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-}
-      API_PROXY_TARGET: ${API_PROXY_TARGET}
+      API_PROXY_TARGET: ${API_PROXY_TARGET:-http://127.0.0.1:5000}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     restart: unless-stopped
