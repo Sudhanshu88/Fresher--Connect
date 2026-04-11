@@ -126,6 +126,12 @@ function resolveRegisterErrorMessage(error: unknown) {
     }
 
     const serverMessage = readServerRegisterMessage(error);
+    if (error.status === 502 || error.status === 504) {
+      return serverMessage
+        ? `Registration service is temporarily unreachable. ${serverMessage}`
+        : "Registration service is temporarily unreachable. Please try again in a few minutes.";
+    }
+
     if (error.status === 503) {
       return serverMessage
         ? `Registration service is temporarily unavailable. ${serverMessage}`

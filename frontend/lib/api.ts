@@ -103,7 +103,18 @@ async function parseResponse(response: Response) {
 
 function readPayloadMessage(payload: unknown) {
   if (typeof payload === "string") {
-    return payload.trim();
+    const trimmed = payload.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    // Reverse proxies often return full HTML error documents for 5xx responses.
+    // Do not surface raw markup to users as an application error message.
+    if (/^\s*<!doctype html\b/i.test(trimmed) || /^\s*<html\b/i.test(trimmed)) {
+      return "";
+    }
+
+    return trimmed;
   }
 
   if (typeof payload !== "object" || payload === null) {
