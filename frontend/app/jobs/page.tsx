@@ -104,7 +104,12 @@ function JobsPageContent() {
   const [submittingJobId, setSubmittingJobId] = useState<number | null>(null);
 
   useEffect(() => {
-    const nextFilters = readFilters(searchParams);
+    const params = new URLSearchParams(searchParamKey);
+    const nextFilters = readFilters({
+      get(name: string) {
+        return params.get(name);
+      }
+    });
     setFilters(nextFilters);
     void loadJobs(nextFilters);
   }, [searchParamKey]);

@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -32,9 +33,18 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const bootstrapped = usePlatformStore((state) => state.bootstrapped);
+  const hydrateSession = usePlatformStore((state) => state.hydrateSession);
   const user = usePlatformStore((state) => state.user);
   const logout = usePlatformStore((state) => state.logout);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (bootstrapped) {
+      return;
+    }
+    void hydrateSession();
+  }, [bootstrapped, hydrateSession]);
 
   function isActive(href: string) {
     const normalizedHref = href.split("?")[0];
@@ -59,7 +69,7 @@ export function AppShell({
         <div className="container topbar-inner topbar-modern react-topbar">
           <Link href="/" className="brand">
             <span className="brand-mark image-mark">
-              <img className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" />
+              <Image className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" width={36} height={36} priority />
             </span>
             <span>
               <span className="brand-title">Fresher Connect</span>
@@ -150,7 +160,7 @@ export function AppShell({
           <section className="footer-brand-block" aria-label="Fresher Connect footer introduction">
             <Link className="brand footer-brand" href="/">
               <span className="brand-mark image-mark">
-                <img className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" />
+                <Image className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" width={36} height={36} />
               </span>
               <span>
                 <span className="brand-title footer-brand-title">Fresher Connect</span>

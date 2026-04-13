@@ -86,31 +86,31 @@ export function usePlatformStore<T>(selector: (state: PlatformStoreFacade) => T)
 
   const notifications = useMemo(
     () => orderedValues(notificationsState),
-    [notificationsState.entities, notificationsState.ids]
+    [notificationsState]
   );
   const candidateApplications = useMemo(
     () => orderedValues(applicationsState.candidate),
-    [applicationsState.candidate.entities, applicationsState.candidate.ids]
+    [applicationsState.candidate]
   );
   const companyApplications = useMemo(
     () => orderedValues(applicationsState.company),
-    [applicationsState.company.entities, applicationsState.company.ids]
+    [applicationsState.company]
   );
   const recommendedJobs = useMemo(
     () => orderedValues(jobsState.recommended),
-    [jobsState.recommended.entities, jobsState.recommended.ids]
+    [jobsState.recommended]
   );
   const savedJobs = useMemo(
     () => orderedValues(jobsState.saved),
-    [jobsState.saved.entities, jobsState.saved.ids]
+    [jobsState.saved]
   );
   const postedJobs = useMemo(
     () => orderedValues(jobsState.posted),
-    [jobsState.posted.entities, jobsState.posted.ids]
+    [jobsState.posted]
   );
   const moderatedJobs = useMemo(
     () => orderedValues(jobsState.moderated),
-    [jobsState.moderated.entities, jobsState.moderated.ids]
+    [jobsState.moderated]
   );
 
   const userDashboard = useMemo<UserDashboard | null>(() => {

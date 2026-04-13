@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, FormEvent, Suspense, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -643,7 +644,15 @@ function RegisterPageContent() {
                     {candidatePhotoPreview ? (
                       <span className="candidate-photo-dropzone-body">
                         <span className="candidate-photo-preview">
-                          <img src={candidatePhotoPreview} alt="Candidate photo preview" />
+                          <Image
+                            src={candidatePhotoPreview}
+                            alt="Candidate photo preview"
+                            width={78}
+                            height={78}
+                            className="candidate-photo-preview-image"
+                            sizes="78px"
+                            unoptimized
+                          />
                         </span>
                         <span className="candidate-photo-copy">
                           <strong>{candidatePhotoFile?.name || "Professional photo selected"}</strong>

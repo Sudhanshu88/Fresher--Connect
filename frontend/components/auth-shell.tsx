@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { LiveUpdatesTicker } from "@/components/live-updates-ticker";
+import { usePlatformStore } from "@/lib/stores/platform-store";
 
 export function AuthShell({
   brandSubtitle,
@@ -29,6 +32,16 @@ export function AuthShell({
   left: React.ReactNode;
   right: React.ReactNode;
 }) {
+  const bootstrapped = usePlatformStore((state) => state.bootstrapped);
+  const hydrateSession = usePlatformStore((state) => state.hydrateSession);
+
+  useEffect(() => {
+    if (bootstrapped) {
+      return;
+    }
+    void hydrateSession();
+  }, [bootstrapped, hydrateSession]);
+
   return (
     <div className={pageClassName ? `auth-page ${pageClassName}` : "auth-page"}>
       {showUtilityHeader ? (
@@ -37,7 +50,7 @@ export function AuthShell({
             <div className="auth-utility-inner">
               <Link className="brand auth-utility-brand" href="/">
                 <span className="brand-mark image-mark">
-                  <img className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" />
+                  <Image className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" width={36} height={36} priority />
                 </span>
                 <span className="auth-utility-brand-copy">
                   <span className="brand-title">Fresher Connect</span>
@@ -99,7 +112,7 @@ export function AuthShell({
           {showBrand ? (
             <Link className="brand" href="/">
               <span className="brand-mark image-mark">
-                <img className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" />
+                <Image className="brand-logo" src="/fc-logo.svg" alt="Fresher Connect logo" width={36} height={36} />
               </span>
               <span>
                 <span className="brand-title">Fresher Connect</span>

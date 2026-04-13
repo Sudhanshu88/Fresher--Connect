@@ -43,12 +43,21 @@ def api_session():
 
 def healthcheck():
     store = get_store()
+    engine = "mongomock" if getattr(store, "use_mock", False) else "mongodb"
     try:
         store.bootstrap()
-        return jsonify({"database": "available", "engine": "mongodb", "ok": True, "ready": True})
+        return jsonify(
+            {
+                "database": "available",
+                "engine": engine,
+                "mode": "mock" if getattr(store, "use_mock", False) else "live",
+                "ok": True,
+                "ready": True,
+            }
+        )
     except (PyMongoError, RuntimeError) as error:
         current_app.logger.warning("Healthcheck error: %s", error)
-        return jsonify({"database": "unavailable", "engine": "mongodb", "ok": False, "ready": False}), 503
+        return jsonify({"database": "unavailable", "engine": engine, "ok": False, "ready": False}), 503
 
 
 def uploaded_file(filename):

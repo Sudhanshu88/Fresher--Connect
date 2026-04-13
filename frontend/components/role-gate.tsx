@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import { LoadingBlock } from "@/components/loading-block";
 import { dashboardPath } from "@/lib/routes";
 import { usePlatformStore } from "@/lib/stores/platform-store";
-import type { SessionUser, UserRole } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 
 export function RoleGate({
   roles,
   children
 }: {
   roles: UserRole[];
-  children: (user: SessionUser) => React.ReactNode;
+  children: React.ReactNode;
 }) {
   const router = useRouter();
   const user = usePlatformStore((state) => state.user);
@@ -41,5 +41,5 @@ export function RoleGate({
     return <LoadingBlock label="Verifying secure access..." />;
   }
 
-  return <>{children(user)}</>;
+  return <>{children}</>;
 }

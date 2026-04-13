@@ -40,7 +40,7 @@ export function JobCard({
               <span className="match-pill medium">{formatPercent(job.match_score)}</span>
             </div>
             <span className="meta-line">
-              See how your current profile aligns with the employer's most important requirements.
+              See how your current profile aligns with the employer requirements that matter most.
             </span>
           </div>
         ) : null}

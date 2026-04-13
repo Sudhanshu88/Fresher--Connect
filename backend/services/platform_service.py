@@ -4,12 +4,11 @@ import os
 import re
 import secrets
 from datetime import UTC, datetime, timedelta
-from urllib.parse import urlparse
 
-from dotenv import load_dotenv
 from flask import current_app, jsonify, session
 from pymongo import ASCENDING, DESCENDING, MongoClient, ReturnDocument
 
+from backend.config.settings import build_allowed_origins, extract_database_name, is_allowed_origin, normalize_mongodb_uri
 from backend.models.documents import build_company_document, build_job_document, build_user_document
 from backend.services.auth_service import hash_password
 
@@ -17,9 +16,6 @@ try:
     import mongomock
 except ImportError:  # pragma: no cover
     mongomock = None
-
-
-load_dotenv()
 
 
 def utcnow():
@@ -42,42 +38,6 @@ def ensure_csrf_token():
         token = secrets.token_urlsafe(32)
         session["csrf_token"] = token
     return token
-
-
-def normalize_mongodb_uri():
-    mongodb_uri = str(os.getenv("MONGODB_URI", "")).strip()
-    if mongodb_uri:
-        return mongodb_uri
-
-    mongo_uri = str(os.getenv("MONGO_URI", "")).strip()
-    if mongo_uri:
-        return mongo_uri
-
-    database_url = str(os.getenv("DATABASE_URL", "")).strip()
-    if database_url.startswith("mongodb://") or database_url.startswith("mongodb+srv://"):
-        return database_url
-
-    return "mongodb://127.0.0.1:27017/fresher_connect"
-
-
-def extract_database_name(uri):
-    parsed = urlparse(uri)
-    database_name = parsed.path.lstrip("/").split("/", 1)[0]
-    return database_name or "fresher_connect"
-
-
-def build_allowed_origins():
-    origins = {"http://127.0.0.1:3000", "http://localhost:3000"}
-    configured = str(os.getenv("FRONTEND_ORIGINS", "")).split(",")
-    for origin in configured:
-        origin = origin.strip()
-        if origin:
-            origins.add(origin)
-    return origins
-
-
-def is_allowed_origin(origin, allowed_origins):
-    return bool(origin and origin in allowed_origins)
 
 
 def parse_tag_list(value):

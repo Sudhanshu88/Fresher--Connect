@@ -13,6 +13,8 @@ from backend.services.platform_service import MongoStore
 def create_app():
     backend = Flask(__name__)
     backend.config.update(load_runtime_settings())
+    if backend.config["FC_USE_MOCK_DB"] and backend.config["FC_PRODUCTION_LIKE_RUNTIME"]:
+        raise RuntimeError("mock_db_not_allowed_in_production_like_runtime")
     upload_folder = os.path.join(backend.instance_path, "uploads")
     os.makedirs(upload_folder, exist_ok=True)
     backend.config["UPLOAD_FOLDER"] = upload_folder

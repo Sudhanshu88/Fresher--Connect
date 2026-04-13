@@ -149,6 +149,7 @@ Notes:
 - The backend loads `backend/.env` first and falls back to the root `.env` only for backward compatibility
 - If `MONGODB_URI` is not set, the backend defaults to `mongodb://127.0.0.1:27017/fresher_connect`
 - Set `MONGODB_USE_MOCK=true` to run the backend against an in-memory mocked MongoDB
+- Do not use `MONGODB_USE_MOCK=true` on a deployed server; mock mode is ephemeral and live companies, reviews, and similar writes will be lost on restart or redeploy
 - Set `DISABLE_SEED_DATA=true` to skip sample companies and jobs
 - Set `STORAGE_BACKEND=s3` with `S3_BUCKET` and `AWS_REGION` to store uploaded resumes in S3 instead of local disk
 

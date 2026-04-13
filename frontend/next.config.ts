@@ -13,6 +13,9 @@ const apiProxyTarget =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  eslint: {
+    dirs: ["app", "components", "lib"]
+  },
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: false },

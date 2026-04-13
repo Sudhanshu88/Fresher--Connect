@@ -74,6 +74,20 @@ def is_allowed_origin(origin, allowed_origins):
     return bool(origin and origin in allowed_origins)
 
 
+def is_local_origin(origin):
+    parsed = urlparse(str(origin or "").strip())
+    hostname = str(parsed.hostname or "").strip().lower()
+    return hostname in {"", "localhost", "127.0.0.1"}
+
+
+def is_production_like_runtime():
+    if parse_bool(os.getenv("SESSION_COOKIE_SECURE"), default=False):
+        return True
+
+    configured = [item.strip() for item in str(os.getenv("FRONTEND_ORIGINS", "")).split(",") if item.strip()]
+    return any(not is_local_origin(origin) for origin in configured)
+
+
 def load_runtime_settings():
     return {
         "SECRET_KEY": os.getenv("SECRET_KEY", "change-this-before-production"),
@@ -89,6 +103,7 @@ def load_runtime_settings():
         "FC_ALLOWED_ORIGINS": build_allowed_origins(),
         "FC_MONGODB_URI": normalize_mongodb_uri(),
         "FC_USE_MOCK_DB": parse_bool(os.getenv("MONGODB_USE_MOCK"), default=False),
+        "FC_PRODUCTION_LIKE_RUNTIME": is_production_like_runtime(),
         "FC_STORAGE_BACKEND": str(os.getenv("STORAGE_BACKEND", "local")).strip().lower() or "local",
         "FC_S3_BUCKET": str(os.getenv("S3_BUCKET", "")).strip(),
         "FC_S3_REGION": str(os.getenv("AWS_REGION", os.getenv("S3_REGION", ""))).strip(),

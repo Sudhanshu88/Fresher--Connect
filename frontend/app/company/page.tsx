@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
@@ -42,7 +42,9 @@ type ApplicationDraftMap = Record<
 export default function CompanyPage() {
   return (
     <AppShell>
-      <RoleGate roles={["company"]}>{() => <CompanyWorkspace />}</RoleGate>
+      <RoleGate roles={["company"]}>
+        <CompanyWorkspace />
+      </RoleGate>
     </AppShell>
   );
 }
@@ -60,9 +62,7 @@ function CompanyWorkspace() {
   const [applicationDrafts, setApplicationDrafts] = useState<ApplicationDraftMap>({});
   const [updatingApplicationId, setUpdatingApplicationId] = useState<number | null>(null);
 
-  async function refreshDashboard() {
-    return loadCompanyDashboard();
-  }
+  const refreshDashboard = useCallback(() => loadCompanyDashboard(), [loadCompanyDashboard]);
 
   useEffect(() => {
     let active = true;
@@ -86,7 +86,7 @@ function CompanyWorkspace() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshDashboard]);
 
   useEffect(() => {
     if (!dashboard?.applications) {

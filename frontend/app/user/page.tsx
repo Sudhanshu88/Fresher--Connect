@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
@@ -35,7 +35,9 @@ const defaultProfileForm = {
 export default function UserPage() {
   return (
     <AppShell>
-      <RoleGate roles={["fresher"]}>{() => <CandidateWorkspace />}</RoleGate>
+      <RoleGate roles={["fresher"]}>
+        <CandidateWorkspace />
+      </RoleGate>
     </AppShell>
   );
 }
@@ -52,10 +54,7 @@ function CandidateWorkspace() {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [applyingJobId, setApplyingJobId] = useState<number | null>(null);
 
-  async function refreshDashboard() {
-    const response = await loadUserDashboard();
-    return response;
-  }
+  const refreshDashboard = useCallback(() => loadUserDashboard(), [loadUserDashboard]);
 
   useEffect(() => {
     let active = true;
@@ -79,7 +78,7 @@ function CandidateWorkspace() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshDashboard]);
 
   useEffect(() => {
     if (!dashboard?.user) {

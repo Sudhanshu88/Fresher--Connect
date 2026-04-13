@@ -20,13 +20,16 @@ const workflowStatuses = ["applied", "reviewing", "shortlisted", "interview", "o
 export default function ApplicationDetailPage() {
   return (
     <AppShell>
-      <RoleGate roles={["fresher", "company"]}>{(user) => <ApplicationWorkspace user={user} />}</RoleGate>
+      <RoleGate roles={["fresher", "company"]}>
+        <ApplicationWorkspace />
+      </RoleGate>
     </AppShell>
   );
 }
 
-function ApplicationWorkspace({ user }: { user: SessionUser }) {
+function ApplicationWorkspace() {
   const params = useParams<{ id: string }>();
+  const user = usePlatformStore((state) => state.user) as SessionUser;
   const loadCompanyDashboard = usePlatformStore((state) => state.loadCompanyDashboard);
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);

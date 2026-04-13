@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { Feedback } from "@/components/feedback";
@@ -29,7 +29,9 @@ type JobDraftMap = Record<
 export default function AdminPage() {
   return (
     <AppShell>
-      <RoleGate roles={["admin"]}>{() => <AdminWorkspace />}</RoleGate>
+      <RoleGate roles={["admin"]}>
+        <AdminWorkspace />
+      </RoleGate>
     </AppShell>
   );
 }
@@ -45,9 +47,7 @@ function AdminWorkspace() {
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
   const [savingJobId, setSavingJobId] = useState<number | null>(null);
 
-  async function refreshDashboard() {
-    return loadAdminDashboard();
-  }
+  const refreshDashboard = useCallback(() => loadAdminDashboard(), [loadAdminDashboard]);
 
   useEffect(() => {
     let active = true;
@@ -71,7 +71,7 @@ function AdminWorkspace() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshDashboard]);
 
   useEffect(() => {
     if (!dashboard) {
